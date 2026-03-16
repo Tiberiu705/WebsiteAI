@@ -51,6 +51,8 @@ DESIGN:
 - Animații: DOAR transform și opacity — NICIODATĂ transition-all
 - Fiecare element clickabil (buton, link, card): stări hover, focus-visible ȘI active distincte
 - Imagini: overlay gradient (bg-gradient-to-t from-black/60) + filter brightness(0.8) pe toate imaginile
+- Imaginea hero (landing page): filter brightness(0.8) blur(3px) scale(1.05) — ușor blurată pentru profunzime
+- Text peste imagini (hero, banner): ÎNTOTDEAUNA alb pur (#ffffff) cu text-shadow pentru contrast maxim, NICIODATĂ gri
 - Spacing: token-uri consistente (nu valori Tailwind aleatorii)
 - Depth: suprafețe cu z-plane distinct (base → elevated → floating)
 
@@ -68,8 +70,8 @@ BUTOANE CTA:
 - Butoane secundare: outline sau ghost, același border-radius ca cele primare
 
 SERVICII:
-- Fiecare card de serviciu are o imagine diferită și unică (dimensiuni și subiecte diferite)
-- Imaginile serviciilor: folosește placehold.co cu dimensiuni variate (ex: 400x300, 380x280, 420x320)
+- Fiecare card de serviciu TREBUIE să aibă o imagine cu dimensiuni unice — NICIO dimensiune nu se repetă
+- Folosește aceste dimensiuni exacte în ordine: 400x300, 380x260, 420x280, 360x240, 410x290, 390x270 (una per card)
 - Fiecare imagine de serviciu are filter brightness(0.8)
 - Cardurile de servicii: grid uniform, spațiere consistentă
 
