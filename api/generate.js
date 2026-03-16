@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
-        generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
+        generationConfig: { maxOutputTokens: 16384, temperature: 0.75, topP: 0.95 },
       }),
     });
 
