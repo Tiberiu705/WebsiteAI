@@ -46,6 +46,9 @@ DESIGN:
 - Tipografie: font display pentru heading-uri (tracking -0.03em pe titluri mari), font sans pentru body (line-height 1.7)
 - Font size body: 13px pentru tot textul de paragraf, descrieri, liste
 - O singură culoare de text pentru tot conținutul (nu amesteca culori de text în același bloc)
+- CONTRAST OBLIGATORIU: text pe fundal deschis (alb, gri, verde deschis, bej) = text închis (#111). Text pe fundal închis = text alb (#fff). NICIODATĂ text alb pe fundal alb sau deschis
+- Butoanele CTA pe fonduri deschise: background închis cu text alb, sau border cu text închis
+- Dacă background-ul unei secțiuni e mai deschis de #888, textul TREBUIE să fie mai închis de #444
 - Shadows: layered, cu culori ușor tintate, low opacity — NU flat shadow-md
 - Gradiente: minim 2 gradiente radiale layered pentru fundal
 - Animații: DOAR transform și opacity — NICIODATĂ transition-all
