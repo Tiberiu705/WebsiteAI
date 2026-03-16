@@ -1790,35 +1790,32 @@
 
   /* ── CSS injection engine — bypasses Tailwind completely ── */
   let _efCounter = 0;
+  const _efStyles = new Map(); // elementId -> { cssProp: value }
+
   function efId(el) {
-    if (!el.dataset.efId) el.dataset.efId = 'ef' + (++_efCounter);
-    return el.dataset.efId;
+    if (!el.id || !el.id.startsWith('ef-')) el.id = 'ef-' + (++_efCounter);
+    return el.id;
   }
+
   function efApply(el, prop, value) {
     const doc = previewIframe.contentDocument;
     if (!doc) return;
     const id = efId(el);
+    if (!_efStyles.has(id)) _efStyles.set(id, {});
+    _efStyles.get(id)[prop] = value;
+    // Rebuild entire overrides sheet
+    let css = '';
+    _efStyles.forEach((props, elId) => {
+      const decls = Object.entries(props).map(([p, v]) => `${p}:${v} !important`).join(';');
+      css += `#${elId}{${decls}}\n`;
+    });
     let sheet = doc.getElementById('ef-overrides');
     if (!sheet) {
       sheet = doc.createElement('style');
       sheet.id = 'ef-overrides';
       doc.head.appendChild(sheet);
     }
-    // Parse existing rules, update or add the property for this element
-    const selector = `[data-ef-id="${id}"]`;
-    const text = sheet.textContent;
-    const blockRx = new RegExp(`(\\[data-ef-id="${id}"\\]\\s*\\{)([^}]*)(\\})`, 's');
-    const propRx  = new RegExp(`${prop}\\s*:[^;]+!important;?`, 'g');
-    const newDecl = `${prop}:${value} !important;`;
-    if (blockRx.test(text)) {
-      const newBlock = text.replace(blockRx, (_, open, body, close) => {
-        const newBody = propRx.test(body) ? body.replace(propRx, newDecl) : body + newDecl;
-        return open + newBody + close;
-      });
-      sheet.textContent = newBlock;
-    } else {
-      sheet.textContent += `\n${selector}{${newDecl}}`;
-    }
+    sheet.textContent = css;
     syncHtml();
   }
 
@@ -1891,6 +1888,27 @@
     row1.appendChild(sizeInput);
     row1.appendChild(mkSizeBtn('+', 1));
     wrap.appendChild(row1);
+
+    /* ── Row 1b: Text color picker ── */
+    const colorRow = document.createElement('div');
+    colorRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:5px;';
+    const colorLbl = document.createElement('span');
+    colorLbl.textContent = 'Culoare text';
+    colorLbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.72rem;color:#666;flex-shrink:0;';
+    const colorPicker = document.createElement('input');
+    colorPicker.type = 'color';
+    const doc0 = previewIframe.contentDocument;
+    colorPicker.value = doc0 ? ('#' + Array.from(doc0.defaultView.getComputedStyle(el).color.match(/\d+/g)||[0,0,0]).map(n=>parseInt(n).toString(16).padStart(2,'0')).join('')) : '#111111';
+    colorPicker.style.cssText = 'width:36px;height:30px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;cursor:pointer;padding:2px;background:none;flex-shrink:0;';
+    colorPicker.addEventListener('input', () => efApply(el, 'color', colorPicker.value));
+    const colorHex = document.createElement('span');
+    colorHex.style.cssText = 'font-family:monospace;font-size:0.72rem;color:#555;';
+    colorHex.textContent = colorPicker.value.toUpperCase();
+    colorPicker.addEventListener('input', () => { colorHex.textContent = colorPicker.value.toUpperCase(); });
+    colorRow.appendChild(colorLbl);
+    colorRow.appendChild(colorPicker);
+    colorRow.appendChild(colorHex);
+    wrap.appendChild(colorRow);
 
     /* ── Row 2: Font family select ── */
     const fontSel = document.createElement('select');
