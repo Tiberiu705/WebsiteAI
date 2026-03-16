@@ -207,6 +207,7 @@
       min-width: 0;
     }
     .ai-input::placeholder { color: #666; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     /* ── Cards ── */
     .site-card {
@@ -2049,6 +2050,14 @@
         reader.readAsDataURL(file);
       });
 
+      // AI Generate button
+      const aiGenBtn = document.createElement('button');
+      aiGenBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" stroke="#C8FF00" stroke-width="1.4" stroke-linejoin="round"/></svg>Generează cu AI';
+      aiGenBtn.style.cssText = 'width:100%;padding:0 10px;height:36px;background:rgba(200,255,0,0.04);border:1px solid rgba(200,255,0,0.2);border-radius:8px;color:#C8FF00;font-family:"Inter",sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;';
+      aiGenBtn.addEventListener('mouseenter', () => aiGenBtn.style.background = 'rgba(200,255,0,0.10)');
+      aiGenBtn.addEventListener('mouseleave', () => aiGenBtn.style.background = 'rgba(200,255,0,0.04)');
+      aiGenBtn.addEventListener('click', () => openAiImageModal(img, preview));
+
       // URL input
       const urlInput = document.createElement('input');
       urlInput.type = 'url';
@@ -2067,9 +2076,105 @@
 
       wrap.appendChild(uploadBtn);
       wrap.appendChild(fileInput);
+      wrap.appendChild(aiGenBtn);
       wrap.appendChild(urlInput);
       panel.appendChild(wrap);
     });
+  }
+
+  /* ── AI Image Generation Modal ── */
+  function openAiImageModal(imgEl, previewEl) {
+    // Remove existing modal if any
+    const existing = document.getElementById('ai-img-modal');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ai-img-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#1a1a1a;border:1px solid rgba(200,255,0,0.2);border-radius:16px;padding:28px;width:100%;max-width:440px;font-family:"Inter",sans-serif;box-shadow:0 24px 80px rgba(0,0,0,0.7);';
+
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;';
+    header.innerHTML = '<div style="display:flex;align-items:center;gap:10px;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" stroke="#C8FF00" stroke-width="1.4" stroke-linejoin="round"/></svg><span style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;color:#fff;">Generează imagine cu AI</span></div>';
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = 'background:none;border:none;color:#888;font-size:1rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color 0.15s;';
+    closeBtn.addEventListener('mouseenter', () => closeBtn.style.color = '#fff');
+    closeBtn.addEventListener('mouseleave', () => closeBtn.style.color = '#888');
+    closeBtn.addEventListener('click', () => overlay.remove());
+    header.appendChild(closeBtn);
+
+    // Prompt label
+    const label = document.createElement('div');
+    label.textContent = 'Descrie imaginea dorită';
+    label.style.cssText = 'font-size:0.8rem;color:#888;margin-bottom:8px;';
+
+    // Prompt textarea
+    const textarea = document.createElement('textarea');
+    textarea.placeholder = 'ex: fotografie profesională cu un service auto modern, iluminare dramatică, perspectivă largă...';
+    textarea.rows = 4;
+    textarea.style.cssText = 'width:100%;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;line-height:1.6;outline:none;resize:vertical;transition:border-color 0.15s;margin-bottom:16px;';
+    textarea.addEventListener('focus', () => textarea.style.borderColor = 'rgba(200,255,0,0.4)');
+    textarea.addEventListener('blur',  () => textarea.style.borderColor = 'rgba(255,255,255,0.1)');
+
+    // Generate button
+    const genBtn = document.createElement('button');
+    genBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:7px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" fill="#080808" stroke="#080808" stroke-width="0.5"/></svg>Generează imaginea';
+    genBtn.style.cssText = 'width:100%;height:44px;background:#C8FF00;border:none;border-radius:10px;color:#080808;font-family:"Syne",sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s,transform 0.1s;';
+    genBtn.addEventListener('mouseenter', () => genBtn.style.background = '#d8ff33');
+    genBtn.addEventListener('mouseleave', () => genBtn.style.background = '#C8FF00');
+
+    // Status text
+    const status = document.createElement('div');
+    status.style.cssText = 'font-size:0.78rem;color:#888;text-align:center;margin-top:12px;min-height:18px;';
+
+    genBtn.addEventListener('click', async () => {
+      const prompt = textarea.value.trim();
+      if (!prompt) { status.textContent = 'Scrie un prompt mai întâi.'; status.style.color = '#ff6b6b'; return; }
+
+      genBtn.disabled = true;
+      genBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:7px;animation:spin 0.8s linear infinite;vertical-align:-2px"><circle cx="12" cy="12" r="10" stroke="#080808" stroke-width="3" stroke-dasharray="40 20"/></svg>Generând...';
+      status.textContent = 'Se generează imaginea, poate dura 15-30 secunde...';
+      status.style.color = '#888';
+
+      try {
+        const dataUrl = await nanobanana2Generate(prompt);
+        if (dataUrl) {
+          imgEl.src = dataUrl;
+          if (previewEl) previewEl.src = dataUrl;
+          syncHtml();
+          status.textContent = '✓ Imagine generată cu succes!';
+          status.style.color = '#C8FF00';
+          setTimeout(() => overlay.remove(), 1200);
+        } else {
+          status.textContent = 'Generarea a eșuat. Încearcă alt prompt.';
+          status.style.color = '#ff6b6b';
+          genBtn.disabled = false;
+          genBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:7px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" fill="#080808" stroke="#080808" stroke-width="0.5"/></svg>Încearcă din nou';
+        }
+      } catch(e) {
+        status.textContent = 'Eroare: ' + e.message;
+        status.style.color = '#ff6b6b';
+        genBtn.disabled = false;
+        genBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:7px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" fill="#080808" stroke="#080808" stroke-width="0.5"/></svg>Încearcă din nou';
+      }
+    });
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+    modal.appendChild(header);
+    modal.appendChild(label);
+    modal.appendChild(textarea);
+    modal.appendChild(genBtn);
+    modal.appendChild(status);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => textarea.focus(), 50);
   }
 
   /* ── POPULATE CULORI ── */
