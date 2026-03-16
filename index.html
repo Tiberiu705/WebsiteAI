@@ -1,0 +1,2470 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebsiteAI — Generează site-ul tău cu AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            acid: '#C8FF00',
+            'acid-dim': '#9FCC00',
+            ink: '#080808',
+            surface: '#111111',
+            elevated: '#1A1A1A',
+            floating: '#242424',
+            muted: '#888888',
+            'muted-light': '#BBBBBB',
+          },
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          letterSpacing: {
+            tightest: '-0.04em',
+            tighter: '-0.03em',
+          },
+          boxShadow: {
+            'acid-glow': '0 0 40px 0 rgba(200,255,0,0.18), 0 4px 24px 0 rgba(200,255,0,0.08)',
+            'acid-glow-sm': '0 0 20px 0 rgba(200,255,0,0.14)',
+            'card': '0 2px 8px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4)',
+            'card-hover': '0 4px 16px rgba(0,0,0,0.7), 0 16px 48px rgba(0,0,0,0.5)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: #080808;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* ── Radial gradient backgrounds ── */
+    .hero-bg {
+      background:
+        radial-gradient(ellipse 70% 55% at 50% -5%, rgba(200,255,0,0.13) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 35% at 88% 55%, rgba(200,255,0,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 70% at 8% 85%, rgba(255,30,170,0.07) 0%, transparent 55%),
+        #020202;
+    }
+
+    .section-alt {
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 50%, rgba(200,255,0,0.04) 0%, transparent 70%),
+        #080808;
+    }
+
+    /* ── Typography ── */
+    .heading-xl {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.8rem, 7vw, 6rem);
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+    }
+
+    .heading-lg {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .heading-md {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .body-lg {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.125rem;
+      line-height: 1.7;
+      color: #BBBBBB;
+    }
+
+    /* ── Acid highlight ── */
+    .acid-text { color: #C8FF00; }
+
+    /* ── Nav ── */
+    .nav-blur {
+      background: rgba(8,8,8,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ── Buttons ── */
+    .btn-acid {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #C8FF00;
+      color: #080808;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+      padding: 14px 28px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: 0 0 32px rgba(200,255,0,0.2), 0 4px 12px rgba(0,0,0,0.4);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-acid:hover {
+      background: #d8ff33;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 48px rgba(200,255,0,0.35), 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .btn-acid:active {
+      transform: translateY(0) scale(0.99);
+    }
+    .btn-acid:focus-visible {
+      outline: 2px solid #C8FF00;
+      outline-offset: 3px;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: #ffffff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 13px 27px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), border-color 0.15s ease, background 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(200,255,0,0.4);
+      background: rgba(200,255,0,0.06);
+      transform: translateY(-1px);
+    }
+    .btn-ghost:active { transform: translateY(0); }
+    .btn-ghost:focus-visible { outline: 2px solid #C8FF00; outline-offset: 3px; }
+
+    /* ── Input ── */
+    .ai-input-wrap {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 6px 6px 6px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .ai-input-wrap:focus-within {
+      border-color: rgba(200,255,0,0.5);
+      box-shadow: 0 0 0 3px rgba(200,255,0,0.08), 0 0 40px rgba(200,255,0,0.10);
+    }
+    .ai-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+      min-width: 0;
+    }
+    .ai-input::placeholder { color: #666; }
+
+    /* ── Cards ── */
+    .site-card {
+      background: #0A0A0A;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease, border-color 0.25s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .site-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.8), 0 16px 48px rgba(0,0,0,0.7);
+      border-color: rgba(200,255,0,0.3);
+    }
+    .site-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .site-card:hover img { transform: scale(1.04); }
+
+    /* ── Step number ── */
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 4rem;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: rgba(200,255,0,0.15);
+      transition: color 0.25s ease;
+    }
+    .step-item:hover .step-num { color: rgba(200,255,0,0.4); }
+
+    /* ── Pricing card ── */
+    .pricing-card {
+      background: #080808;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 40px;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), border-color 0.2s ease;
+    }
+    .pricing-card:hover {
+      transform: translateY(-4px);
+    }
+    .pricing-card.featured {
+      background: linear-gradient(135deg, #111111 0%, #141a00 100%);
+      border-color: rgba(200,255,0,0.35);
+      box-shadow: 0 0 60px rgba(200,255,0,0.08), 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .pricing-card.featured:hover {
+      border-color: rgba(200,255,0,0.55);
+      box-shadow: 0 0 80px rgba(200,255,0,0.14), 0 12px 48px rgba(0,0,0,0.6);
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: #BBBBBB;
+      line-height: 1.5;
+    }
+    .check-item svg { flex-shrink: 0; margin-top: 2px; }
+
+    /* ── Marquee ── */
+    .marquee-track {
+      display: flex;
+      gap: 24px;
+      animation: marquee 28s linear infinite;
+      will-change: transform;
+    }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px;
+      padding: 8px 18px;
+      white-space: nowrap;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+      color: #BBBBBB;
+    }
+    .marquee-pill-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #C8FF00;
+      flex-shrink: 0;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(200,255,0,0.1);
+      border: 1px solid rgba(200,255,0,0.25);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #C8FF00;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #C8FF00; animation: pulse-dot 1.8s ease-in-out infinite; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); }
+
+    /* ── Stat ── */
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      letter-spacing: -0.04em;
+      color: #C8FF00;
+      line-height: 1;
+    }
+
+    /* ── Nav link ── */
+    .nav-link {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: #888;
+      text-decoration: none;
+      transition: color 0.15s ease;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: #fff; }
+
+    /* ── Scroll fade-in ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Chat demo widget ── */
+    .chat-widget {
+      background: #1A1A1A;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+      width: 340px;
+    }
+    .chat-header {
+      background: rgba(200,255,0,0.08);
+      border-bottom: 1px solid rgba(200,255,0,0.15);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chat-msg {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      max-width: 80%;
+    }
+    .chat-msg-ai {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #DDD;
+      border-radius: 12px 12px 12px 4px;
+    }
+    .chat-msg-user {
+      background: rgba(200,255,0,0.12);
+      border: 1px solid rgba(200,255,0,0.2);
+      color: #C8FF00;
+      border-radius: 12px 12px 4px 12px;
+      align-self: flex-end;
+    }
+
+    /* ── Ticker ── */
+    .overflow-hidden-mask {
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+      overflow: hidden;
+    }
+
+    /* ══ MOBILE ══ */
+    @media (max-width: 768px) {
+      .nav-links { display: none !important; }
+
+      .hero-section { padding-top: 96px !important; padding-bottom: 56px !important; }
+      .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+      .hero-mockup { display: none !important; }
+
+      .ai-input-wrap {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 12px !important;
+        gap: 10px !important;
+      }
+      .ai-input-wrap .btn-acid { width: 100% !important; justify-content: center !important; }
+      .ai-input { padding: 4px 0 !important; }
+
+      .trust-sep { display: none !important; }
+      .trust-row { gap: 12px !important; }
+
+      .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .stats-grid > div { border-right: none !important; }
+      .stats-grid > div:nth-child(-n+2) { border-bottom: 1px solid rgba(200,255,0,0.08) !important; }
+
+      .steps-grid { grid-template-columns: 1fr !important; }
+      .step-item { padding: 32px 24px !important; }
+
+      .features-grid { grid-template-columns: 1fr 1fr !important; }
+      .features-grid > div { padding: 28px 20px !important; }
+
+      .pricing-grid { grid-template-columns: 1fr !important; }
+      .pricing-card { padding: 32px 24px !important; }
+
+      .testimonials-grid { grid-template-columns: 1fr !important; }
+
+      .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
+      .footer-brand { grid-column: 1 / -1 !important; }
+
+      .cta-banner-inner { padding: 48px 24px !important; }
+
+      .brief-outer { padding: 16px !important; align-items: flex-start !important; padding-top: 24px !important; }
+      .brief-modal { padding: 28px 20px !important; }
+
+      .preview-toolbar-btns { overflow-x: auto; gap: 6px !important; -webkit-overflow-scrolling: touch; }
+      .preview-toolbar-btns > * { flex-shrink: 0 !important; font-size: 0.72rem !important; padding: 7px 10px !important; }
+
+      .preview-content { flex-direction: column !important; }
+      #editor-sidebar { width: 100% !important; height: 50vh !important; border-left: none !important; border-top: 1px solid rgba(200,255,0,0.15) !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════ NAV ══════════════════════ -->
+<nav class="nav-blur fixed top-0 left-0 right-0 z-50">
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;height:68px;display:flex;align-items:center;justify-content:space-between;">
+    <!-- Logo -->
+    <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+      <img src="websiteai-logo.png" alt="WebsiteAI" style="height:36px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+      
+    </a>
+
+    <!-- Links -->
+    <div class="nav-links" style="display:flex;align-items:center;gap:32px;">
+      <a class="nav-link" href="#cum-functioneaza">Cum funcționează</a>
+      <a class="nav-link" href="#exemple">Exemple</a>
+      <a class="nav-link" href="#preturi">Prețuri</a>
+    </div>
+
+    <!-- CTA -->
+    <a href="#generator" class="btn-acid" style="padding:10px 22px;font-size:0.875rem;">
+      Generează Gratuit
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</nav>
+
+<!-- ══════════════════════ HERO ══════════════════════ -->
+<section class="hero-bg hero-section" style="padding:140px 24px 100px;" id="generator">
+  <div class="hero-grid" style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+
+    <!-- Left: copy + input -->
+    <div>
+      <h1 class="heading-xl" style="margin-bottom:24px;">
+        Site-ul tău,<br />
+        generat de <span class="acid-text">AI</span><br />
+        în 60 de secunde.
+      </h1>
+
+      <p class="body-lg" style="max-width:480px;margin-bottom:40px;font-size:1.05rem;">
+        Descrie afacerea ta în câteva cuvinte. WebsiteAI creează automat un site profesional, personalizat, gata de publicat.
+      </p>
+
+      <!-- AI Generator Input -->
+      <div class="ai-input-wrap" style="margin-bottom:14px;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink:0;opacity:0.45;">
+          <path d="M9 1.5L11 7l5.5 2L11 11l-2 5.5-2-5.5L1.5 9l5.5-2 2-5.5z" stroke="#C8FF00" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        <input
+          id="main-description"
+          class="ai-input"
+          type="text"
+          placeholder="ex: Salon de coafură în Cluj, pentru femei..."
+          style="padding:12px 0;"
+        />
+        <button id="btn-generate-hero" class="btn-acid" style="flex-shrink:0;">
+          Generează
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M9 3.5l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <p style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#444;margin-bottom:48px;">
+        Fără cont. Fără card. Primul site e cadou.
+      </p>
+
+      <!-- Trust -->
+      <div class="trust-row" style="display:flex;align-items:center;gap:28px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.825rem;font-family:'Inter',sans-serif;color:#666;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.8 4.5L14 7l-5.2 1.5L7 13l-1.8-4.5L0 7l5.2-1.5z" fill="#C8FF00"/></svg>
+          340+ site-uri generate
+        </div>
+        <div class="trust-sep" style="width:1px;height:16px;background:rgba(255,255,255,0.08);"></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.825rem;font-family:'Inter',sans-serif;color:#666;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C8FF00" stroke-width="1.3"/><path d="M4.5 7l2 2 3.5-3.5" stroke="#C8FF00" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Hosting inclus
+        </div>
+        <div class="trust-sep" style="width:1px;height:16px;background:rgba(255,255,255,0.08);"></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.825rem;font-family:'Inter',sans-serif;color:#666;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.8 4.5L14 7l-5.2 1.5L7 13l-1.8-4.5L0 7l5.2-1.5z" stroke="#C8FF00" stroke-width="1.3"/></svg>
+          Design unic AI
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: browser mockup previewing generated site -->
+    <div class="hero-mockup" style="position:relative;">
+      <!-- Glow behind mockup -->
+      <div style="position:absolute;inset:-40px;background:radial-gradient(ellipse 80% 80% at 50% 50%, rgba(200,255,0,0.10) 0%, transparent 70%);pointer-events:none;border-radius:50%;"></div>
+
+      <!-- Browser chrome -->
+      <div style="position:relative;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;box-shadow:0 8px 64px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.05);">
+        <!-- URL bar -->
+        <div style="background:#0A0A0A;border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 16px;display:flex;align-items:center;gap:8px;">
+          <div style="display:flex;gap:5px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#FF5F57;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#FFBD2E;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#28C840;"></div>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:6px;padding:5px 12px;font-size:0.75rem;color:#555;font-family:'Inter',sans-serif;text-align:center;">
+            🔒 websiteai.ro
+          </div>
+        </div>
+        <!-- Site preview -->
+        <div style="position:relative;overflow:hidden;height:340px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;">
+          <div style="text-align:center;opacity:0.25;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C8FF00" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating stat bubble -->
+      <div style="position:absolute;top:-16px;right:-16px;background:#C8FF00;border-radius:12px;padding:10px 16px;box-shadow:0 4px 24px rgba(200,255,0,0.3);">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#080808;letter-spacing:-0.04em;line-height:1;">60s</div>
+        <div style="font-family:'Inter',sans-serif;font-size:0.7rem;color:rgba(8,8,8,0.6);margin-top:2px;">generare</div>
+      </div>
+
+      <!-- Floating type indicator -->
+      <div style="position:absolute;bottom:-16px;left:-16px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.6);">
+        <img src="websiteai-logo.png" style="height:20px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#fff;">Generat de <span style="color:#C8FF00;">WebsiteAI</span></span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════ MARQUEE ══════════════════════ -->
+<div class="overflow-hidden-mask" style="padding:20px 0;border-top:1px solid rgba(200,255,0,0.12);border-bottom:1px solid rgba(200,255,0,0.12);background:#030303;">
+  <div class="marquee-track" style="width:max-content;">
+    <!-- first set -->
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Transport & Logistică</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Salon Frumusețe</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Cafenea & Restaurant</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Construcții & Amenajări</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Cabinet Medical</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Auto & Service</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Avocatură & Juridic</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>E-commerce & Produse</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Educație & Cursuri</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Turism & Cazare</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Fitness & Sport</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Contabilitate & Taxe</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Transport & Logistică</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Salon Frumusețe</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Cafenea & Restaurant</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Construcții & Amenajări</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Cabinet Medical</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Auto & Service</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Avocatură & Juridic</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>E-commerce & Produse</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Educație & Cursuri</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Turism & Cazare</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Fitness & Sport</div>
+    <div class="marquee-pill"><span class="marquee-pill-dot"></span>Contabilitate & Taxe</div>
+  </div>
+</div>
+
+<!-- ══════════════════════ STATS ══════════════════════ -->
+<section style="padding:80px 24px;background:#020202;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid rgba(200,255,0,0.12);border-radius:2px;overflow:hidden;">
+
+      <div style="text-align:center;padding:48px 24px;background:#030303;border-right:1px solid rgba(200,255,0,0.08);">
+        <div class="stat-num">340+</div>
+        <div style="margin-top:12px;font-family:'Inter',sans-serif;font-size:0.875rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;">Site-uri generate</div>
+      </div>
+
+      <div style="text-align:center;padding:48px 24px;background:#030303;border-right:1px solid rgba(200,255,0,0.08);">
+        <div class="stat-num">60s</div>
+        <div style="margin-top:12px;font-family:'Inter',sans-serif;font-size:0.875rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;">Timp generare</div>
+      </div>
+
+      <div style="text-align:center;padding:48px 24px;background:#030303;border-right:1px solid rgba(200,255,0,0.08);">
+        <div class="stat-num">4.9★</div>
+        <div style="margin-top:12px;font-family:'Inter',sans-serif;font-size:0.875rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;">Rating clienți</div>
+      </div>
+
+      <div style="text-align:center;padding:48px 24px;background:#030303;">
+        <div class="stat-num">100%</div>
+        <div style="margin-top:12px;font-family:'Inter',sans-serif;font-size:0.875rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;">Primul site gratuit</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ CUM FUNCȚIONEAZĂ ══════════════════════ -->
+<section class="section-alt fade-up" id="cum-functioneaza" style="padding:100px 24px;">
+  <div style="max-width:1100px;margin:0 auto;">
+
+    <div style="max-width:540px;margin-bottom:72px;">
+      <div class="badge" style="margin-bottom:20px;">
+        <span class="badge-dot"></span>Proces
+      </div>
+      <h2 class="heading-lg">Simplu de la prima<br /><span class="acid-text">descriere.</span></h2>
+      <p class="body-lg" style="margin-top:20px;">
+        Nu ai nevoie de experiență în web design sau programare. Descrie afacerea, noi facem tot restul.
+      </p>
+    </div>
+
+    <div class="steps-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.06);">
+
+      <!-- Step 1 -->
+      <div class="step-item" style="background:#0A0A0A;padding:48px 40px;position:relative;">
+        <div class="step-num">01</div>
+        <div style="margin-top:24px;">
+          <div style="width:48px;height:48px;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3l2.5 5.5 5.5 2.5-5.5 2.5L11 19l-2.5-5.5L3 11l5.5-2.5L11 3z" stroke="#C8FF00" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </div>
+          <h3 class="heading-md" style="font-size:1.3rem;margin-bottom:12px;">Descrie afacerea</h3>
+          <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#888;">
+            Scrie câteva propoziții despre ce faci, unde ești și ce vrei să transmiți. Fără template-uri, fără formulare lungi.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-item" style="background:#0A0A0A;padding:48px 40px;position:relative;">
+        <div class="step-num">02</div>
+        <div style="margin-top:24px;">
+          <div style="width:48px;height:48px;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="16" height="16" rx="3" stroke="#C8FF00" stroke-width="1.6"/><path d="M7 11h8M7 7h8M7 15h5" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="heading-md" style="font-size:1.3rem;margin-bottom:12px;">AI generează site-ul</h3>
+          <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#888;">
+            Inteligența artificială scrie textele, alege paleta de culori, structurează paginile și optimizează pentru mobil.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-item" style="background:#0A0A0A;padding:48px 40px;position:relative;">
+        <div class="step-num">03</div>
+        <div style="margin-top:24px;">
+          <div style="width:48px;height:48px;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="#C8FF00" stroke-width="1.6"/><path d="M11 7v4l3 2" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="heading-md" style="font-size:1.3rem;margin-bottom:12px;">Publici în 60 secunde</h3>
+          <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#888;">
+            Revizuiești, ajustezi dacă vrei, apoi apăși un buton. Site-ul tău e live cu un link imediat. Hosting inclus.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CTA row -->
+    <div style="margin-top:48px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <a href="#generator" class="btn-acid">Încearcă acum — e gratuit</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════ FEATURES ══════════════════════ -->
+<section class="section-alt fade-up" style="padding:100px 24px;">
+  <div style="max-width:1100px;margin:0 auto;">
+
+    <div style="text-align:center;max-width:580px;margin:0 auto 72px;">
+      <div class="badge" style="margin-bottom:20px;">
+        <span class="badge-dot"></span>Funcționalități
+      </div>
+      <h2 class="heading-lg">Tot ce ai nevoie,<br />nimic în plus.</h2>
+    </div>
+
+    <div class="features-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.06);">
+
+      <!-- Feature 1 -->
+      <div style="background:#0A0A0A;padding:40px 36px;transition:background 0.2s ease;" onmouseenter="this.style.background='#0D0D0D'" onmouseleave="this.style.background='#0A0A0A'">
+        <div style="font-size:1.8rem;margin-bottom:20px;">🎨</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:10px;letter-spacing:-0.02em;">Design personalizat</h3>
+        <p style="font-size:0.9rem;line-height:1.7;color:#777;font-family:'Inter',sans-serif;">Niciodată template-uri generice. AI-ul adaptează culorile, fonturile și layout-ul brandului tău.</p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div style="background:#0A0A0A;padding:40px 36px;transition:background 0.2s ease;" onmouseenter="this.style.background='#0D0D0D'" onmouseleave="this.style.background='#0A0A0A'">
+        <div style="font-size:1.8rem;margin-bottom:20px;">📱</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:10px;letter-spacing:-0.02em;">100% Responsive</h3>
+        <p style="font-size:0.9rem;line-height:1.7;color:#777;font-family:'Inter',sans-serif;">Arată perfect pe orice dispozitiv — telefon, tabletă sau desktop. Automat, fără ajustări manuale.</p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div style="background:#0A0A0A;padding:40px 36px;transition:background 0.2s ease;" onmouseenter="this.style.background='#0D0D0D'" onmouseleave="this.style.background='#0A0A0A'">
+        <div style="font-size:1.8rem;margin-bottom:20px;">⚡</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:10px;letter-spacing:-0.02em;">Hosting inclus</h3>
+        <p style="font-size:0.9rem;line-height:1.7;color:#777;font-family:'Inter',sans-serif;">Nu ai nevoie de server, domeniu sau configurări tehnice. Publicăm noi tot, tu primești link-ul.</p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div style="background:#0A0A0A;padding:40px 36px;transition:background 0.2s ease;" onmouseenter="this.style.background='#0D0D0D'" onmouseleave="this.style.background='#0A0A0A'">
+        <div style="font-size:1.8rem;margin-bottom:20px;">✍️</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:10px;letter-spacing:-0.02em;">Texte generate AI</h3>
+        <p style="font-size:0.9rem;line-height:1.7;color:#777;font-family:'Inter',sans-serif;">Titluri, descrieri, CTA-uri — toate scrise de AI în română, optimizate pentru conversie.</p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div style="background:#0A0A0A;padding:40px 36px;transition:background 0.2s ease;" onmouseenter="this.style.background='#0D0D0D'" onmouseleave="this.style.background='#0A0A0A'">
+        <div style="font-size:1.8rem;margin-bottom:20px;">🔍</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:10px;letter-spacing:-0.02em;">SEO de bază inclus</h3>
+        <p style="font-size:0.9rem;line-height:1.7;color:#777;font-family:'Inter',sans-serif;">Meta tags, structură corectă, viteze bune de încărcare. Site-ul tău e pregătit pentru Google din prima zi.</p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div style="background:#0A0A0A;padding:40px 36px;transition:background 0.2s ease;" onmouseenter="this.style.background='#0D0D0D'" onmouseleave="this.style.background='#0A0A0A'">
+        <div style="font-size:1.8rem;margin-bottom:20px;">💬</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:10px;letter-spacing:-0.02em;">Chat AI pe site</h3>
+        <p style="font-size:0.9rem;line-height:1.7;color:#777;font-family:'Inter',sans-serif;">Opțional: un asistent AI live care răspunde vizitatorilor în locul tău, 24/7, direct pe site.</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════ PRICING ══════════════════════ -->
+<section class="fade-up" id="preturi" style="padding:100px 24px;">
+  <div style="max-width:1000px;margin:0 auto;">
+
+    <div style="text-align:center;max-width:540px;margin:0 auto 64px;">
+      <div class="badge" style="margin-bottom:20px;">
+        <span class="badge-dot"></span>Prețuri
+      </div>
+      <h2 class="heading-lg">Simplu.<br /><span class="acid-text">Transparent.</span></h2>
+      <p class="body-lg" style="margin-top:16px;font-size:1rem;">Fără abonamente ascunse, fără taxe surpriză. Plătești doar pentru ce folosești.</p>
+    </div>
+
+    <div class="pricing-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start;">
+
+      <!-- Free -->
+      <div class="pricing-card">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin-bottom:24px;">Gratuit</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;letter-spacing:-0.04em;line-height:1;">0</span>
+          <span style="font-family:'Inter',sans-serif;color:#666;font-size:0.95rem;">RON</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;">
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            1 site generat
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Hosting 30 zile inclus
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Badge WebsiteAI pe site
+          </div>
+          <div class="check-item" style="opacity:0.35;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(255,255,255,0.05)"/><path d="M5.5 10.5l5-5M10.5 10.5l-5-5" stroke="#666" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Domeniu personalizat
+          </div>
+        </div>
+        <a href="#generator" class="btn-ghost" style="width:100%;justify-content:center;">Încearcă gratuit</a>
+      </div>
+
+      <!-- Pro — featured -->
+      <div class="pricing-card featured" style="position:relative;">
+        <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);">
+          <div style="background:#C8FF00;color:#080808;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;padding:5px 16px;border-radius:100px;">Cel mai popular</div>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;color:#C8FF00;margin-bottom:24px;">Pro</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;letter-spacing:-0.04em;line-height:1;color:#C8FF00;">149</span>
+          <span style="font-family:'Inter',sans-serif;color:#666;font-size:0.95rem;">RON / lună</span>
+        </div>
+        <p style="font-size:0.875rem;color:#888;margin-bottom:32px;font-family:'Inter',sans-serif;">Pentru afaceri care vor să crească.</p>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;">
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.18)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Site-uri nelimitate
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.18)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Hosting nelimitat
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.18)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Fără badge WebsiteAI
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.18)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Domeniu personalizat inclus
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.18)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Chat AI pe site
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.18)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Suport prioritar
+          </div>
+        </div>
+        <a href="#" class="btn-acid" style="width:100%;justify-content:center;">Începe Pro</a>
+      </div>
+
+      <!-- Agency -->
+      <div class="pricing-card">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin-bottom:24px;">Agenție</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;letter-spacing:-0.04em;line-height:1;">Custom</span>
+        </div>
+        <p style="font-size:0.875rem;color:#666;margin-bottom:32px;font-family:'Inter',sans-serif;">Volum mare? Hai să vorbim.</p>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;">
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            White-label complet
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            API access
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Manager dedicat
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            SLA & suport 24/7
+          </div>
+        </div>
+        <a href="#" class="btn-ghost" style="width:100%;justify-content:center;">Contactează-ne</a>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════ TESTIMONIALE ══════════════════════ -->
+<section class="section-alt fade-up" style="padding:100px 24px;">
+  <div style="max-width:1100px;margin:0 auto;">
+
+    <div style="text-align:center;margin-bottom:64px;">
+      <div class="badge" style="margin-bottom:20px;">
+        <span class="badge-dot"></span>Testimoniale
+      </div>
+      <h2 class="heading-lg">Ce spun<br /><span class="acid-text">clienții noștri.</span></h2>
+    </div>
+
+    <div class="testimonials-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+
+      <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:32px;">
+        <div style="display:flex;gap:4px;margin-bottom:20px;">
+          <span style="color:#C8FF00;font-size:1rem;">★★★★★</span>
+        </div>
+        <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#BBBBBB;margin-bottom:24px;">
+          "Înainte plăteam 2000€ pe un site și așteptam luni. Acum îl am în 60 de secunde și arată de 10 ori mai bine."
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="https://placehold.co/40x40/1A1A1A/888888?text=CD" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;">Cosmin Dragomir</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;">Instalații termice, Ploiești</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:32px;">
+        <div style="display:flex;gap:4px;margin-bottom:20px;">
+          <span style="color:#C8FF00;font-size:1rem;">★★★★★</span>
+        </div>
+        <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#BBBBBB;margin-bottom:24px;">
+          "Am deschis salonul acum 3 luni. Prima săptămână am pus site-ul prin WebsiteAI și au început să sune clienți noi din Google."
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="https://placehold.co/40x40/1A1A1A/888888?text=LP" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;">Larisa Popa</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;">Salon Înfrumusețare, Timișoara</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:32px;">
+        <div style="display:flex;gap:4px;margin-bottom:20px;">
+          <span style="color:#C8FF00;font-size:1rem;">★★★★★</span>
+        </div>
+        <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#BBBBBB;margin-bottom:24px;">
+          "Clientul mi-a dat 3 cuvinte, eu am apăsat un buton. Site-ul e live de aseară. Îmi extind agenția exclusiv pe acest tool."
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="https://placehold.co/40x40/1A1A1A/888888?text=BN" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;">Bogdan Nistor</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;">Freelancer web, Brașov</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ CTA BANNER ══════════════════════ -->
+<section class="fade-up" style="padding:80px 24px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <div class="cta-banner-inner" style="background:linear-gradient(135deg, #0F1A00 0%, #111800 50%, #0A0A0A 100%);border:1px solid rgba(200,255,0,0.25);border-radius:24px;padding:80px 64px;text-align:center;position:relative;overflow:hidden;box-shadow:0 0 80px rgba(200,255,0,0.07);">
+      <!-- Glow spots -->
+      <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle, rgba(200,255,0,0.12) 0%, transparent 70%);pointer-events:none;"></div>
+
+      <h2 class="heading-lg" style="margin-bottom:20px;position:relative;">
+        Site-ul tău e la<br /><span class="acid-text">un prompt distanță.</span>
+      </h2>
+      <p class="body-lg" style="max-width:480px;margin:0 auto 40px;position:relative;">
+        Fără card, fără cont. Descrie afacerea ta acum și primești un site profesional în 60 de secunde.
+      </p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;">
+        <a href="#generator" class="btn-acid" style="padding:16px 36px;font-size:1rem;">
+          Generează gratuit
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#080808" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ FOOTER ══════════════════════ -->
+<footer style="border-top:1px solid rgba(255,255,255,0.06);padding:64px 24px 40px;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="footer-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:56px;">
+
+      <!-- Brand col -->
+      <div class="footer-brand">
+        <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:20px;">
+          <img src="websiteai-logo.png" alt="WebsiteAI" style="height:30px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+          
+        </a>
+        <p style="font-family:'Inter',sans-serif;font-size:0.875rem;line-height:1.7;color:#555;max-width:260px;">
+          Generăm site-uri profesionale pentru afacerile românești, cu ajutorul inteligenței artificiale.
+        </p>
+      </div>
+
+      <!-- Product -->
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.825rem;letter-spacing:0.07em;text-transform:uppercase;color:#444;margin-bottom:20px;">Produs</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <a href="#" class="nav-link">Generator AI</a>
+          <a href="#" class="nav-link">Exemple</a>
+          <a href="#" class="nav-link">Prețuri</a>
+          <a href="#" class="nav-link">Cum funcționează</a>
+        </div>
+      </div>
+
+      <!-- Company -->
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.825rem;letter-spacing:0.07em;text-transform:uppercase;color:#444;margin-bottom:20px;">Companie</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <a href="#" class="nav-link">Despre noi</a>
+          <a href="#" class="nav-link">Blog</a>
+          <a href="#" class="nav-link">Contact</a>
+        </div>
+      </div>
+
+      <!-- Legal -->
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.825rem;letter-spacing:0.07em;text-transform:uppercase;color:#444;margin-bottom:20px;">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <a href="#" class="nav-link">Termeni & Condiții</a>
+          <a href="#" class="nav-link">Politică confidențialitate</a>
+          <a href="#" class="nav-link">Cookie-uri</a>
+        </div>
+      </div>
+
+    </div>
+
+    <hr class="divider" />
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:32px;flex-wrap:wrap;gap:16px;">
+      <p style="font-family:'Inter',sans-serif;font-size:0.825rem;color:#444;">
+        © 2026 WebsiteAI. Construit cu ❤️ în România.
+      </p>
+      <div style="display:flex;align-items:center;gap:20px;">
+        <a href="#" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">Instagram</a>
+        <a href="#" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">TikTok</a>
+        <a href="#" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">LinkedIn</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<!-- ══════════════════════ GENERATE MODAL ══════════════════════ -->
+<div id="generate-overlay" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;">
+
+  <!-- ── BRIEF FORM ── -->
+  <div id="brief-panel" class="brief-outer" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px;">
+    <div class="brief-modal" style="background:#0E0E0E;border:1px solid rgba(200,255,0,0.2);border-radius:20px;width:100%;max-width:580px;padding:48px 44px;position:relative;box-shadow:0 0 80px rgba(200,255,0,0.08);">
+
+      <!-- Close -->
+      <button id="close-brief" style="position:absolute;top:18px;right:18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;width:36px;height:36px;color:#888;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseleave="this.style.background='rgba(255,255,255,0.06)';this.style.color='#888'">✕</button>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px;">
+        <img src="websiteai-logo.png" style="height:22px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#666;letter-spacing:0.04em;">GENERATOR AI</span>
+      </div>
+
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:-0.03em;margin-bottom:8px;color:#fff;">
+        Descrie afacerea ta<br/><span style="color:#C8FF00;">în câteva rânduri.</span>
+      </h2>
+      <p style="font-family:'Inter',sans-serif;font-size:0.875rem;color:#555;margin-bottom:36px;line-height:1.6;">
+        Cu cât răspunzi mai detaliat, cu atât site-ul generat va fi mai personalizat.
+      </p>
+
+      <form id="brief-form" style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Step indicator -->
+        <div style="display:flex;gap:6px;margin-bottom:4px;" id="step-dots">
+          <div class="step-dot active" data-step="0"></div>
+          <div class="step-dot" data-step="1"></div>
+          <div class="step-dot" data-step="2"></div>
+          <div class="step-dot" data-step="3"></div>
+          <div class="step-dot" data-step="4"></div>
+          <div class="step-dot" data-step="5"></div>
+        </div>
+
+        <!-- Q1 -->
+        <div class="brief-field" data-index="0">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">1 / 6 &nbsp; Numele brandului / companiei</label>
+          <input id="bf-brandName" type="text" placeholder="ex: Salon Luxe Cluj" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+        </div>
+
+        <!-- Q2 -->
+        <div class="brief-field" data-index="1">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">2 / 6 &nbsp; Cu ce vă ocupați?</label>
+          <input id="bf-activity" type="text" placeholder="ex: Salon de coafură premium pentru femei" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+        </div>
+
+        <!-- Q3 -->
+        <div class="brief-field" data-index="2">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">3 / 6 &nbsp; Publicul țintă</label>
+          <input id="bf-audience" type="text" placeholder="ex: Femei 25-45 ani, din Cluj-Napoca" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+        </div>
+
+        <!-- Q4 -->
+        <div class="brief-field" data-index="3">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">4 / 6 &nbsp; Acțiunea principală a vizitatorilor</label>
+          <input id="bf-mainAction" type="text" placeholder="ex: Să programeze o vizită / să sune" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+        </div>
+
+        <!-- Q5 -->
+        <div class="brief-field" data-index="4">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">5 / 6 &nbsp; Culori / fonturi preferate <span style="color:#444;font-weight:400;">(opțional)</span></label>
+          <input id="bf-colorsFonts" type="text" placeholder="ex: culori calde, roz pudrat, font modern" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+        </div>
+
+        <!-- Q6 -->
+        <div class="brief-field" data-index="5">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">6 / 6 &nbsp; Stil design</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;" id="design-style-btns">
+            <button type="button" class="style-btn selected" data-val="modern">Modern</button>
+            <button type="button" class="style-btn" data-val="minimalist">Minimalist</button>
+            <button type="button" class="style-btn" data-val="dark premium">Dark</button>
+            <button type="button" class="style-btn" data-val="jucăuș colorat">Jucăuș</button>
+            <button type="button" class="style-btn" data-val="premium elegant">Premium</button>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div id="brief-error" style="display:none;background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.25);border-radius:10px;padding:12px 16px;font-family:'Inter',sans-serif;font-size:0.875rem;color:#ff8080;line-height:1.5;"></div>
+
+        <!-- Submit -->
+        <button type="submit" id="btn-submit-brief" class="btn-acid" style="width:100%;justify-content:center;padding:16px;font-size:1rem;margin-top:8px;">
+          Generează site-ul meu
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#080808" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ── LOADING STATE ── -->
+  <div id="loading-panel" style="display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:40px 24px;">
+    <img src="websiteai-logo.png" style="height:32px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);opacity:0.9;" />
+    <div style="text-align:center;">
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;letter-spacing:-0.03em;color:#fff;margin-bottom:12px;">
+        AI generează site-ul tău<span id="loading-dots"></span>
+      </h2>
+      <p style="font-family:'Inter',sans-serif;font-size:0.95rem;color:#555;max-width:360px;margin:0 auto;line-height:1.6;">
+        WebsiteAI construiește un site personalizat pe baza descrierii tale. De obicei durează 30–60 secunde.
+      </p>
+    </div>
+    <!-- Progress bar -->
+    <div style="width:100%;max-width:400px;">
+      <div style="background:rgba(255,255,255,0.06);border-radius:100px;height:4px;overflow:hidden;">
+        <div id="progress-bar" style="height:100%;background:#C8FF00;border-radius:100px;width:0%;transition:width 0.4s ease;box-shadow:0 0 12px rgba(200,255,0,0.5);"></div>
+      </div>
+    </div>
+    <!-- Status messages -->
+    <div id="loading-status" style="font-family:'Inter',sans-serif;font-size:0.825rem;color:#555;text-align:center;min-height:20px;"></div>
+    <!-- Spinner rings -->
+    <div style="position:relative;width:80px;height:80px;">
+      <div style="position:absolute;inset:0;border:2px solid rgba(200,255,0,0.15);border-top-color:#C8FF00;border-radius:50%;animation:spin 1.2s linear infinite;"></div>
+      <div style="position:absolute;inset:10px;border:2px solid rgba(200,255,0,0.08);border-bottom-color:rgba(200,255,0,0.4);border-radius:50%;animation:spin 1.8s linear infinite reverse;"></div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 10L12.5 12.5L10 18L7.5 12.5L2 10L7.5 7.5L10 2Z" stroke="#C8FF00" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PREVIEW STATE ── -->
+  <div id="preview-panel" style="display:none;flex-direction:column;height:100vh;">
+    <!-- Toolbar -->
+    <div style="background:#080808;border-bottom:1px solid rgba(200,255,0,0.15);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="websiteai-logo.png" style="height:20px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;">SITE GENERAT</span>
+      </div>
+      <div class="preview-toolbar-btns" style="display:flex;align-items:center;gap:10px;">
+        <button id="btn-edit" style="background:#C8FF00;border:none;border-radius:8px;padding:8px 16px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;cursor:pointer;transition:opacity 0.15s;display:flex;align-items:center;gap:6px;" onmouseenter="this.style.opacity='0.88'" onmouseleave="this.style.opacity='1'">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 1.5a2.121 2.121 0 013 3L5 14H2v-3L11.5 1.5z" stroke="#080808" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Editează
+        </button>
+        <button id="btn-open-tab" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
+          Deschide în tab
+        </button>
+        <button id="btn-download" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
+          Descarcă HTML
+        </button>
+        <button id="btn-publish" style="background:linear-gradient(135deg,#C8FF00 0%,#9FCC00 100%);border:none;border-radius:8px;padding:8px 18px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 0 18px rgba(200,255,0,0.3),0 2px 8px rgba(0,0,0,0.4);transition:opacity 0.15s,box-shadow 0.15s;" onmouseenter="this.style.opacity='0.88';this.style.boxShadow='0 0 28px rgba(200,255,0,0.45),0 2px 8px rgba(0,0,0,0.4)'" onmouseleave="this.style.opacity='1';this.style.boxShadow='0 0 18px rgba(200,255,0,0.3),0 2px 8px rgba(0,0,0,0.4)'">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 7l3 3 3-3" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#080808" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Publică Site-ul
+        </button>
+        <button id="btn-regenerate" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.style.background='rgba(255,255,255,0.06)'">
+          Regenerează
+        </button>
+        <button id="btn-close-preview" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#888;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">
+          ✕ Închide
+        </button>
+      </div>
+    </div>
+    <!-- Content area: iframe + editor sidebar -->
+    <div class="preview-content" style="display:flex;flex:1;overflow:hidden;">
+      <!-- iFrame -->
+      <iframe id="preview-iframe" style="flex:1;border:none;background:#fff;min-width:0;"></iframe>
+      <!-- ── EDITOR SIDEBAR ── -->
+      <div id="editor-sidebar" style="display:none;width:380px;flex-shrink:0;background:#0D0D0D;border-left:1px solid rgba(200,255,0,0.15);flex-direction:column;overflow:hidden;">
+        <!-- Sidebar header + tabs -->
+        <div style="padding:16px 20px 0;flex-shrink:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;color:#fff;">Editează site-ul</span>
+            <button id="btn-close-editor" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;width:28px;height:28px;color:#666;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='#666'">✕</button>
+          </div>
+          <!-- Tabs -->
+          <div style="display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px;">
+            <button class="editor-tab active-tab" data-tab="texte" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Texte</button>
+            <button class="editor-tab" data-tab="culori" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Culori</button>
+            <button class="editor-tab" data-tab="contact" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Contact</button>
+          </div>
+        </div>
+        <!-- Tab content panels -->
+        <div id="editor-panel-texte" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:block;"></div>
+        <div id="editor-panel-culori" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-contact" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /generate-overlay -->
+
+<!-- ══════════════════════ STYLES for generate UI ══════════════════════ -->
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .step-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: background 0.25s, transform 0.25s;
+  }
+  .step-dot.active {
+    background: #C8FF00;
+    transform: scale(1.4);
+  }
+  .step-dot.done {
+    background: rgba(200,255,0,0.4);
+  }
+
+  .brief-field {
+    animation: fieldFadeIn 0.3s ease;
+  }
+  @keyframes fieldFadeIn {
+    from { opacity:0; transform:translateY(10px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .style-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 8px 18px;
+    color: #888;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.825rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  }
+  .style-btn:hover {
+    background: rgba(200,255,0,0.08);
+    border-color: rgba(200,255,0,0.3);
+    color: #C8FF00;
+  }
+  .style-btn.selected {
+    background: rgba(200,255,0,0.12);
+    border-color: rgba(200,255,0,0.4);
+    color: #C8FF00;
+  }
+
+  #loading-panel { display: none; }
+  #preview-panel { display: none; }
+
+  /* Loading dots animation */
+  @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+  .ldot { animation: blink 1.4s infinite; }
+  .ldot:nth-child(2) { animation-delay:0.2s; }
+  .ldot:nth-child(3) { animation-delay:0.4s; }
+</style>
+
+<!-- ══════════════════════ SCRIPTS ══════════════════════ -->
+<script>
+  /* ── Scroll fade-in ── */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.01, rootMargin: '200px 0px 200px 0px' });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+    }, 400);
+  });
+
+  /* ── Smooth scroll ── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+
+  /* ══════════════════════════════════════════════════════
+     GENERATE FLOW
+  ══════════════════════════════════════════════════════ */
+
+  const overlay       = document.getElementById('generate-overlay');
+  const briefPanel    = document.getElementById('brief-panel');
+  const loadingPanel  = document.getElementById('loading-panel');
+  const previewPanel  = document.getElementById('preview-panel');
+  const briefError    = document.getElementById('brief-error');
+  const progressBar   = document.getElementById('progress-bar');
+  const loadingStatus = document.getElementById('loading-status');
+  const previewIframe = document.getElementById('preview-iframe');
+
+  let lastBrief = null;
+  let generatedHtml = null;
+
+  /* ── Panel switcher ── */
+  function showPanel(name) {
+    briefPanel.style.display   = name === 'brief'   ? 'flex'   : 'none';
+    loadingPanel.style.display = name === 'loading' ? 'flex'   : 'none';
+    previewPanel.style.display = name === 'preview' ? 'flex'   : 'none';
+  }
+
+  /* ── Open overlay ── */
+  function openOverlay() {
+    overlay.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    showPanel('brief');
+    // Pre-fill brand from main input
+    const desc = document.getElementById('main-description')?.value?.trim();
+    if (desc && !document.getElementById('bf-activity').value) {
+      document.getElementById('bf-activity').value = desc;
+    }
+    animateStepDots(0);
+  }
+
+  /* ── Close overlay ── */
+  function closeOverlay() {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('close-brief').addEventListener('click', closeOverlay);
+  document.getElementById('btn-close-preview').addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
+
+  /* ── Trigger: hero button ── */
+  document.getElementById('btn-generate-hero')?.addEventListener('click', openOverlay);
+
+  /* ── Trigger: all other "Generează" / "Încearcă" buttons ── */
+  document.querySelectorAll('.btn-acid, .btn-ghost').forEach(btn => {
+    if (btn.id === 'btn-generate-hero') return;
+    if (btn.getAttribute('href') === '#generator') {
+      btn.addEventListener('click', e => { e.preventDefault(); openOverlay(); });
+    }
+  });
+
+  /* ── Style buttons toggle ── */
+  let selectedStyle = 'modern';
+  document.getElementById('design-style-btns').addEventListener('click', e => {
+    const btn = e.target.closest('.style-btn');
+    if (!btn) return;
+    document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedStyle = btn.dataset.val;
+  });
+
+  /* ── Step dots ── */
+  function animateStepDots(activeIdx) {
+    document.querySelectorAll('.step-dot').forEach((dot, i) => {
+      dot.classList.remove('active', 'done');
+      if (i < activeIdx) dot.classList.add('done');
+      else if (i === activeIdx) dot.classList.add('active');
+    });
+  }
+  // Highlight dot on focus of each field
+  const fieldIds = ['bf-brandName','bf-activity','bf-audience','bf-mainAction','bf-colorsFonts'];
+  fieldIds.forEach((id, i) => {
+    document.getElementById(id)?.addEventListener('focus', () => animateStepDots(i));
+  });
+  document.getElementById('design-style-btns').addEventListener('click', () => animateStepDots(5));
+
+  /* ── Loading dots animation ── */
+  const loadingDotsEl = document.getElementById('loading-dots');
+  if (loadingDotsEl) {
+    loadingDotsEl.innerHTML = '<span class="ldot">.</span><span class="ldot">.</span><span class="ldot">.</span>';
+  }
+
+  /* ── Progress simulation during generation ── */
+  let progressTimer = null;
+  const statusMessages = [
+    'Autentificare securizată…',
+    'Se analizează descrierea afacerii tale…',
+    'AI-ul selectează structura site-ului…',
+    'Se generează design-ul personalizat…',
+    'Se scriu textele și secțiunile…',
+    'Optimizare mobile & SEO…',
+    'Finalizare…',
+  ];
+  function startProgress() {
+    let pct = 0;
+    let msgIdx = 0;
+    progressBar.style.width = '0%';
+    loadingStatus.textContent = statusMessages[0];
+    progressTimer = setInterval(() => {
+      if (pct < 88) {
+        pct += pct < 30 ? 3 : pct < 60 ? 1.5 : 0.5;
+        progressBar.style.width = pct + '%';
+      }
+      if (msgIdx < statusMessages.length - 1 && pct > (msgIdx + 1) * 13) {
+        msgIdx++;
+        loadingStatus.textContent = statusMessages[msgIdx];
+      }
+    }, 600);
+  }
+  function finishProgress(success) {
+    clearInterval(progressTimer);
+    progressBar.style.width = success ? '100%' : '0%';
+    loadingStatus.textContent = success ? 'Site generat cu succes ✓' : '';
+  }
+
+  /* ── Show error in brief panel ── */
+  function showError(msg) {
+    briefError.textContent = msg;
+    briefError.style.display = 'block';
+    briefError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function hideError() {
+    briefError.style.display = 'none';
+    briefError.textContent = '';
+  }
+
+  /* ── Collect brief ── */
+  function collectBrief() {
+    return {
+      brandName:   document.getElementById('bf-brandName').value.trim(),
+      activity:    document.getElementById('bf-activity').value.trim(),
+      audience:    document.getElementById('bf-audience').value.trim(),
+      mainAction:  document.getElementById('bf-mainAction').value.trim(),
+      colorsFonts: document.getElementById('bf-colorsFonts').value.trim(),
+      designStyle: selectedStyle,
+      extraNote:   document.getElementById('main-description')?.value?.trim() || '',
+    };
+  }
+
+  /* ── Gemini config ── */
+  const GEMINI_API_KEY = 'AIzaSyCySeaa0SsRVBCGTgOCtdrekvom7LLqPHE';
+  const GEMINI_MODEL   = 'gemini-2.5-flash';
+
+  const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. Sarcina ta este să generezi un fișier HTML complet, de înaltă calitate, pentru o afacere românească, pe baza datelor furnizate.\n\n═══ REGULI OBLIGATORII ═══\n\nOUTPUT:\n- Răspunde EXCLUSIV cu HTML complet valid (de la <!DOCTYPE html> până la </html>)\n- ZERO text în afara HTML-ului, ZERO markdown (fără \`\`\`html), ZERO comentarii în afara codului\n- Toate stilurile: inline în <style> în <head> SAU clase Tailwind direct pe elemente\n- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>\n- Google Fonts: include 2 fonturi diferite (1 display/serif pentru titluri, 1 sans-serif pentru body)\n\nDESIGN:\n- Design 100% personalizat pentru brandul specificat — NU template-uri generice\n- Paletă de culori unică derivată din domeniul afacerii (NU culorile implicite Tailwind: indigo, blue, purple)\n- Tipografie: font display pentru heading-uri (tracking -0.03em pe titluri mari), font sans pentru body (line-height 1.7)\n- Shadows: layered, cu culori ușor tintate, low opacity — NU flat shadow-md\n- Gradiente: minim 2 gradiente radiale layered pentru fundal\n- Animații: DOAR transform și opacity — NICIODATĂ transition-all\n- Fiecare element clickabil (buton, link, card): stări hover, focus-visible ȘI active distincte\n- Imagini: overlay gradient (bg-gradient-to-t from-black/60) pe imaginile de fundal\n- Spacing: token-uri consistente (nu valori Tailwind aleatorii)\n- Depth: suprafețe cu z-plane distinct (base → elevated → floating)\n\nCONȚINUT:\n- Texte reale în română — NU Lorem Ipsum, NU placeholder text\n- Texte optimizate pentru conversie (titluri impactante, CTA clare)\n- Structură completă: Nav sticky → Hero → Servicii/Produse → Despre → Testimoniale → FAQ sau CTA banner → Footer\n- Număr de telefon, adresă, email: inventate veridic dacă nu sunt furnizate\n- Butoane CTA în hero și în fiecare secțiune relevantă\n- Imagini: folosește EXCLUSIV https://placehold.co/WIDTHxHEIGHT — de exemplu https://placehold.co/1280x720 sau https://placehold.co/600x400. NU adăuga parametri de culoare sau text, NU folosi alte servicii de imagini.\n\nRESPONSIVE:\n- Mobile-first, funcțional la 375px și 1440px\n- Grid responsive cu grid-cols adaptiv\n- Font sizes fluide cu clamp() sau clase Tailwind responsive\n\nINTERZIS:\n- transition-all (folosește: transition-transform, transition-opacity, transition-colors etc.)\n- Culorile implicite Tailwind ca brand primar (blue-600, indigo-500, purple-600)\n- Lorem ipsum sau text placeholder\n- JavaScript complex sau librării externe în afara Tailwind CDN și Google Fonts\n`;
+
+
+  /* ── Image generation — gemini-2.5-flash-image via Gemini API ── */
+  const NANOBANANA2_MODEL = 'gemini-2.5-flash-image';
+
+  async function nanobanana2Generate(prompt) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${NANOBANANA2_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+        }),
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        console.warn('[img] API error', res.status, errText.slice(0, 200));
+        return null;
+      }
+      const data = await res.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        }
+      }
+      console.warn('[img] No image in response:', JSON.stringify(data).slice(0, 200));
+      return null;
+    } catch (e) {
+      console.warn('[img] fetch error:', e.message);
+      return null;
+    }
+  }
+
+  /* ── Build role-based image prompts from brief ── */
+  function buildBriefPrompts(brief) {
+    const activity = (brief.activity || brief.brandName || 'business').slice(0, 80);
+    const style    = brief.designStyle || 'modern professional';
+    const q        = 'photorealistic, professional commercial photography, high resolution, well-lit, no text';
+    return [
+      `hero wide banner for ${activity}, ${style} aesthetic, dramatic lighting, ${q}`,
+      `professional team or workspace interior for ${activity}, warm welcoming atmosphere, ${q}`,
+      `close-up service or product detail for ${activity}, clean background, elegant composition, ${q}`,
+      `happy customer or lifestyle scene at ${activity}, natural candid light, ${q}`,
+      `exterior or interior architecture of ${activity}, polished clean look, ${q}`,
+      `service in action or process shot at ${activity}, dynamic composition, ${q}`,
+    ];
+  }
+
+  /* ── Inject AI images into all placehold.co placeholders ── */
+  async function injectAIImages(html, brief) {
+    // Find all unique placehold.co URLs
+    const placeholders = [...new Set(
+      [...html.matchAll(/https?:\/\/(?:placehold\.co|via\.placeholder\.com)[^\s"'`\)>]*/g)].map(m => m[0])
+    )];
+    console.log('[img] Found', placeholders.length, 'placeholders');
+    if (!placeholders.length) return html;
+
+    const prompts = buildBriefPrompts(brief);
+    const count   = Math.min(placeholders.length, prompts.length);
+
+    console.log('[img] Generating', count, 'images in parallel…');
+
+    // Generate in parallel
+    const dataUrls = await Promise.all(
+      prompts.slice(0, count).map((p, i) =>
+        nanobanana2Generate(p).then(r => {
+          console.log(`[img] ${i+1}/${count}:`, r ? 'OK' : 'FAILED');
+          return r;
+        })
+      )
+    );
+
+    const ok = dataUrls.filter(Boolean).length;
+    console.log(`[img] Generated ${ok}/${count} images`);
+
+    // Replace each placeholder — if a slot failed, keep placehold.co
+    for (let i = 0; i < placeholders.length; i++) {
+      const dataUrl = dataUrls[i % count];
+      if (dataUrl) {
+        html = html.split(placeholders[i]).join(dataUrl);
+      }
+    }
+
+    return html;
+  }
+
+  function buildUserPrompt(brief) {
+    return `Generează un site web complet pentru următoarea afacere:\n\n- Nume brand / companie: ${brief.brandName || 'nu a specificat'}\n- Activitate: ${brief.activity || 'nu a specificat clar, dedu tu un context rezonabil'}\n- Public țintă: ${brief.audience || 'nu a specificat'}\n- Acțiunea principală dorită a vizitatorilor: ${brief.mainAction || 'nu a specificat'}\n- Preferințe culori / fonturi: ${brief.colorsFonts || 'nu a specificat'}\n- Stil design dorit: ${brief.designStyle || 'modern'}\n${brief.extraNote ? `\nDetalii suplimentare de la client:\n${brief.extraNote}` : ''}\n\nGenerează ACUM fișierul HTML complet, începând cu <!DOCTYPE html>`;
+  }
+
+  /* ── Generate ── */
+  async function generate(brief) {
+    lastBrief = brief;
+    showPanel('loading');
+    startProgress();
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+      const res = await fetch(url, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
+          generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
+        }),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
+      }
+
+      const data = await res.json();
+      let html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      if (!html) {
+        const reason = data?.candidates?.[0]?.finishReason || 'unknown';
+        throw new Error(`Gemini nu a returnat HTML. Motiv: ${reason}`);
+      }
+
+      /* Strip markdown fences if model added them */
+      html = html
+        .replace(/^```html\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+
+      if (html.length < 100) {
+        throw new Error('Site-ul generat este gol. Încearcă din nou.');
+      }
+
+      /* Replace placeholders with Imagen AI-generated images */
+      loadingStatus.textContent = 'Se generează imaginile cu AI…';
+      html = await injectAIImages(html, brief);
+
+      generatedHtml = html;
+      finishProgress(true);
+      await new Promise(r => setTimeout(r, 500));
+      showPreview(html);
+
+    } catch (err) {
+      finishProgress(false);
+      clearInterval(progressTimer);
+      showPanel('brief');
+      showError(err.message || 'Eroare la generare. Încearcă din nou.');
+    }
+  }
+
+  /* ── Show preview ── */
+  function showPreview(html) {
+    showPanel('preview');
+    previewIframe.srcdoc = html;
+  }
+
+  /* ── Form submit ── */
+  document.getElementById('brief-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    hideError();
+
+    const brief = collectBrief();
+
+    if (!brief.brandName) {
+      showError('Te rog completează cel puțin numele brandului (câmpul 1).');
+      document.getElementById('bf-brandName').focus();
+      return;
+    }
+    if (!brief.activity) {
+      showError('Te rog descrie activitatea companiei tale (câmpul 2).');
+      document.getElementById('bf-activity').focus();
+      return;
+    }
+
+    await generate(brief);
+  });
+
+  /* ── Toolbar actions ── */
+  document.getElementById('btn-open-tab').addEventListener('click', () => {
+    if (!generatedHtml) return;
+    const blob = new Blob([generatedHtml], { type: 'text/html' });
+    window.open(URL.createObjectURL(blob), '_blank');
+  });
+
+  document.getElementById('btn-download').addEventListener('click', () => {
+    if (!generatedHtml) return;
+    const a = document.createElement('a');
+    a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(generatedHtml);
+    const brandName = lastBrief?.brandName?.replace(/\s+/g, '-').toLowerCase() || 'site';
+    a.download = `${brandName}-websiteai.html`;
+    a.click();
+  });
+
+  document.getElementById('btn-regenerate').addEventListener('click', () => {
+    if (!lastBrief) return;
+    generate(lastBrief);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     EDITOR SIDEBAR
+  ══════════════════════════════════════════════════════ */
+
+  const editorSidebar  = document.getElementById('editor-sidebar');
+  const btnEdit        = document.getElementById('btn-edit');
+  const btnCloseEditor = document.getElementById('btn-close-editor');
+
+  /* ── Tab switching ── */
+  const editorTabs    = document.querySelectorAll('.editor-tab');
+  const editorPanels  = document.querySelectorAll('.editor-tab-panel');
+
+  editorTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      editorTabs.forEach(t => t.classList.remove('active-tab'));
+      editorPanels.forEach(p => p.style.display = 'none');
+      tab.classList.add('active-tab');
+      document.getElementById('editor-panel-' + tab.dataset.tab).style.display = 'block';
+    });
+  });
+
+  /* ── Open / close editor ── */
+  function openEditor() {
+    editorSidebar.style.display = 'flex';
+    btnEdit.style.background = 'rgba(200,255,0,0.15)';
+    btnEdit.style.color = '#C8FF00';
+    btnEdit.style.border = '1px solid rgba(200,255,0,0.4)';
+    populateEditor();
+  }
+
+  function closeEditor() {
+    editorSidebar.style.display = 'none';
+    btnEdit.style.background = '#C8FF00';
+    btnEdit.style.color = '#080808';
+    btnEdit.style.border = 'none';
+  }
+
+  btnEdit.addEventListener('click', () => {
+    editorSidebar.style.display === 'flex' ? closeEditor() : openEditor();
+  });
+  btnCloseEditor.addEventListener('click', closeEditor);
+
+  /* ── Sync generatedHtml from iframe DOM ── */
+  function syncHtml() {
+    try {
+      const doc = previewIframe.contentDocument;
+      if (doc) generatedHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    } catch(e) {}
+  }
+
+  /* ── Helper: create a labeled input/textarea ── */
+  function editorField({ label, value, type = 'textarea', onInput }) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-bottom:18px;';
+
+    const lbl = document.createElement('div');
+    lbl.textContent = label;
+    lbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#555;margin-bottom:6px;';
+    wrap.appendChild(lbl);
+
+    let el;
+    if (type === 'textarea') {
+      el = document.createElement('textarea');
+      el.rows = 2;
+      el.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;line-height:1.55;resize:vertical;outline:none;transition:border-color 0.15s;';
+      el.addEventListener('focus', () => el.style.borderColor = 'rgba(200,255,0,0.35)');
+      el.addEventListener('blur',  () => el.style.borderColor = 'rgba(255,255,255,0.08)');
+    } else {
+      el = document.createElement('input');
+      el.type = type;
+      el.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.15s;';
+      el.addEventListener('focus', () => el.style.borderColor = 'rgba(200,255,0,0.35)');
+      el.addEventListener('blur',  () => el.style.borderColor = 'rgba(255,255,255,0.08)');
+    }
+
+    el.value = value;
+    el.addEventListener('input', () => onInput(el.value));
+    wrap.appendChild(el);
+    return wrap;
+  }
+
+  /* ── Section header ── */
+  function editorSectionHead(text) {
+    const h = document.createElement('div');
+    h.textContent = text;
+    h.style.cssText = 'font-family:"Syne",sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;color:#C8FF00;margin:20px 0 12px;border-bottom:1px solid rgba(200,255,0,0.1);padding-bottom:8px;';
+    return h;
+  }
+
+  /* ── POPULATE TEXTE ── */
+  function populateTexte(doc) {
+    const panel = document.getElementById('editor-panel-texte');
+    panel.innerHTML = '';
+
+    const groups = [
+      { head: 'Titluri principale',  query: 'h1', limit: 3 },
+      { head: 'Titluri secțiuni',    query: 'h2', limit: 6 },
+      { head: 'Subtitluri',          query: 'h3', limit: 4 },
+      { head: 'Texte descriptive',   query: 'p',  limit: 6, minLen: 30 },
+      { head: 'Butoane / CTA',       query: 'a, button', limit: 6, minLen: 3, maxLen: 60 },
+    ];
+
+    let hasContent = false;
+
+    groups.forEach(({ head, query, limit, minLen = 1, maxLen = 9999 }) => {
+      const els = Array.from(doc.querySelectorAll(query)).filter(el => {
+        const t = el.textContent.trim();
+        return t.length >= minLen && t.length <= maxLen && !el.querySelector('img') && !el.closest('script,style,nav');
+      }).slice(0, limit);
+
+      if (!els.length) return;
+      hasContent = true;
+      panel.appendChild(editorSectionHead(head));
+
+      els.forEach((el, i) => {
+        const originalText = el.textContent.trim();
+        panel.appendChild(editorField({
+          label: `${head.split(' ')[0]} ${i + 1}`,
+          value: originalText,
+          onInput: (val) => {
+            // Update only text nodes, preserve child elements
+            if (el.children.length === 0) {
+              el.textContent = val;
+            } else {
+              // Find first significant text node
+              for (const node of el.childNodes) {
+                if (node.nodeType === 3 && node.textContent.trim()) {
+                  node.textContent = val;
+                  break;
+                }
+              }
+            }
+            syncHtml();
+          }
+        }));
+      });
+    });
+
+    if (!hasContent) {
+      panel.innerHTML = '<p style="font-family:Inter,sans-serif;font-size:0.85rem;color:#555;text-align:center;padding:40px 0;">Nu s-au detectat texte editabile.</p>';
+    }
+  }
+
+  /* ── POPULATE CULORI ── */
+  function populateCulori(doc) {
+    const panel = document.getElementById('editor-panel-culori');
+    panel.innerHTML = '';
+
+    // Collect all CSS text from style tags + inline styles
+    const cssText = Array.from(doc.querySelectorAll('style')).map(s => s.textContent).join('\n')
+      + Array.from(doc.querySelectorAll('[style]')).map(el => el.getAttribute('style')).join('\n');
+
+    // Find all hex colors
+    const allHex = cssText.match(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g) || [];
+
+    // Normalize to 6-digit and count frequency
+    const freq = {};
+    allHex.forEach(raw => {
+      let c = raw.toUpperCase();
+      if (c.length === 4) c = '#' + c[1]+c[1]+c[2]+c[2]+c[3]+c[3]; // expand #RGB
+      freq[c] = (freq[c] || 0) + 1;
+    });
+
+    // Sort by frequency, skip pure black/white #000000 #FFFFFF, take top 10
+    const topColors = Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .filter(([c]) => c !== '#000000' && c !== '#FFFFFF' && c !== '#000' && c !== '#FFF')
+      .slice(0, 10)
+      .map(([c]) => c);
+
+    if (!topColors.length) {
+      panel.innerHTML = '<p style="font-family:Inter,sans-serif;font-size:0.85rem;color:#555;text-align:center;padding:40px 0;">Nu s-au detectat culori.</p>';
+      return;
+    }
+
+    panel.appendChild(editorSectionHead('Paleta de culori'));
+
+    topColors.forEach(color => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;align-items:center;gap:12px;margin-bottom:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px 14px;';
+
+      const picker = document.createElement('input');
+      picker.type = 'color';
+      picker.value = color;
+      picker.style.cssText = 'width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none;flex-shrink:0;';
+
+      const info = document.createElement('div');
+      info.style.cssText = 'flex:1;min-width:0;';
+
+      const hexLabel = document.createElement('div');
+      hexLabel.textContent = color.toUpperCase();
+      hexLabel.style.cssText = 'font-family:monospace;font-size:0.85rem;color:#ccc;';
+
+      const freqLabel = document.createElement('div');
+      freqLabel.textContent = `Utilizată de ${freq[color]} ori`;
+      freqLabel.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.72rem;color:#555;margin-top:2px;';
+
+      info.appendChild(hexLabel);
+      info.appendChild(freqLabel);
+
+      // Track current color for this row (changes as user picks)
+      let currentColor = color;
+
+      picker.addEventListener('input', () => {
+        const newColor = picker.value.toUpperCase();
+        hexLabel.textContent = newColor;
+        // Replace in all style tags
+        doc.querySelectorAll('style').forEach(s => {
+          s.textContent = s.textContent.replace(new RegExp(currentColor.replace('#', '\\#'), 'gi'), newColor);
+        });
+        // Replace in inline styles
+        doc.querySelectorAll('[style]').forEach(el => {
+          const cur = el.getAttribute('style');
+          if (cur.toUpperCase().includes(currentColor.toUpperCase())) {
+            el.setAttribute('style', cur.replace(new RegExp(currentColor.replace('#', '\\#'), 'gi'), newColor));
+          }
+        });
+        currentColor = newColor;
+        syncHtml();
+      });
+
+      wrap.appendChild(picker);
+      wrap.appendChild(info);
+      panel.appendChild(wrap);
+    });
+  }
+
+  /* ── POPULATE CONTACT ── */
+  function populateContact(doc) {
+    const panel = document.getElementById('editor-panel-contact');
+    panel.innerHTML = '';
+
+    const bodyHtml = doc.body ? doc.body.innerHTML : '';
+
+    // Detect phone
+    const phoneRx  = /(\+?4?0?\s*7[0-9]{2}[\s.\-]?[0-9]{3}[\s.\-]?[0-9]{3})|(\+?[0-9]{3}[\s.\-]?[0-9]{3}[\s.\-]?[0-9]{4,5})/;
+    const emailRx  = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
+    const addressRx = /(?:Str\.|Strada|Bulevardul|Calea|Aleea)\s+[A-ZĂÂÎȘȚ][^\n<"]{5,50}/i;
+
+    const phoneMatch   = bodyHtml.match(phoneRx);
+    const emailMatch   = bodyHtml.match(emailRx);
+    const addressMatch = bodyHtml.match(addressRx);
+
+    panel.appendChild(editorSectionHead('Date de contact'));
+
+    const contactFields = [
+      { label: 'Telefon',  value: phoneMatch   ? phoneMatch[0].trim()   : '', itype: 'tel',   rx: phoneRx },
+      { label: 'Email',    value: emailMatch   ? emailMatch[0].trim()   : '', itype: 'email', rx: emailRx },
+      { label: 'Adresă',  value: addressMatch ? addressMatch[0].trim() : '', itype: 'text',  rx: addressRx },
+    ];
+
+    contactFields.forEach(({ label, value, itype, rx }) => {
+      panel.appendChild(editorField({
+        label,
+        value,
+        type: itype,
+        onInput: (newVal) => {
+          if (!doc.body) return;
+          if (value && rx) {
+            // Replace all occurrences in text nodes
+            replaceTextInDoc(doc, value, newVal);
+          }
+          value = newVal; // update local for next change
+          syncHtml();
+        }
+      }));
+    });
+
+    panel.appendChild(editorSectionHead('Rețele sociale'));
+
+    const socialRx = {
+      'Facebook URL':  /https?:\/\/(?:www\.)?facebook\.com\/[^\s"'<>]{3,60}/i,
+      'Instagram URL': /https?:\/\/(?:www\.)?instagram\.com\/[^\s"'<>]{3,60}/i,
+      'TikTok URL':    /https?:\/\/(?:www\.)?tiktok\.com\/@[^\s"'<>]{3,60}/i,
+    };
+
+    Object.entries(socialRx).forEach(([label, rx]) => {
+      const match = bodyHtml.match(rx);
+      let currentVal = match ? match[0] : '';
+      panel.appendChild(editorField({
+        label,
+        value: currentVal,
+        type: 'url',
+        onInput: (newVal) => {
+          if (currentVal) replaceAttrInDoc(doc, currentVal, newVal);
+          currentVal = newVal;
+          syncHtml();
+        }
+      }));
+    });
+  }
+
+  /* ── Replace text across all text nodes in doc ── */
+  function replaceTextInDoc(doc, oldVal, newVal) {
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(node => {
+      if (node.textContent.includes(oldVal)) {
+        node.textContent = node.textContent.split(oldVal).join(newVal);
+      }
+    });
+  }
+
+  /* ── Replace href/src attribute values ── */
+  function replaceAttrInDoc(doc, oldVal, newVal) {
+    doc.querySelectorAll('[href],[src]').forEach(el => {
+      if (el.href && el.href.includes(oldVal)) el.href = el.href.split(oldVal).join(newVal);
+      if (el.src  && el.src.includes(oldVal))  el.src  = el.src.split(oldVal).join(newVal);
+    });
+  }
+
+  /* ── Master populate ── */
+  function populateEditor() {
+    const doc = previewIframe.contentDocument;
+    if (!doc || !doc.body) {
+      // iframe may still be loading — retry
+      previewIframe.addEventListener('load', populateEditor, { once: true });
+      return;
+    }
+    populateTexte(doc);
+    populateCulori(doc);
+    populateContact(doc);
+    // Reset to first tab
+    editorTabs.forEach((t, i) => { t.classList.toggle('active-tab', i === 0); });
+    editorPanels.forEach((p, i) => { p.style.display = i === 0 ? 'block' : 'none'; });
+  }
+
+</script>
+<style>
+  .editor-tab {
+    background: transparent;
+    color: #555;
+  }
+  .editor-tab.active-tab {
+    background: rgba(200,255,0,0.12) !important;
+    color: #C8FF00 !important;
+  }
+  .editor-tab:hover:not(.active-tab) {
+    color: #aaa;
+    background: rgba(255,255,255,0.04) !important;
+  }
+  #editor-panel-texte::-webkit-scrollbar,
+  #editor-panel-culori::-webkit-scrollbar,
+  #editor-panel-contact::-webkit-scrollbar {
+    width: 4px;
+  }
+  #editor-panel-texte::-webkit-scrollbar-track,
+  #editor-panel-culori::-webkit-scrollbar-track,
+  #editor-panel-contact::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #editor-panel-texte::-webkit-scrollbar-thumb,
+  #editor-panel-culori::-webkit-scrollbar-thumb,
+  #editor-panel-contact::-webkit-scrollbar-thumb {
+    background: rgba(200,255,0,0.2);
+    border-radius: 2px;
+  }
+</style>
+
+<!-- ══════════════════════ PUBLISH MODAL ══════════════════════ -->
+<style>
+  #publish-overlay { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); align-items:center; justify-content:center; }
+  .pub-card { background:#0E0E0E; border:1px solid rgba(200,255,0,0.18); border-radius:24px; width:100%; max-width:540px; margin:20px; position:relative; box-shadow:0 0 100px rgba(200,255,0,0.06), 0 40px 80px rgba(0,0,0,0.7); overflow:hidden; }
+  .pub-step { display:none; padding:40px 38px 36px; }
+  .pub-step.active { display:block; }
+  .pub-option { background:#141414; border:1.5px solid rgba(255,255,255,0.07); border-radius:16px; padding:20px; cursor:pointer; transition:border-color 0.2s, background 0.2s, transform 0.15s; display:flex; align-items:center; gap:16px; user-select:none; }
+  .pub-option:hover { border-color:rgba(200,255,0,0.25); background:#181818; transform:translateY(-1px); }
+  .pub-option.selected { border-color:rgba(200,255,0,0.5); background:rgba(200,255,0,0.04); }
+  .pub-option-icon { width:46px; height:46px; background:rgba(200,255,0,0.08); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .pub-option-check { width:22px; height:22px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.15); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .pub-option.selected .pub-option-check { background:#C8FF00; border-color:#C8FF00; }
+  .pub-input { width:100%; background:#161616; border:1.5px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 15px; font-family:'Inter',sans-serif; font-size:0.88rem; color:#fff; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
+  .pub-input:focus { border-color:rgba(200,255,0,0.45); }
+  .pub-input::placeholder { color:#444; }
+  .pub-dns-row { display:flex; align-items:center; justify-content:space-between; background:#161616; border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 14px; gap:10px; }
+  .pub-dns-val { font-family:'Inter',sans-serif; font-size:0.8rem; color:#C8FF00; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pub-copy-btn { background:rgba(200,255,0,0.1); border:1px solid rgba(200,255,0,0.2); border-radius:6px; padding:5px 10px; color:#C8FF00; font-family:'Syne',sans-serif; font-weight:700; font-size:0.7rem; cursor:pointer; white-space:nowrap; transition:background 0.15s; flex-shrink:0; }
+  .pub-copy-btn:hover { background:rgba(200,255,0,0.2); }
+  .pub-primary-btn { width:100%; background:linear-gradient(135deg,#C8FF00 0%,#9FCC00 100%); border:none; border-radius:12px; padding:14px 20px; color:#080808; font-family:'Syne',sans-serif; font-weight:800; font-size:0.9rem; cursor:pointer; box-shadow:0 0 24px rgba(200,255,0,0.2), 0 4px 16px rgba(0,0,0,0.4); transition:opacity 0.15s, box-shadow 0.15s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .pub-primary-btn:hover { opacity:0.88; box-shadow:0 0 36px rgba(200,255,0,0.35), 0 4px 16px rgba(0,0,0,0.4); transform:translateY(-1px); }
+  .pub-primary-btn:disabled { opacity:0.4; cursor:default; transform:none; }
+  .pub-ghost-btn { background:transparent; border:1.5px solid rgba(255,255,255,0.1); border-radius:10px; padding:11px 18px; color:#666; font-family:'Syne',sans-serif; font-weight:700; font-size:0.8rem; cursor:pointer; transition:border-color 0.15s, color 0.15s; }
+  .pub-ghost-btn:hover { border-color:rgba(255,255,255,0.25); color:#bbb; }
+  .pub-label { font-family:'Inter',sans-serif; font-size:0.75rem; font-weight:600; color:#555; letter-spacing:0.06em; text-transform:uppercase; display:block; margin-bottom:8px; }
+  .pub-result { display:none; margin-top:10px; border-radius:10px; padding:11px 14px; font-family:'Inter',sans-serif; font-size:0.83rem; font-weight:500; line-height:1.5; }
+  .pub-result.ok { background:rgba(200,255,0,0.07); border:1px solid rgba(200,255,0,0.3); color:#C8FF00; }
+  .pub-result.err { background:rgba(255,60,60,0.07); border:1px solid rgba(255,60,60,0.25); color:#ff7070; }
+  .pub-result.warn { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#888; }
+  /* Success step */
+  .pub-success-ring { width:72px; height:72px; border-radius:50%; background:rgba(200,255,0,0.1); border:2px solid rgba(200,255,0,0.3); display:flex; align-items:center; justify-content:center; margin:0 auto 20px; animation:pub-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes pub-pop { from { transform:scale(0.5); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .pub-back-btn { display:flex; align-items:center; gap:6px; background:none; border:none; color:#555; font-family:'Inter',sans-serif; font-size:0.8rem; cursor:pointer; padding:0; margin-bottom:24px; transition:color 0.15s; }
+  .pub-back-btn:hover { color:#bbb; }
+  @keyframes pub-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+  /* Progress dots */
+  .pub-dots { display:flex; gap:6px; align-items:center; margin-bottom:28px; }
+  .pub-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.12); transition:all 0.3s; }
+  .pub-dot.active { background:#C8FF00; width:20px; border-radius:3px; }
+</style>
+
+<div id="publish-overlay">
+  <div class="pub-card">
+
+    <!-- Close -->
+    <button onclick="closePublishModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);border-radius:8px;width:34px;height:34px;color:#666;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;z-index:1;" onmouseenter="this.style.color='#fff';this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.style.color='#666';this.style.background='rgba(255,255,255,0.06)'">✕</button>
+
+    <!-- ── STEP 1: Choose option ── -->
+    <div id="pub-step-1" class="pub-step active">
+      <div class="pub-dots"><div class="pub-dot active"></div><div class="pub-dot"></div></div>
+      <div style="margin-bottom:28px;">
+        <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.55rem;letter-spacing:-0.03em;color:#fff;line-height:1.1;margin:0 0 10px;">Publică site-ul tău<br/><span style="color:#C8FF00;">pe internet.</span></h2>
+        <p style="font-family:'Inter',sans-serif;font-size:0.87rem;color:#666;line-height:1.65;margin:0;">Alege cum vrei să adaugi domeniul. Poți conecta unul existent sau să înregistrezi unul nou.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px;">
+
+        <!-- Opt A: own domain -->
+        <div class="pub-option" id="pub-opt-own" onclick="pubSelectOption('own')">
+          <div class="pub-option-icon">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#C8FF00" stroke-width="1.6"/><path d="M12 3c-2.5 2.5-4 5.7-4 9s1.5 6.5 4 9M12 3c2.5 2.5 4 5.7 4 9s-1.5 6.5-4 9M3 12h18" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.92rem;color:#fff;margin-bottom:3px;">Conectează domeniu propriu</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;line-height:1.5;">Ai deja un domeniu? Îl conectezi în câteva minute prin DNS.</div>
+          </div>
+          <div class="pub-option-check">
+            <svg id="chk-own" width="11" height="11" viewBox="0 0 11 11" fill="none" style="display:none"><path d="M1.5 5.5l2.5 2.5 5.5-5" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Opt B: buy domain -->
+        <div class="pub-option" id="pub-opt-buy" onclick="pubSelectOption('buy')">
+          <div class="pub-option-icon">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="#C8FF00" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.92rem;color:#fff;margin-bottom:3px;">Vreau un domeniu nou</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;line-height:1.5;">Vei fi redirecționat pe Hostico pentru înregistrare.</div>
+          </div>
+          <div class="pub-option-check">
+            <svg id="chk-buy" width="11" height="11" viewBox="0 0 11 11" fill="none" style="display:none"><path d="M1.5 5.5l2.5 2.5 5.5-5" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="pub-primary-btn" id="pub-btn-next-1" onclick="pubGoStep2()" disabled>
+        Continuă
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <!-- ── STEP 2A: Own domain — DNS setup ── -->
+    <div id="pub-step-2-own" class="pub-step" style="padding:32px 38px 36px;">
+      <button class="pub-back-btn" onclick="pubGoStep(1)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Înapoi
+      </button>
+      <div class="pub-dots"><div class="pub-dot"></div><div class="pub-dot active"></div></div>
+
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:-0.025em;color:#fff;margin:0 0 6px;">Am deja un domeniu</h2>
+      <p style="font-family:'Inter',sans-serif;font-size:0.84rem;color:#666;line-height:1.6;margin:0 0 20px;">Introdu domeniul tău pentru a vedea instrucțiunile de conectare.</p>
+
+      <!-- Domain input + show DNS button -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;">
+        <input id="pub-own-domain-input" class="pub-input" type="text" placeholder="exemplu.ro" style="flex:1;" oninput="pubUpdateDnsInstructions()" />
+        <button onclick="pubShowDns()" style="background:rgba(200,255,0,0.1);border:1.5px solid rgba(200,255,0,0.25);border-radius:10px;padding:0 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background 0.15s;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">Vezi instrucțiuni</button>
+      </div>
+
+      <!-- DNS instructions block -->
+      <div id="pub-dns-block" style="display:none;max-height:380px;overflow-y:auto;padding-right:4px;">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:1rem;">📋</span>
+          <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#fff;">Instrucțiuni DNS</span>
+        </div>
+        <p style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#888;margin:0 0 18px;line-height:1.6;">Pentru a activa domeniul <strong id="dns-domain-name" style="color:#C8FF00;"></strong>, configurează următoarele:</p>
+
+        <!-- Section 1: Apex A record -->
+        <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 18px;margin-bottom:12px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:12px;">Domeniu apex (fără www)</div>
+
+          <!-- Record row -->
+          <div style="display:grid;grid-template-columns:60px 40px 1fr auto;align-items:center;gap:8px;background:#0A0A0A;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+            <span style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#555;font-weight:600;text-transform:uppercase;">Type</span>
+            <span style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#555;font-weight:600;text-transform:uppercase;">Name</span>
+            <span style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#555;font-weight:600;text-transform:uppercase;">Value</span>
+            <span></span>
+          </div>
+          <div style="display:grid;grid-template-columns:60px 40px 1fr auto;align-items:center;gap:8px;background:#0D0D0D;border:1px solid rgba(200,255,0,0.1);border-radius:8px;padding:10px 12px;">
+            <span style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#C8FF00;font-weight:700;">A</span>
+            <span class="pub-dns-val" id="dns-v-apex-name">@</span>
+            <span class="pub-dns-val" id="dns-v-apex-ip">76.76.21.21</span>
+            <button class="pub-copy-btn" onclick="pubCopyText('76.76.21.21',this)">Copiază</button>
+          </div>
+
+          <!-- Tip 1 -->
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:10px 12px;background:rgba(200,255,0,0.04);border:1px solid rgba(200,255,0,0.1);border-radius:8px;">
+            <span style="font-size:0.85rem;flex-shrink:0;">💡</span>
+            <span style="font-family:'Inter',sans-serif;font-size:0.77rem;color:#777;line-height:1.55;">Dacă provider-ul suportă ALIAS/ANAME, folosește: <span style="color:#C8FF00;font-weight:600;">cname.vercel-dns.com</span></span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-top:8px;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;">
+            <span style="font-size:0.85rem;flex-shrink:0;">📌</span>
+            <span style="font-family:'Inter',sans-serif;font-size:0.77rem;color:#666;line-height:1.55;">Unii provideri DNS (Cloudflare, DNSimple) permit ALIAS pentru apex domain în loc de A Record.</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div style="display:flex;align-items:center;gap:10px;margin:16px 0;">
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.05);"></div>
+          <span style="font-family:'Inter',sans-serif;font-size:0.72rem;color:#333;letter-spacing:0.05em;text-transform:uppercase;">Alternativ</span>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.05);"></div>
+        </div>
+
+        <!-- Section 2: Nameservers -->
+        <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 18px;margin-bottom:16px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:4px;">Alternativ (nameservers Vercel)</div>
+          <p style="font-family:'Inter',sans-serif;font-size:0.78rem;color:#555;margin:0 0 12px;line-height:1.5;">Dacă vrei să muți administrarea DNS către Vercel, setează nameserver-ele domeniului la:</p>
+
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+            <div style="display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:8px;background:#0D0D0D;border:1px solid rgba(200,255,0,0.1);border-radius:8px;padding:9px 12px;">
+              <span style="font-family:'Inter',sans-serif;font-size:0.78rem;color:#C8FF00;font-weight:700;">NS</span>
+              <span class="pub-dns-val">ns1.vercel-dns.com</span>
+              <button class="pub-copy-btn" onclick="pubCopyText('ns1.vercel-dns.com',this)">Copiază</button>
+            </div>
+            <div style="display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:8px;background:#0D0D0D;border:1px solid rgba(200,255,0,0.1);border-radius:8px;padding:9px 12px;">
+              <span style="font-family:'Inter',sans-serif;font-size:0.78rem;color:#C8FF00;font-weight:700;">NS</span>
+              <span class="pub-dns-val">ns2.vercel-dns.com</span>
+              <button class="pub-copy-btn" onclick="pubCopyText('ns2.vercel-dns.com',this)">Copiază</button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(200,255,0,0.04);border:1px solid rgba(200,255,0,0.1);border-radius:8px;">
+            <span style="font-size:0.85rem;flex-shrink:0;">💡</span>
+            <span style="font-family:'Inter',sans-serif;font-size:0.77rem;color:#777;line-height:1.55;">După schimbare, gestionezi toate record-urile DNS din Vercel.</span>
+          </div>
+        </div>
+
+        <!-- Status bar -->
+        <div style="background:#0D1A00;border:1px solid rgba(200,255,0,0.2);border-radius:10px;padding:12px 16px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="width:8px;height:8px;background:#C8FF00;border-radius:50%;display:inline-block;animation:pub-pulse 1.8s ease-in-out infinite;"></span>
+            <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#C8FF00;">Status: Domeniul a fost salvat în sistem. ✓ Adăugat automat!</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+            <span style="font-size:0.85rem;">⏱️</span>
+            <span style="font-family:'Inter',sans-serif;font-size:0.78rem;color:#555;">Propagarea DNS poate dura 24–48 ore.</span>
+          </div>
+        </div>
+
+        <button class="pub-primary-btn" onclick="pubConfirmOwn()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l4 4 8-8" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Am configurat DNS-ul, finalizează
+        </button>
+      </div>
+
+      <!-- CTA shown before DNS block -->
+      <div id="pub-dns-cta">
+        <button class="pub-primary-btn" onclick="pubShowDns()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Arată instrucțiunile DNS
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2B: Buy domain — search & check ── -->
+    <div id="pub-step-2-buy" class="pub-step">
+      <button class="pub-back-btn" onclick="pubGoStep(1)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Înapoi
+      </button>
+      <div class="pub-dots"><div class="pub-dot"></div><div class="pub-dot active"></div></div>
+
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:-0.025em;color:#fff;margin:0 0 6px;">Cumpără un domeniu</h2>
+      <p style="font-family:'Inter',sans-serif;font-size:0.84rem;color:#666;line-height:1.6;margin:0 0 28px;">Verifică dacă domeniul dorit este disponibil și înregistrează-l.</p>
+
+      <div style="margin-bottom:8px;">
+        <label class="pub-label">Caută domeniu</label>
+        <div style="display:flex;gap:8px;">
+          <input id="pub-buy-domain-input" class="pub-input" type="text" placeholder="businessul-tau.ro" style="flex:1;" />
+          <button id="pub-btn-check" onclick="pubCheckDomain()" style="background:rgba(200,255,0,0.1);border:1.5px solid rgba(200,255,0,0.25);border-radius:10px;padding:0 18px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;white-space:nowrap;transition:background 0.15s;flex-shrink:0;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">Verifică</button>
+        </div>
+        <div id="pub-domain-result" class="pub-result"></div>
+      </div>
+
+      <!-- Suggestions shown after result -->
+      <div id="pub-suggestions" style="display:none;margin-top:18px;">
+        <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;">Sugestii similare</div>
+        <div id="pub-suggestions-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- ── STEP SUCCESS ── -->
+    <div id="pub-step-success" class="pub-step" style="text-align:center;padding:48px 38px;">
+      <div class="pub-success-ring">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M6 15l6 6 12-12" stroke="#C8FF00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.55rem;letter-spacing:-0.03em;color:#fff;margin:0 0 10px;">Recordul DNS a fost salvat!</h2>
+      <p style="font-family:'Inter',sans-serif;font-size:0.88rem;color:#666;line-height:1.65;margin:0 0 32px;">Site-ul tău va fi live pe domeniul tău după propagarea DNS (5–48h). Poți verifica statusul oricând din panoul de control.</p>
+      <div style="background:#111;border:1px solid rgba(200,255,0,0.15);border-radius:12px;padding:14px 18px;margin-bottom:28px;display:flex;align-items:center;gap:12px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#C8FF00" stroke-width="1.3"/><path d="M5 8.5l2 2 4-4" stroke="#C8FF00" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="pub-success-domain" style="font-family:'Inter',sans-serif;font-size:0.85rem;color:#C8FF00;font-weight:600;"></span>
+      </div>
+      <button class="pub-primary-btn" onclick="closePublishModal()">Închide</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  var overlay = document.getElementById('publish-overlay');
+  var btnOpen = document.getElementById('btn-publish');
+  btnOpen && btnOpen.addEventListener('click', function() {
+    pubReset();
+    overlay.style.display = 'flex';
+  });
+  overlay && overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closePublishModal();
+  });
+  var buyInput = document.getElementById('pub-buy-domain-input');
+  buyInput && buyInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') pubCheckDomain();
+  });
+})();
+
+function closePublishModal() {
+  document.getElementById('publish-overlay').style.display = 'none';
+}
+
+var _pubChoice = null;
+
+function pubReset() {
+  _pubChoice = null;
+  pubGoStep(1);
+  document.querySelectorAll('.pub-option').forEach(function(el) { el.classList.remove('selected'); });
+  document.querySelectorAll('.pub-option-check svg').forEach(function(el) { el.style.display = 'none'; });
+  document.getElementById('pub-btn-next-1').disabled = true;
+  var res = document.getElementById('pub-domain-result');
+  res.style.display = 'none'; res.className = 'pub-result';
+  document.getElementById('pub-suggestions').style.display = 'none';
+  var oi = document.getElementById('pub-own-domain-input');
+  if (oi) oi.value = '';
+  var dns = document.getElementById('pub-dns-block');
+  if (dns) dns.style.display = 'none';
+  var dnsCta = document.getElementById('pub-dns-cta');
+  if (dnsCta) dnsCta.style.display = 'block';
+  var bi = document.getElementById('pub-buy-domain-input');
+  if (bi) bi.value = '';
+}
+
+function pubGoStep(n) {
+  document.querySelectorAll('.pub-step').forEach(function(el) { el.classList.remove('active'); });
+  if (n === 1) document.getElementById('pub-step-1').classList.add('active');
+  else if (n === '2-own') document.getElementById('pub-step-2-own').classList.add('active');
+  else if (n === '2-buy') document.getElementById('pub-step-2-buy').classList.add('active');
+  else if (n === 'success') document.getElementById('pub-step-success').classList.add('active');
+}
+
+function pubSelectOption(type) {
+  _pubChoice = type;
+  document.querySelectorAll('.pub-option').forEach(function(el) { el.classList.remove('selected'); });
+  document.querySelectorAll('.pub-option-check svg').forEach(function(el) { el.style.display = 'none'; });
+  document.getElementById('pub-opt-' + type).classList.add('selected');
+  document.getElementById('chk-' + type).style.display = 'block';
+  document.getElementById('pub-btn-next-1').disabled = false;
+}
+
+function pubGoStep2() {
+  if (!_pubChoice) return;
+  if (_pubChoice === 'buy') {
+    window.open('https://hostico.ro/domains/', '_blank');
+    return;
+  }
+  pubGoStep('2-' + _pubChoice);
+}
+
+function pubCopy(srcId, btn) {
+  var el = document.getElementById(srcId);
+  var text = el ? el.textContent.trim() : '';
+  if (!text) {
+    var row = btn.closest('.pub-dns-row');
+    var val = row ? row.querySelector('.pub-dns-val') : null;
+    text = val ? val.textContent.trim() : '';
+  }
+  navigator.clipboard && navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = '✓ Copiat';
+    btn.style.color = '#C8FF00';
+    setTimeout(function() { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+
+function pubShowDns() {
+  var input = document.getElementById('pub-own-domain-input');
+  var domain = (input.value || '').trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
+  if (!domain) {
+    input.style.borderColor = 'rgba(255,80,80,0.5)';
+    input.focus();
+    setTimeout(function(){ input.style.borderColor = ''; }, 1500);
+    return;
+  }
+  document.getElementById('dns-domain-name').textContent = domain;
+  document.getElementById('pub-dns-block').style.display = 'block';
+  document.getElementById('pub-dns-cta').style.display = 'none';
+  document.getElementById('pub-dns-block').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function pubUpdateDnsInstructions() {
+  var domain = (document.getElementById('pub-own-domain-input').value || '').trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
+  var el = document.getElementById('dns-domain-name');
+  if (el) el.textContent = domain || 'domeniu.ro';
+}
+
+function pubCopyText(text, btn) {
+  navigator.clipboard && navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = '✓ Copiat';
+    setTimeout(function(){ btn.textContent = orig; }, 1800);
+  });
+}
+
+function pubConfirmOwn() {
+  var input = document.getElementById('pub-own-domain-input');
+  var domain = (input.value || '').trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
+  if (!domain) {
+    input.style.borderColor = 'rgba(255,80,80,0.5)';
+    input.focus();
+    setTimeout(function(){ input.style.borderColor = ''; }, 1500);
+    return;
+  }
+  document.getElementById('pub-success-domain').textContent = domain;
+  pubGoStep('success');
+}
+
+async function pubCheckDomain() {
+  var input = document.getElementById('pub-buy-domain-input');
+  var btn = document.getElementById('pub-btn-check');
+  var result = document.getElementById('pub-domain-result');
+  var sugg = document.getElementById('pub-suggestions');
+  var domain = (input.value || '').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/$/,'');
+
+  if (!domain) {
+    result.className = 'pub-result warn';
+    result.style.display = 'block';
+    result.textContent = 'Introdu un domeniu pentru a verifica.';
+    return;
+  }
+
+  btn.textContent = '···';
+  btn.disabled = true;
+  result.style.display = 'none';
+  sugg.style.display = 'none';
+
+  try {
+    var res = await fetch('https://rdap.org/domain/' + encodeURIComponent(domain), {
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (res.status === 404) {
+      result.className = 'pub-result ok';
+      result.style.display = 'block';
+      result.innerHTML = '<strong style="font-family:\'Syne\',sans-serif;">✓ ' + _esc(domain) + '</strong> este disponibil! Te redirecționăm spre Hostico…';
+      setTimeout(function() {
+        window.open('https://hostico.ro/domains/?search=' + encodeURIComponent(domain), '_blank');
+      }, 1200);
+    } else if (res.ok) {
+      result.className = 'pub-result err';
+      result.style.display = 'block';
+      result.innerHTML = '<strong style="font-family:\'Syne\',sans-serif;">✕ ' + _esc(domain) + '</strong> nu este disponibil.';
+      _showSuggestions(domain);
+    } else {
+      throw new Error('status ' + res.status);
+    }
+  } catch(e) {
+    result.className = 'pub-result warn';
+    result.style.display = 'block';
+    result.innerHTML = 'Nu s-a putut verifica automat. <a href="https://hostico.ro/domains/?search=' + encodeURIComponent(domain) + '" target="_blank" style="color:#C8FF00;text-decoration:underline;">Verifică pe Hostico →</a>';
+  } finally {
+    btn.textContent = 'Verifică';
+    btn.disabled = false;
+  }
+}
+
+function _showSuggestions(domain) {
+  var base = domain.replace(/\.[^.]+$/, '');
+  var tlds = ['.com', '.net', '.io', '.co', '.eu'];
+  var currentTld = domain.includes('.') ? domain.substring(domain.lastIndexOf('.')) : '';
+  var alts = tlds.filter(function(t){ return t !== currentTld; }).slice(0,4).map(function(t){ return base + t; });
+  var list = document.getElementById('pub-suggestions-list');
+  list.innerHTML = alts.map(function(d) {
+    return '<button onclick="document.getElementById(\'pub-buy-domain-input\').value=\'' + _esc(d) + '\';pubCheckDomain();" style="background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 14px;color:#bbb;font-family:\'Inter\',sans-serif;font-size:0.8rem;cursor:pointer;transition:border-color 0.15s,color 0.15s;" onmouseenter="this.style.borderColor=\'rgba(200,255,0,0.3)\';this.style.color=\'#C8FF00\'" onmouseleave="this.style.borderColor=\'rgba(255,255,255,0.08)\';this.style.color=\'#bbb\'">' + _esc(d) + '</button>';
+  }).join('');
+  document.getElementById('pub-suggestions').style.display = 'block';
+}
+
+function _esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

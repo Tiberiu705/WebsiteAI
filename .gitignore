@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Screenshots temporare
+temporary screenshots/
+
+# Imagini mari de referință
+beach-please.ro_.png
+ex1.png
+ex2.png
+ex3.png
+ex4.png
+ex5.png
+ex6.png
+ex7.png
+ex8.png
+preview-test.html
+
+# Node
+node_modules/
+nanobanana-output/
+
+# Claude
+CLAUDE.md
+front-end skill.md
+SKILL.md
