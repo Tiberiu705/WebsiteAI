@@ -1460,7 +1460,16 @@
   }
 
   /* ── Gemini config ── */
-  const GEMINI_MODEL   = 'gemini-2.5-flash';
+  const GEMINI_MODEL = 'gemini-2.5-flash';
+  let _geminiKey = null;
+  async function getGeminiKey() {
+    if (_geminiKey) return _geminiKey;
+    try {
+      const r = await fetch('/api/key');
+      if (r.ok) { const d = await r.json(); _geminiKey = d.key; return _geminiKey; }
+    } catch(e) {}
+    return null;
+  }
 
   const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. Sarcina ta este să generezi un fișier HTML complet, de înaltă calitate, pentru o afacere românească, pe baza datelor furnizate.\n\n═══ REGULI OBLIGATORII ═══\n\nOUTPUT:\n- Răspunde EXCLUSIV cu HTML complet valid (de la <!DOCTYPE html> până la </html>)\n- ZERO text în afara HTML-ului, ZERO markdown (fără \`\`\`html), ZERO comentarii în afara codului\n- Toate stilurile: inline în <style> în <head> SAU clase Tailwind direct pe elemente\n- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>\n- Google Fonts: include 2 fonturi diferite (1 display/serif pentru titluri, 1 sans-serif pentru body)\n\nDESIGN:\n- Design 100% personalizat pentru brandul specificat — NU template-uri generice\n- Paletă de culori unică derivată din domeniul afacerii (NU culorile implicite Tailwind: indigo, blue, purple)\n- Tipografie: font display pentru heading-uri (tracking -0.03em pe titluri mari), font sans pentru body (line-height 1.7)\n- Font size body: 13px pentru tot textul de paragraf, descrieri, liste\n- O singură culoare de text pentru tot conținutul (nu amesteca culori de text în același bloc)
 - CONTRAST OBLIGATORIU: text pe fundal deschis (alb, gri deschis, verde deschis, bej) = text închis (#111 sau #1a1a1a). Text pe fundal închis = text alb (#fff). NICIODATĂ text alb pe fundal alb sau deschis
@@ -1552,10 +1561,18 @@
     startProgress();
 
     try {
-      const res = await fetch('/api/generate', {
-        method:  'POST',
+      const key = await getGeminiKey();
+      if (!key) throw new Error('Cheia API Gemini nu este configurată.');
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+      const res = await fetch(url, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(brief),
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
+          generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
+        }),
       });
 
       if (!res.ok) {
@@ -1564,8 +1581,12 @@
       }
 
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      let html = data.html || '';
+      let html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!html) {
+        const reason = data?.candidates?.[0]?.finishReason || 'unknown';
+        throw new Error(`Gemini nu a returnat HTML. Motiv: ${reason}`);
+      }
+      html = html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
 
       if (html.length < 100) {
         throw new Error('Site-ul generat este gol. Încearcă din nou.');
