@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = 3000;
 
 /* ── Gemini config (same provider SiteAI uses for "scratch" mode) ── */
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyCySeaa0SsRVBCGTgOCtdrekvom7LLqPHE';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyClV1LXol5PGTU2qS-NlXO3CXjkJO1jdJ0';
 const GEMINI_MODEL   = 'gemini-2.5-flash';
 
 /* ── MIME types ── */
