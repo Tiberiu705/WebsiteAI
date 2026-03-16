@@ -1479,20 +1479,32 @@
 - Text peste imagini (hero, banner): ÎNTOTDEAUNA alb pur (#ffffff) cu text-shadow pentru contrast maxim, NICIODATĂ gri\n- Spacing: token-uri consistente (nu valori Tailwind aleatorii)\n- Depth: suprafețe cu z-plane distinct (base → elevated → floating)\n\nNAVBAR:\n- Meniu minimalist și modern: logo stânga, linkuri dreapta, max 5 iteme\n- Navbar transparent sau cu blur backdrop la scroll, fără border gros\n- Linkurile de navigare: text simplu cu hover subtil, fără butoane cu background în nav\n- Un singur CTA button în navbar (ex: „Contactează-ne"), stilizat distinct\n- Spațiere perfectă, aliniament vertical centrat, padding consistent\n\nBUTOANE CTA:\n- ORICE text de acțiune (\"Vezi serviciile\", \"Programează acum\", \"Află mai mult\", etc.) trebuie să fie un buton stilizat — NU text simplu sau link\n- Butoane cu padding px-6 py-3, border-radius consistent, font-weight 600\n- Toate butoanele primare: același stil și culoare brand pe tot site-ul\n- Butoane secundare: outline sau ghost, același border-radius ca cele primare\n\nSERVICII:\n- Fiecare card de serviciu TREBUIE să aibă o imagine cu dimensiuni unice — NICIO dimensiune nu se repetă\n- Folosește aceste dimensiuni exacte în ordine: 400x300, 380x260, 420x280, 360x240, 410x290, 390x270 (una per card)\n- Fiecare imagine de serviciu are filter brightness(0.8)\n- Cardurile de servicii: grid uniform, spațiere consistentă\n\nTESTIMONIALE:\n- Secțiunea de testimoniale: grid de 2-3 coloane, carduri egale ca înălțime\n- Fiecare testimonial: avatar rotund, nume, funcție/ocupație, text citat în ghilimele, rating cu stele\n- Carduri cu shadow subtil, background ușor diferit față de secțiune\n- Spațiere uniformă între carduri\n\nFOOTER:\n- Footer profesional cu 3-4 coloane: Logo+descriere scurtă | Linkuri rapide | Contact | Social media\n- Background închis (nu negru pur), text alb/gri deschis\n- Logo și tagline în prima coloană\n- Linkuri rapide: lista paginilor principale\n- Contact: adresă, telefon, email cu iconițe SVG inline\n- Social media: iconițe SVG pentru Facebook, Instagram, LinkedIn\n- Linie separator deasupra copyright-ului\n- Copyright centrat în sub-footer\n\nCONȚINUT:\n- Texte reale în română — NU Lorem Ipsum, NU placeholder text\n- Texte optimizate pentru conversie (titluri impactante, CTA clare)\n- Structură completă: Nav sticky → Hero → Servicii/Produse → Despre → Testimoniale → FAQ sau CTA banner → Footer\n- Număr de telefon, adresă, email: inventate veridic dacă nu sunt furnizate\n- Imagini: folosește EXCLUSIV https://placehold.co/WIDTHxHEIGHT — NU adăuga parametri de culoare sau text, NU folosi alte servicii de imagini.\n\nRESPONSIVE:\n- Mobile-first, funcțional la 375px și 1440px\n- Grid responsive cu grid-cols adaptiv\n- Navbar: hamburger menu pe mobile\n\nINTERZIS:\n- transition-all (folosește: transition-transform, transition-opacity, transition-colors etc.)\n- Culorile implicite Tailwind ca brand primar (blue-600, indigo-500, purple-600)\n- Lorem ipsum sau text placeholder\n- JavaScript complex sau librării externe în afara Tailwind CDN și Google Fonts\n- Text de acțiune fără stilizare de buton\n- Imagini fără filter brightness(0.8)\n`;
 
 
-  /* ── Image generation — via /api/generate-image serverless ── */
+  /* ── Image generation — direct browser call, no serverless timeout ── */
 
   async function nanobanana2Generate(prompt) {
     try {
-      const res = await fetch('/api/generate-image', {
+      const key = await getGeminiKey();
+      if (!key) return null;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`;
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+        }),
       });
       if (!res.ok) return null;
       const data = await res.json();
-      return data.dataUrl || null;
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        }
+      }
+      return null;
     } catch (e) {
-      console.warn('[img] fetch error:', e.message);
+      console.warn('[img] error:', e.message);
       return null;
     }
   }
