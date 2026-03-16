@@ -1478,31 +1478,34 @@
   /* ── Image generation — direct browser call, no serverless timeout ── */
 
   async function nanobanana2Generate(prompt) {
-    try {
-      const key = await getGeminiKey();
-      if (!key) return null;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
-        }),
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      const parts = data?.candidates?.[0]?.content?.parts || [];
-      for (const part of parts) {
-        if (part.inlineData?.mimeType?.startsWith('image/')) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
-      }
-      return null;
-    } catch (e) {
-      console.warn('[img] error:', e.message);
-      return null;
+    const key = await getGeminiKey();
+    if (!key) throw new Error('Cheia Gemini lipsește');
+
+    const model = 'gemini-2.0-flash-exp';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`Gemini ${res.status}: ${errText.slice(0, 200)}`);
     }
+
+    const data = await res.json();
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.inlineData?.mimeType?.startsWith('image/')) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
+    }
+    const reason = data?.candidates?.[0]?.finishReason || '';
+    throw new Error(reason ? `Model a răspuns fără imagine (${reason})` : 'Nu s-a generat nicio imagine');
   }
 
   /* ── Build role-based image prompts from brief ── */
@@ -2140,26 +2143,22 @@
       status.textContent = 'Se generează imaginea, poate dura 15-30 secunde...';
       status.style.color = '#888';
 
-      try {
-        const dataUrl = await nanobanana2Generate(prompt);
-        if (dataUrl) {
-          imgEl.src = dataUrl;
-          if (previewEl) previewEl.src = dataUrl;
-          syncHtml();
-          status.textContent = '✓ Imagine generată cu succes!';
-          status.style.color = '#C8FF00';
-          setTimeout(() => overlay.remove(), 1200);
-        } else {
-          status.textContent = 'Generarea a eșuat. Încearcă alt prompt.';
-          status.style.color = '#ff6b6b';
-          genBtn.disabled = false;
-          genBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:7px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" fill="#080808" stroke="#080808" stroke-width="0.5"/></svg>Încearcă din nou';
-        }
-      } catch(e) {
-        status.textContent = 'Eroare: ' + e.message;
-        status.style.color = '#ff6b6b';
+      const resetBtn = () => {
         genBtn.disabled = false;
         genBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:7px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" fill="#080808" stroke="#080808" stroke-width="0.5"/></svg>Încearcă din nou';
+      };
+      try {
+        const dataUrl = await nanobanana2Generate(prompt);
+        imgEl.src = dataUrl;
+        if (previewEl) previewEl.src = dataUrl;
+        syncHtml();
+        status.textContent = '✓ Imagine generată cu succes!';
+        status.style.color = '#C8FF00';
+        setTimeout(() => overlay.remove(), 1200);
+      } catch(e) {
+        status.textContent = e.message;
+        status.style.color = '#ff6b6b';
+        resetBtn();
       }
     });
 
