@@ -6,17 +6,13 @@ function buildUserPrompt(brief) {
   return `Generează un site web complet pentru următoarea afacere:\n\n- Nume brand / companie: ${brief.brandName || 'nu a specificat'}\n- Activitate: ${brief.activity || 'nu a specificat clar, dedu tu un context rezonabil'}\n- Public țintă: ${brief.audience || 'nu a specificat'}\n- Acțiunea principală dorită a vizitatorilor: ${brief.mainAction || 'nu a specificat'}\n- Preferințe culori / fonturi: ${brief.colorsFonts || 'nu a specificat'}\n- Stil design dorit: ${brief.designStyle || 'modern'}\n${brief.extraNote ? `\nDetalii suplimentare de la client:\n${brief.extraNote}` : ''}\n\nGenerează ACUM fișierul HTML complet, începând cu <!DOCTYPE html>`;
 }
 
-export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
-  }
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const key = process.env.GEMINI_API_KEY;
   if (!key) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
@@ -58,4 +54,4 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Eroare internă' });
   }
-}
+};
