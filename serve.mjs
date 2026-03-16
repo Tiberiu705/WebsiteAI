@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = 3000;
 
 /* ── Gemini config (same provider SiteAI uses for "scratch" mode) ── */
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyClV1LXol5PGTU2qS-NlXO3CXjkJO1jdJ0';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL   = 'gemini-2.5-flash';
 
 /* ── MIME types ── */
@@ -221,6 +221,48 @@ createServer(async (req, res) => {
         res.writeHead(500, { 'Content-Type': 'application/json' });
       }
       res.end(JSON.stringify({ error: err.message || 'Eroare internă' }));
+    }
+    return;
+  }
+
+  /* ── POST /api/generate-image ── */
+  if (req.method === 'POST' && req.url === '/api/generate-image') {
+    try {
+      const raw = await collectBody(req);
+      const { prompt } = JSON.parse(raw);
+      if (!prompt) throw new Error('prompt lipsește');
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`;
+      const gemRes = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+        }),
+      });
+
+      if (!gemRes.ok) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ dataUrl: null }));
+        return;
+      }
+
+      const data = await gemRes.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ dataUrl: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` }));
+          return;
+        }
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ dataUrl: null }));
+    } catch (err) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ dataUrl: null, error: err.message }));
     }
     return;
   }
