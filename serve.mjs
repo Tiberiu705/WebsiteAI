@@ -44,32 +44,68 @@ DESIGN:
 - Design 100% personalizat pentru brandul specificat — NU template-uri generice
 - Paletă de culori unică derivată din domeniul afacerii (NU culorile implicite Tailwind: indigo, blue, purple)
 - Tipografie: font display pentru heading-uri (tracking -0.03em pe titluri mari), font sans pentru body (line-height 1.7)
+- Font size body: 13px pentru tot textul de paragraf, descrieri, liste
+- O singură culoare de text pentru tot conținutul (nu amesteca culori de text în același bloc)
 - Shadows: layered, cu culori ușor tintate, low opacity — NU flat shadow-md
 - Gradiente: minim 2 gradiente radiale layered pentru fundal
 - Animații: DOAR transform și opacity — NICIODATĂ transition-all
 - Fiecare element clickabil (buton, link, card): stări hover, focus-visible ȘI active distincte
-- Imagini: overlay gradient (bg-gradient-to-t from-black/60) pe imaginile de fundal
+- Imagini: overlay gradient (bg-gradient-to-t from-black/60) + filter brightness(0.8) pe toate imaginile
 - Spacing: token-uri consistente (nu valori Tailwind aleatorii)
 - Depth: suprafețe cu z-plane distinct (base → elevated → floating)
+
+NAVBAR:
+- Meniu minimalist și modern: logo stânga, linkuri dreapta, max 5 iteme
+- Navbar transparent sau cu blur backdrop la scroll, fără border gros
+- Linkurile de navigare: text simplu cu hover subtil, fără butoane cu background în nav
+- Un singur CTA button în navbar (ex: „Contactează-ne"), stilizat distinct
+- Spațiere perfectă, aliniament vertical centrat, padding consistent
+
+BUTOANE CTA:
+- ORICE text de acțiune ("Vezi serviciile", "Programează acum", "Află mai mult", etc.) trebuie să fie un buton stilizat — NU text simplu sau link
+- Butoane cu padding px-6 py-3, border-radius consistent, font-weight 600
+- Toate butoanele primare: același stil și culoare brand pe tot site-ul
+- Butoane secundare: outline sau ghost, același border-radius ca cele primare
+
+SERVICII:
+- Fiecare card de serviciu are o imagine diferită și unică (dimensiuni și subiecte diferite)
+- Imaginile serviciilor: folosește placehold.co cu dimensiuni variate (ex: 400x300, 380x280, 420x320)
+- Fiecare imagine de serviciu are filter brightness(0.8)
+- Cardurile de servicii: grid uniform, spațiere consistentă
+
+TESTIMONIALE:
+- Secțiunea de testimoniale: grid de 2-3 coloane, carduri egale ca înălțime
+- Fiecare testimonial: avatar rotund, nume, funcție/ocupație, text citat în ghilimele, rating cu stele
+- Carduri cu shadow subtil, background ușor diferit față de secțiune
+- Spațiere uniformă între carduri
+
+FOOTER:
+- Footer profesional cu 3-4 coloane: Logo+descriere scurtă | Linkuri rapide | Contact | Social media
+- Background închis (nu negru pur), text alb/gri deschis
+- Contact: adresă, telefon, email cu iconițe SVG inline
+- Social media: iconițe SVG pentru Facebook, Instagram, LinkedIn
+- Linie separator deasupra copyright-ului
+- Copyright centrat în sub-footer
 
 CONȚINUT:
 - Texte reale în română — NU Lorem Ipsum, NU placeholder text
 - Texte optimizate pentru conversie (titluri impactante, CTA clare)
 - Structură completă: Nav sticky → Hero → Servicii/Produse → Despre → Testimoniale → FAQ sau CTA banner → Footer
 - Număr de telefon, adresă, email: inventate veridic dacă nu sunt furnizate
-- Butoane CTA în hero și în fiecare secțiune relevantă
-- Placeholder imagini: https://placehold.co/WIDTHxHEIGHT/BGCOLOR/TEXTCOLOR
+- Imagini: folosește EXCLUSIV https://placehold.co/WIDTHxHEIGHT — NU adăuga parametri de culoare sau text
 
 RESPONSIVE:
 - Mobile-first, funcțional la 375px și 1440px
 - Grid responsive cu grid-cols adaptiv
-- Font sizes fluide cu clamp() sau clase Tailwind responsive
+- Navbar: hamburger menu pe mobile
 
 INTERZIS:
 - transition-all (folosește: transition-transform, transition-opacity, transition-colors etc.)
 - Culorile implicite Tailwind ca brand primar (blue-600, indigo-500, purple-600)
 - Lorem ipsum sau text placeholder
 - JavaScript complex sau librării externe în afara Tailwind CDN și Google Fonts
+- Text de acțiune fără stilizare de buton
+- Imagini fără filter brightness(0.8)
 `;
 
 /* ── Build user prompt from brief (same structure as SiteAI frontend) ── */
