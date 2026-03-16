@@ -1723,70 +1723,133 @@
   }
 
   /* ── Text field with formatting buttons ── */
+  const EDITOR_FONTS = [
+    { label: 'Inter',            value: 'Inter, sans-serif' },
+    { label: 'Poppins',          value: 'Poppins, sans-serif' },
+    { label: 'Roboto',           value: 'Roboto, sans-serif' },
+    { label: 'Montserrat',       value: 'Montserrat, sans-serif' },
+    { label: 'Lato',             value: 'Lato, sans-serif' },
+    { label: 'Open Sans',        value: 'Open Sans, sans-serif' },
+    { label: 'Raleway',          value: 'Raleway, sans-serif' },
+    { label: 'Nunito',           value: 'Nunito, sans-serif' },
+    { label: 'Oswald',           value: 'Oswald, sans-serif' },
+    { label: 'Playfair Display', value: 'Playfair Display, serif' },
+    { label: 'Merriweather',     value: 'Merriweather, serif' },
+    { label: 'Lora',             value: 'Lora, serif' },
+    { label: 'Georgia',          value: 'Georgia, serif' },
+    { label: 'Arial',            value: 'Arial, sans-serif' },
+  ];
+
+  function loadFontInIframe(doc, fontName) {
+    const id = 'ef-font-' + fontName.replace(/\s+/g, '-');
+    if (doc.getElementById(id)) return;
+    const link = doc.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;700&display=swap`;
+    doc.head.appendChild(link);
+  }
+
+  const BTN_BASE = 'width:30px;height:30px;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#777;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;padding:0;line-height:1;';
+
   function editorTextFieldFmt({ label, value, el }) {
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'margin-bottom:18px;';
+    wrap.style.cssText = 'margin-bottom:16px;';
 
     const lbl = document.createElement('div');
     lbl.textContent = label;
-    lbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#555;margin-bottom:6px;';
+    lbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:#555;margin-bottom:6px;';
     wrap.appendChild(lbl);
 
-    // Formatting toolbar
-    const toolbar = document.createElement('div');
-    toolbar.style.cssText = 'display:flex;gap:4px;margin-bottom:6px;';
+    /* ── Row 1: B / I / U + size controls ── */
+    const row1 = document.createElement('div');
+    row1.style.cssText = 'display:flex;align-items:center;gap:4px;margin-bottom:5px;';
 
-    const fmts = [
-      { lbl: 'B', tip: 'Bold',      prop: 'fontWeight',     on: '700',       off: '400'    },
-      { lbl: 'I', tip: 'Italic',    prop: 'fontStyle',      on: 'italic',    off: 'normal' },
-      { lbl: 'U', tip: 'Underline', prop: 'textDecoration', on: 'underline', off: 'none'   },
-    ];
-
-    fmts.forEach(({ lbl: btnLbl, tip, prop, on, off }) => {
+    // B / I / U
+    [
+      { t: 'B', tip: 'Bold',      prop: 'fontWeight',     on: '700',       off: '400',   fw: '700' },
+      { t: 'I', tip: 'Italic',    prop: 'fontStyle',      on: 'italic',    off: 'normal', fi: 'italic' },
+      { t: 'U', tip: 'Underline', prop: 'textDecoration', on: 'underline', off: 'none'   },
+    ].forEach(({ t, tip, prop, on, off, fw, fi }) => {
       const btn = document.createElement('button');
-      btn.title = tip;
-      btn.textContent = btnLbl;
-      btn.style.cssText = `width:28px;height:28px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#777;cursor:pointer;font-size:0.8rem;font-weight:${btnLbl==='B'?'700':'400'};font-style:${btnLbl==='I'?'italic':'normal'};transition:all 0.15s;flex-shrink:0;`;
+      btn.title = tip; btn.textContent = t;
+      btn.style.cssText = BTN_BASE + (fw ? `font-weight:${fw};` : '') + (fi ? `font-style:${fi};` : '');
       let active = false;
       btn.addEventListener('click', () => {
         active = !active;
         el.style[prop] = active ? on : off;
         btn.style.color = active ? '#C8FF00' : '#777';
-        btn.style.borderColor = active ? 'rgba(200,255,0,0.35)' : 'rgba(255,255,255,0.08)';
+        btn.style.borderColor = active ? 'rgba(200,255,0,0.4)' : 'rgba(255,255,255,0.1)';
+        btn.style.background = active ? 'rgba(200,255,0,0.08)' : '#222';
         syncHtml();
       });
-      toolbar.appendChild(btn);
+      row1.appendChild(btn);
     });
 
-    // Font size control
-    const sizeWrap = document.createElement('div');
-    sizeWrap.style.cssText = 'display:flex;align-items:center;gap:3px;margin-left:4px;';
-    const sizeDown = document.createElement('button');
-    sizeDown.textContent = '−';
-    sizeDown.style.cssText = 'width:24px;height:28px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#777;cursor:pointer;font-size:0.9rem;';
-    const sizeUp = document.createElement('button');
-    sizeUp.textContent = '+';
-    sizeUp.style.cssText = 'width:24px;height:28px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#777;cursor:pointer;font-size:0.9rem;';
-    const sizeLabel = document.createElement('span');
-    sizeLabel.style.cssText = 'font-family:monospace;font-size:0.72rem;color:#555;min-width:28px;text-align:center;';
-    const getCurrentSize = () => parseInt(window.getComputedStyle(el).fontSize) || 13;
-    sizeLabel.textContent = getCurrentSize() + 'px';
-    sizeDown.addEventListener('click', () => {
-      const s = getCurrentSize(); el.style.fontSize = (s - 1) + 'px'; sizeLabel.textContent = (s - 1) + 'px'; syncHtml();
-    });
-    sizeUp.addEventListener('click', () => {
-      const s = getCurrentSize(); el.style.fontSize = (s + 1) + 'px'; sizeLabel.textContent = (s + 1) + 'px'; syncHtml();
-    });
-    sizeWrap.appendChild(sizeDown);
-    sizeWrap.appendChild(sizeLabel);
-    sizeWrap.appendChild(sizeUp);
-    toolbar.appendChild(sizeWrap);
-    wrap.appendChild(toolbar);
+    // Separator
+    const sep = document.createElement('div');
+    sep.style.cssText = 'width:1px;height:20px;background:rgba(255,255,255,0.08);margin:0 2px;';
+    row1.appendChild(sep);
 
+    // Font size − [val] +
+    const getCurrentSize = () => {
+      const doc = previewIframe.contentDocument;
+      return parseInt(doc ? doc.defaultView.getComputedStyle(el).fontSize : 13) || 13;
+    };
+    const sizeInput = document.createElement('input');
+    sizeInput.type = 'number';
+    sizeInput.min = 8; sizeInput.max = 96;
+    sizeInput.value = getCurrentSize();
+    sizeInput.style.cssText = 'width:42px;height:30px;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#ccc;font-family:monospace;font-size:0.78rem;text-align:center;outline:none;padding:0 4px;-moz-appearance:textfield;';
+    sizeInput.addEventListener('change', () => {
+      const v = Math.max(8, Math.min(96, parseInt(sizeInput.value) || 13));
+      sizeInput.value = v;
+      el.style.fontSize = v + 'px';
+      syncHtml();
+    });
+
+    const mkSizeBtn = (char, delta) => {
+      const b = document.createElement('button');
+      b.textContent = char;
+      b.style.cssText = BTN_BASE;
+      b.addEventListener('click', () => {
+        const v = Math.max(8, Math.min(96, getCurrentSize() + delta));
+        sizeInput.value = v;
+        el.style.fontSize = v + 'px';
+        syncHtml();
+      });
+      return b;
+    };
+    row1.appendChild(mkSizeBtn('−', -1));
+    row1.appendChild(sizeInput);
+    row1.appendChild(mkSizeBtn('+', 1));
+    wrap.appendChild(row1);
+
+    /* ── Row 2: Font family select ── */
+    const fontSel = document.createElement('select');
+    fontSel.style.cssText = 'width:100%;box-sizing:border-box;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#ccc;font-family:"Inter",sans-serif;font-size:0.78rem;padding:6px 10px;outline:none;cursor:pointer;margin-bottom:5px;height:30px;';
+    const defOpt = document.createElement('option');
+    defOpt.value = ''; defOpt.textContent = '— Font —';
+    fontSel.appendChild(defOpt);
+    EDITOR_FONTS.forEach(({ label: fl, value: fv }) => {
+      const opt = document.createElement('option');
+      opt.value = fv; opt.textContent = fl;
+      fontSel.appendChild(opt);
+    });
+    fontSel.addEventListener('change', () => {
+      if (!fontSel.value) return;
+      const fontName = fontSel.value.split(',')[0].trim();
+      const doc = previewIframe.contentDocument;
+      if (doc) loadFontInIframe(doc, fontName);
+      el.style.fontFamily = fontSel.value;
+      syncHtml();
+    });
+    wrap.appendChild(fontSel);
+
+    /* ── Textarea ── */
     const textarea = document.createElement('textarea');
-    textarea.rows = 2;
-    textarea.value = value;
-    textarea.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;line-height:1.55;resize:vertical;outline:none;transition:border-color 0.15s;';
+    textarea.rows = 2; textarea.value = value;
+    textarea.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:9px 11px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;line-height:1.5;resize:vertical;outline:none;transition:border-color 0.15s;';
     textarea.addEventListener('focus', () => textarea.style.borderColor = 'rgba(200,255,0,0.35)');
     textarea.addEventListener('blur',  () => textarea.style.borderColor = 'rgba(255,255,255,0.08)');
     textarea.addEventListener('input', () => {
@@ -1889,8 +1952,8 @@
       fileInput.style.display = 'none';
 
       const uploadBtn = document.createElement('button');
-      uploadBtn.textContent = '↑ Încarcă imagine de pe dispozitiv';
-      uploadBtn.style.cssText = 'width:100%;padding:8px 10px;background:rgba(200,255,0,0.07);border:1px solid rgba(200,255,0,0.2);border-radius:7px;color:#C8FF00;font-family:"Inter",sans-serif;font-size:0.78rem;cursor:pointer;margin-bottom:8px;';
+      uploadBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M8 1v9M4 4l4-4 4 4M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Încarcă imagine';
+      uploadBtn.style.cssText = 'width:100%;padding:0 10px;height:36px;background:rgba(200,255,0,0.07);border:1px solid rgba(200,255,0,0.25);border-radius:8px;color:#C8FF00;font-family:"Inter",sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;';
       uploadBtn.addEventListener('mouseenter', () => uploadBtn.style.background = 'rgba(200,255,0,0.14)');
       uploadBtn.addEventListener('mouseleave', () => uploadBtn.style.background = 'rgba(200,255,0,0.07)');
       uploadBtn.addEventListener('click', () => fileInput.click());
