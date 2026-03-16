@@ -1481,7 +1481,7 @@
     const key = await getGeminiKey();
     if (!key) throw new Error('Cheia Gemini lipsește');
 
-    const model = 'gemini-2.0-flash-preview-image-generation';
+    const model = 'gemini-2.5-flash-image';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
     const res = await fetch(url, {
       method: 'POST',
