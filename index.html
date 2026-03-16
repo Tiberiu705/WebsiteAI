@@ -1755,6 +1755,40 @@
 
   const BTN_BASE = 'width:30px;height:30px;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#777;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;padding:0;line-height:1;';
 
+  /* ── CSS injection engine — bypasses Tailwind completely ── */
+  let _efCounter = 0;
+  function efId(el) {
+    if (!el.dataset.efId) el.dataset.efId = 'ef' + (++_efCounter);
+    return el.dataset.efId;
+  }
+  function efApply(el, prop, value) {
+    const doc = previewIframe.contentDocument;
+    if (!doc) return;
+    const id = efId(el);
+    let sheet = doc.getElementById('ef-overrides');
+    if (!sheet) {
+      sheet = doc.createElement('style');
+      sheet.id = 'ef-overrides';
+      doc.head.appendChild(sheet);
+    }
+    // Parse existing rules, update or add the property for this element
+    const selector = `[data-ef-id="${id}"]`;
+    const text = sheet.textContent;
+    const blockRx = new RegExp(`(\\[data-ef-id="${id}"\\]\\s*\\{)([^}]*)(\\})`, 's');
+    const propRx  = new RegExp(`${prop}\\s*:[^;]+!important;?`, 'g');
+    const newDecl = `${prop}:${value} !important;`;
+    if (blockRx.test(text)) {
+      const newBlock = text.replace(blockRx, (_, open, body, close) => {
+        const newBody = propRx.test(body) ? body.replace(propRx, newDecl) : body + newDecl;
+        return open + newBody + close;
+      });
+      sheet.textContent = newBlock;
+    } else {
+      sheet.textContent += `\n${selector}{${newDecl}}`;
+    }
+    syncHtml();
+  }
+
   function editorTextFieldFmt({ label, value, el }) {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'margin-bottom:16px;';
@@ -1780,11 +1814,10 @@
       let active = false;
       btn.addEventListener('click', () => {
         active = !active;
-        el.style.setProperty(css, active ? on : off, 'important');
+        efApply(el, css, active ? on : off);
         btn.style.color = active ? '#C8FF00' : '#777';
         btn.style.borderColor = active ? 'rgba(200,255,0,0.4)' : 'rgba(255,255,255,0.1)';
         btn.style.background = active ? 'rgba(200,255,0,0.08)' : '#222';
-        syncHtml();
       });
       row1.appendChild(btn);
     });
@@ -1807,8 +1840,7 @@
     sizeInput.addEventListener('change', () => {
       const v = Math.max(8, Math.min(96, parseInt(sizeInput.value) || 13));
       sizeInput.value = v;
-      el.style.setProperty('font-size', v + 'px', 'important');
-      syncHtml();
+      efApply(el, 'font-size', v + 'px');
     });
 
     const mkSizeBtn = (char, delta) => {
@@ -1818,8 +1850,7 @@
       b.addEventListener('click', () => {
         const v = Math.max(8, Math.min(96, getCurrentSize() + delta));
         sizeInput.value = v;
-        el.style.setProperty('font-size', v + 'px', 'important');
-        syncHtml();
+        efApply(el, 'font-size', v + 'px');
       });
       return b;
     };
@@ -1844,8 +1875,7 @@
       const fontName = fontSel.value.split(',')[0].trim();
       const doc = previewIframe.contentDocument;
       if (doc) loadFontInIframe(doc, fontName);
-      el.style.setProperty('font-family', fontSel.value, 'important');
-      syncHtml();
+      efApply(el, 'font-family', fontSel.value);
     });
     wrap.appendChild(fontSel);
 
