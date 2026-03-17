@@ -1461,7 +1461,10 @@
   }
 
   /* ── Gemini config ── */
-  const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview'];
+  // Prima generare: 1.5 (stabil, fără 503). După generare: 3.1+
+  const GEMINI_MODELS_FIRST = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.5-flash'];
+  const GEMINI_MODELS_REGEN = ['gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+  let _siteGenerated = false; // false = prima generare, true = regenerare
   let _geminiKey = null;
   async function getGeminiKey() {
     if (_geminiKey) return _geminiKey;
@@ -1590,9 +1593,10 @@
       const key = await getGeminiKey();
       if (!key) throw new Error('Cheia API Gemini nu este configurată.');
 
+      const modelList = _siteGenerated ? GEMINI_MODELS_REGEN : GEMINI_MODELS_FIRST;
       let html = '';
-      for (let mi = 0; mi < GEMINI_MODELS.length; mi++) {
-        const model = GEMINI_MODELS[mi];
+      for (let mi = 0; mi < modelList.length; mi++) {
+        const model = modelList[mi];
         if (mi > 0) loadingStatus.textContent = `Model suprasolicitată, încerc ${model}…`;
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
         const res = await fetch(url, {
@@ -1606,7 +1610,7 @@
         });
 
         if (res.status === 503 || res.status === 429) {
-          if (mi === GEMINI_MODELS.length - 1) throw new Error('Toate modelele sunt suprasolicitate. Încearcă în 1-2 minute.');
+          if (mi === modelList.length - 1) throw new Error('Toate modelele sunt suprasolicitate. Încearcă în 1-2 minute.');
           continue;
         }
 
@@ -1634,6 +1638,7 @@
       html = await injectAIImages(html, brief);
 
       generatedHtml = html;
+      _siteGenerated = true;
       finishProgress(true);
       await new Promise(r => setTimeout(r, 500));
       showPreview(html);
