@@ -1,9 +1,13 @@
-// Upstash Redis REST helper
+// Suportă Vercel KV (KV_REST_API_URL / KV_REST_API_TOKEN)
+// și Upstash Redis (UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN)
+const REST_URL   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
+const REST_TOKEN = process.env.KV_REST_API_TOKEN  || process.env.UPSTASH_REDIS_REST_TOKEN;
+
 async function redis(command) {
-  const res = await fetch(process.env.UPSTASH_REDIS_REST_URL, {
+  const res = await fetch(REST_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+      Authorization: `Bearer ${REST_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(command),
@@ -24,8 +28,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  const hasRedis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!hasRedis) return res.status(200).json({ sites: [], total: 0, hasMore: false });
+  if (!REST_URL || !REST_TOKEN) return res.status(200).json({ sites: [], total: 0, hasMore: false, _unconfigured: true });
 
   try {
     if (req.method === 'GET') {
