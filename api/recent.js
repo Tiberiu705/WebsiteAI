@@ -81,6 +81,28 @@ module.exports = async function handler(req, res) {
       return res.status(201).json({ ok: true, site });
     }
 
+    if (req.method === 'DELETE') {
+      const adminSecret = process.env.ADMIN_SECRET;
+      if (!adminSecret || req.headers['x-admin-secret'] !== adminSecret) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      const { id } = req.body || {};
+      if (!id) return res.status(400).json({ error: 'id required' });
+      const members = await redis(['ZRANGE', KEY, 0, -1]);
+      let removed = 0;
+      for (const m of (members || [])) {
+        try {
+          const s = JSON.parse(m);
+          if (s.id === id) {
+            await redis(['ZREM', KEY, m]);
+            await redis(['DEL', `site:html:${id}`]);
+            removed++;
+          }
+        } catch {}
+      }
+      return res.status(200).json({ ok: true, removed });
+    }
+
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Eroare internă' });
