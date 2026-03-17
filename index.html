@@ -1461,10 +1461,10 @@
   }
 
   /* ── Gemini config ── */
-  // Prima generare: 1.5 (stabil, fără 503). După generare: 3.1+
-  const GEMINI_MODELS_FIRST = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.5-flash'];
-  const GEMINI_MODELS_REGEN = ['gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview', 'gemini-2.5-flash', 'gemini-1.5-flash'];
-  let _siteGenerated = false; // false = prima generare, true = regenerare
+  // Prima generare: modele stabile 2.0. După generare: modele 3.x mai puternice
+  const GEMINI_MODELS_FIRST = ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+  const GEMINI_MODELS_REGEN = ['gemini-3.1-pro-preview', 'gemini-3-flash-preview', 'gemini-3-pro-preview', 'gemini-2.5-pro', 'gemini-2.5-flash'];
+  let _siteGenerated = false;
   let _geminiKey = null;
   async function getGeminiKey() {
     if (_geminiKey) return _geminiKey;
