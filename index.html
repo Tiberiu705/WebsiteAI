@@ -1481,31 +1481,46 @@
     const key = await getGeminiKey();
     if (!key) throw new Error('Cheia Gemini lipsește');
 
-    const model = 'gemini-2.5-flash-image';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
-      }),
-    });
+    const models = [
+      'gemini-2.5-flash-image',
+      'gemini-3.1-flash-image-preview',
+      'gemini-3-pro-image-preview',
+    ];
 
-    if (!res.ok) {
-      const errText = await res.text().catch(() => '');
-      throw new Error(`Gemini ${res.status}: ${errText.slice(0, 200)}`);
-    }
+    let lastErr = '';
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+        }),
+      });
 
-    const data = await res.json();
-    const parts = data?.candidates?.[0]?.content?.parts || [];
-    for (const part of parts) {
-      if (part.inlineData?.mimeType?.startsWith('image/')) {
-        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      if (res.status === 503 || res.status === 429) {
+        lastErr = `${model} suprasolicitată (${res.status}), încerc alt model...`;
+        continue;
       }
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(`Gemini ${res.status}: ${errText.slice(0, 200)}`);
+      }
+
+      const data = await res.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        }
+      }
+      const reason = data?.candidates?.[0]?.finishReason || '';
+      throw new Error(reason ? `Fără imagine (${reason})` : 'Nu s-a generat nicio imagine');
     }
-    const reason = data?.candidates?.[0]?.finishReason || '';
-    throw new Error(reason ? `Model a răspuns fără imagine (${reason})` : 'Nu s-a generat nicio imagine');
+
+    throw new Error('Toate modelele sunt suprasolicitate. Încearcă în câteva minute.');
   }
 
   /* ── Build role-based image prompts from brief ── */
