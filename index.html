@@ -412,6 +412,53 @@
       overflow: hidden;
     }
 
+    /* ── Recent generations ── */
+    .recent-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .recent-card {
+      background: #0A0A0A;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease, border-color 0.25s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.7), 0 8px 28px rgba(0,0,0,0.5);
+    }
+    .recent-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.8), 0 16px 48px rgba(0,0,0,0.6);
+      border-color: rgba(200,255,0,0.25);
+    }
+    .recent-card-banner {
+      height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .recent-card-initial {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 3.5rem;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: rgba(255,255,255,0.18);
+      user-select: none;
+    }
+    .recent-skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     /* ══ MOBILE ══ */
     @media (max-width: 768px) {
       .nav-links { display: none !important; }
@@ -451,6 +498,8 @@
       .footer-brand { grid-column: 1 / -1 !important; }
 
       .cta-banner-inner { padding: 48px 24px !important; }
+
+      .recent-grid { grid-template-columns: 1fr !important; }
 
       .brief-outer { padding: 16px !important; align-items: flex-start !important; padding-top: 24px !important; }
       .brief-modal { padding: 28px 20px !important; }
@@ -647,6 +696,45 @@
       </div>
 
     </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ ULTIMELE GENERĂRI ══════════════════════ -->
+<section id="recent-generations" class="fade-up" style="padding:100px 24px;background:#020202;">
+  <div style="max-width:1100px;margin:0 auto;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:56px;flex-wrap:wrap;gap:20px;">
+      <div>
+        <div class="badge" style="margin-bottom:16px;">
+          <span class="badge-dot"></span>Live
+        </div>
+        <h2 class="heading-lg">Ultimele <span class="acid-text">generări</span></h2>
+        <p class="body-lg" style="margin-top:12px;font-size:0.95rem;max-width:480px;">Site-uri create recent cu WebsiteAI de comunitatea noastră.</p>
+      </div>
+      <span id="recent-total-badge" style="display:none;font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:6px 16px;"></span>
+    </div>
+
+    <!-- Cards grid -->
+    <div id="recent-grid" class="recent-grid">
+      <!-- skeletons shown on load -->
+    </div>
+
+    <!-- Empty state -->
+    <div id="recent-empty" style="display:none;text-align:center;padding:64px 24px;">
+      <div style="font-size:2.5rem;margin-bottom:16px;opacity:0.3;">✦</div>
+      <p style="font-family:'Inter',sans-serif;font-size:0.95rem;color:#444;">Nicio generare publică momentan. Fii primul!</p>
+      <a href="#generator" style="display:inline-block;margin-top:20px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.875rem;color:#C8FF00;text-decoration:none;" onmouseenter="this.style.opacity='0.7'" onmouseleave="this.style.opacity='1'">Generează un site →</a>
+    </div>
+
+    <!-- Load more -->
+    <div id="recent-loadmore-wrap" style="display:none;text-align:center;margin-top:48px;">
+      <button id="btn-load-more" class="btn-ghost" onclick="loadMoreRecent()">
+        Încarcă mai multe
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M3 8l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
   </div>
 </section>
 
@@ -1121,6 +1209,12 @@
             <button type="button" class="style-btn" data-val="premium elegant">Premium</button>
           </div>
         </div>
+
+        <!-- Galerie publică opt-in -->
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 16px;background:rgba(200,255,0,0.04);border:1px solid rgba(200,255,0,0.12);border-radius:10px;">
+          <input type="checkbox" id="bf-public" checked style="width:16px;height:16px;accent-color:#C8FF00;cursor:pointer;flex-shrink:0;" />
+          <span style="font-family:'Inter',sans-serif;font-size:0.85rem;color:#888;line-height:1.4;">Afișează site-ul în galeria publică <span style="color:#555;">(doar numele brandului și tipul activității)</span></span>
+        </label>
 
         <!-- Error -->
         <div id="brief-error" style="display:none;background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.25);border-radius:10px;padding:12px 16px;font-family:'Inter',sans-serif;font-size:0.875rem;color:#ff8080;line-height:1.5;"></div>
@@ -1640,6 +1734,13 @@
       generatedHtml = html;
       _siteGenerated = true;
       finishProgress(true);
+
+      // Save to public gallery if user opted in
+      const isPublic = document.getElementById('bf-public')?.checked !== false;
+      if (isPublic && brief.brandName && brief.activity) {
+        saveToRecent(brief);
+      }
+
       await new Promise(r => setTimeout(r, 500));
       showPreview(html);
 
@@ -2870,6 +2971,158 @@ function _showSuggestions(domain) {
 function _esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+/* ══════════════════════════════════════════════════════
+   ULTIMELE GENERĂRI
+══════════════════════════════════════════════════════ */
+var _recentPage = 0;
+var _recentHasMore = false;
+var _recentLoading = false;
+
+function _brandColor(str) {
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  var hue = Math.abs(hash) % 360;
+  return 'hsl(' + hue + ', 55%, 35%)';
+}
+
+function _brandColorLight(str) {
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  var hue = Math.abs(hash) % 360;
+  return 'hsl(' + ((hue + 30) % 360) + ', 60%, 55%)';
+}
+
+function _formatDate(iso) {
+  try {
+    var d = new Date(iso);
+    var months = ['ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','nov','dec'];
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  } catch(e) { return ''; }
+}
+
+function _recentCardHtml(site) {
+  var initial = (site.brandName || '?').charAt(0).toUpperCase();
+  var c1 = _brandColor(site.brandName || '');
+  var c2 = _brandColorLight(site.brandName || '');
+  var dateStr = _formatDate(site.generatedAt);
+  var linkHtml = site.publishedUrl
+    ? '<a href="' + _esc(site.publishedUrl) + '" target="_blank" rel="noopener" style="font-family:\'Inter\',sans-serif;font-size:0.75rem;color:#C8FF00;text-decoration:none;display:flex;align-items:center;gap:4px;flex-shrink:0;" onmouseenter="this.style.opacity=\'0.7\'" onmouseleave="this.style.opacity=\'1\'">Vizitează <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
+    : '';
+  return '<div class="recent-card">'
+    + '<div class="recent-card-banner" style="background:linear-gradient(135deg,' + c1 + ' 0%,' + c2 + ' 100%);">'
+    + '<span class="recent-card-initial">' + _esc(initial) + '</span>'
+    + '</div>'
+    + '<div style="padding:16px 20px 18px;">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">'
+    + '<h3 style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:0.95rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">' + _esc(site.brandName || '') + '</h3>'
+    + linkHtml
+    + '</div>'
+    + '<p style="font-family:\'Inter\',sans-serif;font-size:0.8rem;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:14px;">' + _esc(site.activity || '') + '</p>'
+    + '<div style="display:flex;align-items:center;gap:6px;">'
+    + '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#333" stroke-width="1.2"/><path d="M6 3.5V6l2 1.5" stroke="#333" stroke-width="1.2" stroke-linecap="round"/></svg>'
+    + '<span style="font-family:\'Inter\',sans-serif;font-size:0.72rem;color:#444;">' + _esc(dateStr) + '</span>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function _recentSkeletons(n) {
+  var html = '';
+  for (var i = 0; i < n; i++) {
+    html += '<div class="recent-card">'
+      + '<div class="recent-card-banner recent-skeleton" style=""></div>'
+      + '<div style="padding:16px 20px 18px;">'
+      + '<div class="recent-skeleton" style="height:14px;width:55%;margin-bottom:10px;"></div>'
+      + '<div class="recent-skeleton" style="height:11px;width:75%;margin-bottom:14px;"></div>'
+      + '<div class="recent-skeleton" style="height:10px;width:35%;"></div>'
+      + '</div>'
+      + '</div>';
+  }
+  return html;
+}
+
+async function loadRecent(page, append) {
+  if (_recentLoading) return;
+  _recentLoading = true;
+  var grid = document.getElementById('recent-grid');
+  var empty = document.getElementById('recent-empty');
+  var lmWrap = document.getElementById('recent-loadmore-wrap');
+  var lmBtn = document.getElementById('btn-load-more');
+  var totalBadge = document.getElementById('recent-total-badge');
+
+  if (!append) {
+    grid.innerHTML = _recentSkeletons(6);
+    empty.style.display = 'none';
+    lmWrap.style.display = 'none';
+  } else {
+    if (lmBtn) { lmBtn.disabled = true; lmBtn.textContent = 'Se încarcă…'; }
+  }
+
+  try {
+    var r = await fetch('/api/recent?page=' + (page || 0));
+    var data = await r.json();
+    var sites = data.sites || [];
+    _recentHasMore = !!data.hasMore;
+    _recentPage = page || 0;
+
+    if (!append) {
+      if (sites.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+      } else {
+        grid.innerHTML = sites.map(_recentCardHtml).join('');
+      }
+    } else {
+      var frag = document.createElement('div');
+      frag.innerHTML = sites.map(_recentCardHtml).join('');
+      while (frag.firstChild) grid.appendChild(frag.firstChild);
+    }
+
+    if (data.total > 0) {
+      totalBadge.textContent = data.total + ' site-uri generate';
+      totalBadge.style.display = 'inline-block';
+    }
+
+    lmWrap.style.display = _recentHasMore ? 'block' : 'none';
+  } catch(e) {
+    if (!append) { grid.innerHTML = ''; empty.style.display = 'block'; }
+  } finally {
+    _recentLoading = false;
+    if (lmBtn) { lmBtn.disabled = false; lmBtn.innerHTML = 'Încarcă mai multe <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M3 8l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  }
+}
+
+function loadMoreRecent() {
+  loadRecent(_recentPage + 1, true);
+}
+
+async function saveToRecent(brief) {
+  try {
+    await fetch('/api/recent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brandName: brief.brandName,
+        activity: brief.activity,
+        publishedUrl: null,
+      }),
+    });
+    // Refresh the grid to show the new entry
+    loadRecent(0, false);
+  } catch(e) { /* silent fail — non-critical */ }
+}
+
+// Load on page init
+document.addEventListener('DOMContentLoaded', function() {
+  loadRecent(0, false);
+});
 </script>
 </body>
 </html>
