@@ -1738,7 +1738,7 @@
       // Save to public gallery if user opted in
       const isPublic = document.getElementById('bf-public')?.checked !== false;
       if (isPublic && brief.brandName && brief.activity) {
-        saveToRecent(brief);
+        saveToRecent(brief, html);
       }
 
       await new Promise(r => setTimeout(r, 500));
@@ -3012,8 +3012,9 @@ function _recentCardHtml(site) {
   var c1 = _brandColor(site.brandName || '');
   var c2 = _brandColorLight(site.brandName || '');
   var dateStr = _formatDate(site.generatedAt);
-  var linkHtml = site.publishedUrl
-    ? '<a href="' + _esc(site.publishedUrl) + '" target="_blank" rel="noopener" style="font-family:\'Inter\',sans-serif;font-size:0.75rem;color:#C8FF00;text-decoration:none;display:flex;align-items:center;gap:4px;flex-shrink:0;" onmouseenter="this.style.opacity=\'0.7\'" onmouseleave="this.style.opacity=\'1\'">Vizitează <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
+  var openUrl = site.publishedUrl || site.previewUrl;
+  var linkHtml = openUrl
+    ? '<a href="' + _esc(openUrl) + '" target="_blank" rel="noopener" style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:0.72rem;color:#080808;background:#C8FF00;text-decoration:none;display:flex;align-items:center;gap:4px;flex-shrink:0;padding:5px 10px;border-radius:6px;" onmouseenter="this.style.opacity=\'0.85\'" onmouseleave="this.style.opacity=\'1\'">Deschide <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
     : '';
   return '<div class="recent-card">'
     + '<div class="recent-card-banner" style="background:linear-gradient(135deg,' + c1 + ' 0%,' + c2 + ' 100%);">'
@@ -3103,7 +3104,7 @@ function loadMoreRecent() {
   loadRecent(_recentPage + 1, true);
 }
 
-async function saveToRecent(brief) {
+async function saveToRecent(brief, html) {
   try {
     await fetch('/api/recent', {
       method: 'POST',
@@ -3112,6 +3113,7 @@ async function saveToRecent(brief) {
         brandName: brief.brandName,
         activity: brief.activity,
         publishedUrl: null,
+        html: html || '',
       }),
     });
     // Refresh the grid to show the new entry

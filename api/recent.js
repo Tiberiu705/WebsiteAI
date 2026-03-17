@@ -49,22 +49,34 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { brandName, activity, publishedUrl } = req.body || {};
+      const { brandName, activity, publishedUrl, html } = req.body || {};
 
       if (!brandName || !activity) {
         return res.status(400).json({ error: 'brandName și activity sunt obligatorii' });
       }
 
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
       const site = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        id,
         brandName: String(brandName).slice(0, 80),
         activity: String(activity).slice(0, 120),
         publishedUrl: publishedUrl ? String(publishedUrl).slice(0, 300) : null,
+        previewUrl: html ? `/api/preview?id=${id}` : null,
         generatedAt: new Date().toISOString(),
       };
 
-      await redis(['ZADD', KEY, Date.now(), JSON.stringify(site)]);
-      await redis(['ZREMRANGEBYRANK', KEY, 0, -(MAX_ITEMS + 1)]);
+      const ops = [
+        redis(['ZADD', KEY, Date.now(), JSON.stringify(site)]),
+        redis(['ZREMRANGEBYRANK', KEY, 0, -(MAX_ITEMS + 1)]),
+      ];
+
+      // Store HTML with 30-day expiry (2592000 seconds)
+      if (html && html.length > 100) {
+        ops.push(redis(['SET', `site:html:${id}`, String(html), 'EX', 2592000]));
+      }
+
+      await Promise.all(ops);
 
       return res.status(201).json({ ok: true, site });
     }
