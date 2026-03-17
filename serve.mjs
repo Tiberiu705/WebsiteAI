@@ -103,7 +103,8 @@ const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. G
 ═══ DESIGN ═══
 - Culori: paletă unică din domeniu — NU blue-600, indigo-500, purple-600 Tailwind
 - Definește: :root { --brand: #HEX; --brand-dark: #HEX; --brand-light: #HEX; }
-- CONTRAST: fundal deschis → text #111. Fundal închis → text #fff. NICIODATĂ text alb pe fundal deschis
+- CONTRAST SECȚIUNI: fundal deschis → text #111. Fundal închis → text #fff
+- CONTRAST BUTOANE (OBLIGATORIU): buton alb/galben/bej/deschis → text #111. Buton negru/închis/colorat → text #fff. CTA Banner buton alb pe fundal colorat → text = culoarea brand sau #111, NU alb
 - Shadows layered cu opacitate mică. Animații DOAR transform și opacity
 - Hover pe carduri: transform translateY(-4px), shadow mai mare
 - Secțiunile alternează background: alb → gri deschis → alb → gri deschis
