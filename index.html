@@ -432,7 +432,7 @@
       border-color: rgba(200,255,0,0.25);
     }
     .recent-card-banner {
-      height: 88px;
+      height: 160px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -447,6 +447,17 @@
       letter-spacing: -0.04em;
       color: rgba(255,255,255,0.18);
       user-select: none;
+    }
+    .recent-card-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1280px;
+      height: 800px;
+      border: none;
+      pointer-events: none;
+      transform: scale(0.22);
+      transform-origin: top left;
     }
     .recent-skeleton {
       background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 75%);
@@ -3016,10 +3027,16 @@ function _recentCardHtml(site) {
   var linkHtml = openUrl
     ? '<a href="' + _esc(openUrl) + '" target="_blank" rel="noopener" style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:0.72rem;color:#080808;background:#C8FF00;text-decoration:none;display:flex;align-items:center;gap:4px;flex-shrink:0;padding:5px 10px;border-radius:6px;" onmouseenter="this.style.opacity=\'0.85\'" onmouseleave="this.style.opacity=\'1\'">Deschide <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
     : '';
+  // Banner: iframe preview if available, else gradient fallback
+  var bannerHtml = site.previewUrl
+    ? '<div class="recent-card-banner" style="background:linear-gradient(135deg,' + c1 + ' 0%,' + c2 + ' 100%);">'
+      + '<iframe class="recent-card-iframe" src="' + _esc(site.previewUrl) + '" loading="lazy" sandbox="allow-scripts allow-same-origin" title="Preview ' + _esc(site.brandName || '') + '"></iframe>'
+      + '</div>'
+    : '<div class="recent-card-banner" style="background:linear-gradient(135deg,' + c1 + ' 0%,' + c2 + ' 100%);">'
+      + '<span class="recent-card-initial">' + _esc(initial) + '</span>'
+      + '</div>';
   return '<div class="recent-card">'
-    + '<div class="recent-card-banner" style="background:linear-gradient(135deg,' + c1 + ' 0%,' + c2 + ' 100%);">'
-    + '<span class="recent-card-initial">' + _esc(initial) + '</span>'
-    + '</div>'
+    + bannerHtml
     + '<div style="padding:16px 20px 18px;">'
     + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">'
     + '<h3 style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:0.95rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">' + _esc(site.brandName || '') + '</h3>'
@@ -3122,9 +3139,7 @@ async function saveToRecent(brief, html) {
 }
 
 // Load on page init
-document.addEventListener('DOMContentLoaded', function() {
-  loadRecent(0, false);
-});
+loadRecent(0, false);
 </script>
 </body>
 </html>
