@@ -1295,6 +1295,7 @@
         <button id="btn-regenerate" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.style.background='rgba(255,255,255,0.06)'">
           Regenerează
         </button>
+        <span id="gallery-toast" style="display:none;font-family:'Inter',sans-serif;font-size:0.75rem;color:#C8FF00;background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:8px;padding:6px 12px;white-space:nowrap;">✓ Adăugat în galerie</span>
         <button id="btn-close-preview" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#888;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">
           ✕ Închide
         </button>
@@ -1459,6 +1460,8 @@
   function closeOverlay() {
     overlay.style.display = 'none';
     document.body.style.overflow = '';
+    // Refresh gallery when user closes overlay
+    loadRecent(0, false);
   }
 
   document.getElementById('close-brief').addEventListener('click', closeOverlay);
@@ -3123,7 +3126,7 @@ function loadMoreRecent() {
 
 async function saveToRecent(brief, html) {
   try {
-    await fetch('/api/recent', {
+    const r = await fetch('/api/recent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -3133,9 +3136,19 @@ async function saveToRecent(brief, html) {
         html: html || '',
       }),
     });
+    const d = await r.json();
+    if (d.ok) {
+      // Show toast in toolbar
+      var toast = document.getElementById('gallery-toast');
+      if (toast) { toast.style.display = 'inline-block'; }
+    } else {
+      console.warn('[gallery] save failed:', d.error);
+    }
     // Refresh the grid to show the new entry
     loadRecent(0, false);
-  } catch(e) { /* silent fail — non-critical */ }
+  } catch(e) {
+    console.warn('[gallery] fetch error:', e);
+  }
 }
 
 // Load on page init
