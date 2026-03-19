@@ -11,6 +11,8 @@
     "api/create-checkout.js": { "maxDuration": 15 },
     "api/verify-payment.js": { "maxDuration": 10 },
     "api/webhook.js": { "maxDuration": 15 },
+    "api/serve-domain.js": { "maxDuration": 10 },
+    "api/add-domain.js": { "maxDuration": 15 },
     "api/auth/config.js": { "maxDuration": 5 },
     "api/auth/google.js": { "maxDuration": 10 },
     "api/user/sites.js": { "maxDuration": 10 },

@@ -377,62 +377,36 @@ a{color:inherit;text-decoration:none;}
           <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">Domeniu</label>
           <input class="dom-search-input" id="dom-existing-input" type="text" placeholder="ex: salonluxe.ro" oninput="updateExistingDomain(this.value)" />
         </div>
-        <!-- Method tabs -->
-        <div class="dom-method-tabs">
-          <button class="dom-method-tab active" id="tab-ns" onclick="switchDnsMethod('ns')">Nameservere</button>
-          <button class="dom-method-tab" id="tab-cname" onclick="switchDnsMethod('cname')">CNAME</button>
-        </div>
-
-        <!-- Nameservers panel -->
-        <div id="dns-panel-ns">
-          <div style="font-size:0.82rem;color:#666;font-family:'Inter',sans-serif;margin-bottom:14px;line-height:1.6;">Cea mai simplă metodă. Înlocuiește nameserverele curente ale domeniului cu cele de mai jos. Gestionăm tot DNS-ul pentru tine.</div>
+        <!-- DNS records -->
+        <div id="dns-panel-cname">
+          <div style="font-size:0.82rem;color:#666;font-family:'Inter',sans-serif;margin-bottom:14px;line-height:1.6;">Adaugă aceste 2 înregistrări DNS în <strong style="color:#aaa;">cPanel → Zone Editor</strong> sau în panoul registrarului tău.</div>
           <div class="dom-dns-block">
-            <div class="dom-dns-label">Nameservere WebsiteAI</div>
-            <div class="dom-dns-row">
-              <div class="dom-dns-field"><span class="dom-dns-val">ns1.websiteai.ro</span></div>
-              <button class="dom-copy-btn" onclick="copyDns(this,'ns1.websiteai.ro')">Copiază</button>
+            <div class="dom-dns-label">Înregistrări DNS</div>
+            <div style="display:grid;grid-template-columns:65px 60px 1fr auto;gap:8px;margin-bottom:8px;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.05);align-items:center;">
+              <div style="font-family:'Syne',sans-serif;font-size:0.68rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Tip</div>
+              <div style="font-family:'Syne',sans-serif;font-size:0.68rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Nume</div>
+              <div style="font-family:'Syne',sans-serif;font-size:0.68rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Valoare</div>
+              <div></div>
             </div>
-            <div class="dom-dns-row">
-              <div class="dom-dns-field"><span class="dom-dns-val">ns2.websiteai.ro</span></div>
-              <button class="dom-copy-btn" onclick="copyDns(this,'ns2.websiteai.ro')">Copiază</button>
+            <div style="display:grid;grid-template-columns:65px 60px 1fr auto;gap:8px;margin-bottom:10px;align-items:center;">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#C8FF00;">A</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;">@</div>
+              <div class="dom-dns-field"><span class="dom-dns-val">76.76.21.21</span></div>
+              <button class="dom-copy-btn" onclick="copyDns(this,'76.76.21.21')">Copiază</button>
+            </div>
+            <div style="display:grid;grid-template-columns:65px 60px 1fr auto;gap:8px;align-items:center;">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#C8FF00;">CNAME</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;">www</div>
+              <div class="dom-dns-field"><span class="dom-dns-val">cname.vercel-dns.com</span></div>
+              <button class="dom-copy-btn" onclick="copyDns(this,'cname.vercel-dns.com')">Copiază</button>
             </div>
           </div>
           <div class="dom-steps-list">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:4px;">Pași de urmat</div>
-            <div class="dom-step-item"><div class="dom-step-num">1</div><div class="dom-step-text">Intră în panoul de control al registrarului (ex: GoDaddy, Namecheap, RoTLD)</div></div>
-            <div class="dom-step-item"><div class="dom-step-num">2</div><div class="dom-step-text">Găsește secțiunea <strong>Nameservere</strong> sau <strong>DNS Management</strong></div></div>
-            <div class="dom-step-item"><div class="dom-step-num">3</div><div class="dom-step-text">Selectează <strong>Custom / Personal Nameservers</strong></div></div>
-            <div class="dom-step-item"><div class="dom-step-num">4</div><div class="dom-step-text">Înlocuiește nameserverele existente cu <strong>ns1.websiteai.ro</strong> și <strong>ns2.websiteai.ro</strong></div></div>
-            <div class="dom-step-item"><div class="dom-step-num">5</div><div class="dom-step-text">Salvează și apasă <strong>Verifică conectarea</strong> mai jos</div></div>
-          </div>
-        </div>
-
-        <!-- CNAME panel -->
-        <div id="dns-panel-cname" style="display:none;">
-          <div style="font-size:0.82rem;color:#666;font-family:'Inter',sans-serif;margin-bottom:14px;line-height:1.6;">Adaugă înregistrările CNAME la registrarul tău. Recomandat dacă vrei să păstrezi alte servicii (email etc.) pe același domeniu.</div>
-          <div class="dom-dns-block">
-            <div class="dom-dns-label">Înregistrări CNAME</div>
-            <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:8px;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.05);">
-              <div style="font-family:'Syne',sans-serif;font-size:0.7rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;align-self:center;">Tip</div>
-              <div style="font-family:'Syne',sans-serif;font-size:0.7rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Valoare</div>
-            </div>
-            <div class="dom-dns-row">
-              <div style="width:72px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;flex-shrink:0;">www</div>
-              <div class="dom-dns-field"><span class="dom-dns-val">sites.websiteai.ro</span></div>
-              <button class="dom-copy-btn" onclick="copyDns(this,'sites.websiteai.ro')">Copiază</button>
-            </div>
-            <div class="dom-dns-row">
-              <div style="width:72px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;flex-shrink:0;">@</div>
-              <div class="dom-dns-field"><span class="dom-dns-val">185.199.108.153</span></div>
-              <button class="dom-copy-btn" onclick="copyDns(this,'185.199.108.153')">Copiază</button>
-            </div>
-          </div>
-          <div class="dom-steps-list">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:4px;">Pași de urmat</div>
-            <div class="dom-step-item"><div class="dom-step-num">1</div><div class="dom-step-text">Intră în panoul DNS al registrarului tău</div></div>
-            <div class="dom-step-item"><div class="dom-step-num">2</div><div class="dom-step-text">Adaugă înregistrare CNAME: <strong>www</strong> → <strong>sites.websiteai.ro</strong></div></div>
-            <div class="dom-step-item"><div class="dom-step-num">3</div><div class="dom-step-text">Adaugă înregistrare A: <strong>@</strong> (root) → <strong>185.199.108.153</strong></div></div>
-            <div class="dom-step-item"><div class="dom-step-num">4</div><div class="dom-step-text">Salvează și apasă <strong>Verifică conectarea</strong></div></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:4px;">Pași în cPanel</div>
+            <div class="dom-step-item"><div class="dom-step-num">1</div><div class="dom-step-text">Intră în <strong>cPanel → Zone Editor</strong> (sau DNS Management la registrar)</div></div>
+            <div class="dom-step-item"><div class="dom-step-num">2</div><div class="dom-step-text">Adaugă tip <strong>A</strong> → Nume: <strong>@</strong> → Valoare: <strong>76.76.21.21</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">3</div><div class="dom-step-text">Adaugă tip <strong>CNAME</strong> → Nume: <strong>www</strong> → Valoare: <strong>cname.vercel-dns.com</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">4</div><div class="dom-step-text">Salvează și apasă <strong>Verifică conectarea</strong> (propagare DNS: 15 min – 48h)</div></div>
           </div>
         </div>
 
@@ -1005,8 +979,19 @@ function copyDns(btn, text) {
 }
 
 async function startDnsVerification() {
-  var domain = document.getElementById('dom-existing-input').value.trim();
+  var domain = (document.getElementById('dom-existing-input').value || '').trim()
+    .replace(/^https?:\/\//, '').replace(/\/$/, '');
   if (!domain) { alert('Introdu domeniu-ul mai întâi.'); return; }
+
+  // Register domain → site mapping in Redis and add to Vercel
+  try {
+    await fetch('/api/add-domain', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + _session, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain: domain, siteId: _activeSiteId }),
+    });
+  } catch(e) { /* continue anyway */ }
+
   _dnsCheckCount = 0;
   goToStep('dom-step-status');
   runDnsCheck(domain);
