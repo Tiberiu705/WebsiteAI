@@ -47,7 +47,9 @@ module.exports = async function handler(req, res) {
     'success_url': successUrl,
     'cancel_url': `${origin}/dashboard`,
     'subscription_data[metadata][site_id]': siteId,
+    'subscription_data[metadata][origin_site_id]': originSiteId || siteId,
     'metadata[site_id]': siteId,
+    'metadata[origin_site_id]': originSiteId || siteId,
     'locale': 'ro',
   });
 

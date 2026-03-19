@@ -114,6 +114,8 @@ module.exports = async function handler(req, res) {
           await Promise.all([
             redis(['ZREM', key, m]),
             redis(['ZADD', key, Number(score) || Date.now(), JSON.stringify(s)]),
+            // Store site→user mapping so webhook can find this site later
+            redis(['SET', `site:meta:${id}`, JSON.stringify({ userId: user.sub }), 'EX', 7776000]),
           ]);
           return res.status(200).json({ ok: true, site: s });
         } catch {}
