@@ -350,6 +350,7 @@ createServer(async (req, res) => {
   /* ── Static files ── */
   let path = req.url === '/' ? '/index.html' : req.url;
   path = path.split('?')[0];
+  try { path = decodeURIComponent(path); } catch {}
   const filePath = join(__dirname, path);
   try {
     const data = await readFile(filePath);

@@ -473,8 +473,9 @@
     /* ══ MOBILE ══ */
     @media (max-width: 768px) {
       .nav-links { display: none !important; }
+      .heading-xl { font-size: clamp(2rem, 8vw, 2.8rem) !important; }
 
-      .hero-section { padding-top: 96px !important; padding-bottom: 56px !important; }
+      .hero-section { padding-top: 88px !important; padding-bottom: 56px !important; }
       .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
       .hero-mockup { display: none !important; }
 
@@ -514,12 +515,17 @@
 
       .brief-outer { padding: 16px !important; align-items: flex-start !important; padding-top: 24px !important; }
       .brief-modal { padding: 28px 20px !important; }
+      #generate-overlay { overflow-y: auto !important; }
 
-      .preview-toolbar-btns { overflow-x: auto; gap: 6px !important; -webkit-overflow-scrolling: touch; }
+      .preview-toolbar-btns { overflow-x: auto !important; gap: 6px !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; padding-bottom: 4px; }
       .preview-toolbar-btns > * { flex-shrink: 0 !important; font-size: 0.72rem !important; padding: 7px 10px !important; }
+      #btn-regenerate { display: none !important; }
+      #gallery-toast { display: none !important; }
 
       .preview-content { flex-direction: column !important; }
-      #editor-sidebar { width: 100% !important; height: 50vh !important; border-left: none !important; border-top: 1px solid rgba(200,255,0,0.15) !important; }
+      #editor-sidebar { width: 100% !important; height: 40vh !important; border-left: none !important; border-top: 1px solid rgba(200,255,0,0.15) !important; }
+      #preview-iframe { min-height: 200px !important; }
+      #preview-panel { height: 100dvh !important; }
     }
   </style>
 </head>
@@ -527,28 +533,121 @@
 <body>
 
 <!-- ══════════════════════ NAV ══════════════════════ -->
-<nav class="nav-blur fixed top-0 left-0 right-0 z-50">
-  <div style="max-width:1280px;margin:0 auto;padding:0 24px;height:68px;display:flex;align-items:center;justify-content:space-between;">
+<nav class="nav-blur" style="position:fixed;top:0;left:0;right:0;z-index:1000;">
+  <div style="max-width:1280px;margin:0 auto;padding:0 20px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
     <!-- Logo -->
-    <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-      <img src="websiteai-logo.png" alt="WebsiteAI" style="height:36px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
-      
+    <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;">
+      <img src="websiteai-logo.png" alt="WebsiteAI" style="height:32px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
     </a>
 
-    <!-- Links -->
+    <!-- Links desktop -->
     <div class="nav-links" style="display:flex;align-items:center;gap:32px;">
       <a class="nav-link" href="#cum-functioneaza">Cum funcționează</a>
       <a class="nav-link" href="#exemple">Exemple</a>
       <a class="nav-link" href="#preturi">Prețuri</a>
     </div>
 
-    <!-- CTA -->
-    <a href="#generator" class="btn-acid" style="padding:10px 22px;font-size:0.875rem;">
-      Generează Gratuit
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </a>
+    <!-- Dreapta: CTA + avatar + hamburger -->
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+
+      <!-- CTA — logged out -->
+      <a href="#generator" id="nav-cta-loggedout" class="btn-acid" style="padding:9px 18px;font-size:0.82rem;">
+        Generează Gratuit
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+
+      <!-- Avatar — logged in -->
+      <a href="/dashboard" id="nav-user-area" style="display:none;align-items:center;gap:8px;text-decoration:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:10px;padding:6px 12px;">
+        <div id="nav-avatar" style="width:30px;height:30px;border-radius:50%;background:rgba(200,255,0,0.25);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;color:#C8FF00;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(200,255,0,0.4);"></div>
+        <span id="nav-username" style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#C8FF00;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      </a>
+
+      <!-- Hamburger (mobil) -->
+      <button id="nav-hamburger" aria-label="Meniu" style="display:none;background:none;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;cursor:pointer;flex-direction:column;gap:4px;flex-shrink:0;">
+        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;transition:transform 0.2s,opacity 0.2s;"></span>
+        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;transition:transform 0.2s,opacity 0.2s;"></span>
+        <span style="display:block;width:18px;height:2px;background:#fff;border-radius:2px;transition:transform 0.2s,opacity 0.2s;"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile dropdown -->
+  <div id="nav-mobile-menu" style="display:none;background:rgba(8,8,8,0.99);border-top:1px solid rgba(255,255,255,0.08);padding:12px 20px 20px;flex-direction:column;gap:0;">
+    <a href="#cum-functioneaza" class="nav-mob-link" onclick="closeMobileMenu()">Cum funcționează</a>
+    <a href="#exemple" class="nav-mob-link" onclick="closeMobileMenu()">Exemple</a>
+    <a href="#preturi" class="nav-mob-link" onclick="closeMobileMenu()">Prețuri</a>
+    <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0;"></div>
+    <a href="#" id="nav-mob-generate" class="nav-mob-link" onclick="closeMobileMenu();setTimeout(function(){if(typeof openLoginModal==='function'&&!localStorage.getItem('ws_session')){openLoginModal(function(){if(typeof openOverlay==='function')openOverlay();});}else if(typeof openOverlay==='function'){openOverlay();}else{document.getElementById('generator').scrollIntoView({behavior:'smooth'});}},100);return false;" style="color:#C8FF00;font-weight:600;">Generează Gratuit →</a>
+    <a href="/dashboard" id="nav-mob-dashboard" class="nav-mob-link" style="display:none;color:#C8FF00;font-weight:600;" onclick="closeMobileMenu()">Dashboard →</a>
   </div>
 </nav>
+
+<style>
+.nav-mob-link{display:block;font-family:'Inter',sans-serif;font-size:1rem;color:#aaa;padding:13px 4px;border-bottom:1px solid rgba(255,255,255,0.05);text-decoration:none;}
+.nav-mob-link:last-child{border-bottom:none;}
+@media(max-width:768px){
+  #nav-hamburger{display:flex!important;}
+  .nav-links{display:none!important;}
+  #nav-username{display:none!important;}
+  #nav-cta-loggedout{display:none!important;}
+}
+</style>
+
+<script>
+(function(){
+  var btn = document.getElementById('nav-hamburger');
+  var menu = document.getElementById('nav-mobile-menu');
+  var open = false;
+  btn.addEventListener('click', function(){
+    open = !open;
+    menu.style.display = open ? 'flex' : 'none';
+    var bars = btn.querySelectorAll('span');
+    if(open){
+      bars[0].style.transform='translateY(6px) rotate(45deg)';
+      bars[1].style.opacity='0';
+      bars[2].style.transform='translateY(-6px) rotate(-45deg)';
+    } else {
+      bars[0].style.transform=''; bars[1].style.opacity='1'; bars[2].style.transform='';
+    }
+  });
+  window.closeMobileMenu = function(){
+    open=false; menu.style.display='none';
+    var bars=btn.querySelectorAll('span');
+    bars[0].style.transform=''; bars[1].style.opacity='1'; bars[2].style.transform='';
+  };
+})();
+</script>
+
+
+<script>
+(function() {
+  try {
+    var session = localStorage.getItem('ws_session');
+    var user = JSON.parse(localStorage.getItem('ws_user') || 'null');
+    if (session && user) {
+      document.getElementById('nav-cta-loggedout').style.display = 'none';
+      var userArea = document.getElementById('nav-user-area');
+      userArea.setAttribute('style', 'display:flex!important;align-items:center;gap:8px;text-decoration:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:10px;padding:6px 12px;');
+      var uname = (user.name || user.email || '').split(' ')[0];
+      document.getElementById('nav-username').textContent = uname;
+      var avatarEl = document.getElementById('nav-avatar');
+      if (user.picture) {
+        var img = document.createElement('img');
+        img.src = user.picture;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+        avatarEl.appendChild(img);
+      } else {
+        avatarEl.textContent = (user.name || 'U')[0].toUpperCase();
+      }
+      // Mobile dropdown: show Dashboard, hide generate
+      var mobGen = document.getElementById('nav-mob-generate');
+      var mobDash = document.getElementById('nav-mob-dashboard');
+      if (mobGen) mobGen.style.display = 'none';
+      if (mobDash) mobDash.style.display = 'block';
+    }
+  } catch(e) {}
+})();
+</script>
 
 <!-- ══════════════════════ HERO ══════════════════════ -->
 <section class="hero-bg hero-section" style="padding:140px 24px 100px;" id="generator">
@@ -680,6 +779,273 @@
     <div class="marquee-pill"><span class="marquee-pill-dot"></span>Contabilitate & Taxe</div>
   </div>
 </div>
+
+<!-- ══════════════════════ EXEMPLE / TEMPLATES ══════════════════════ -->
+<section id="exemple" style="padding:100px 24px 80px;background:#030303;">
+  <div style="max-width:1240px;margin:0 auto;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:52px;">
+      <div class="badge" style="margin:0 auto 16px;"><span class="badge-dot"></span>Exemple reale</div>
+      <h2 class="heading-lg">Orice afacere,<br/><span class="acid-text">un site memorabil</span></h2>
+      <p class="body-lg" style="margin-top:16px;font-size:0.95rem;max-width:500px;margin-left:auto;margin-right:auto;">Explorează site-uri generate cu WebsiteAI. Alege un stil și generăm ceva similar pentru afacerea ta.</p>
+    </div>
+
+    <!-- Filter pills -->
+    <div id="tpl-filters" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:52px;"></div>
+
+    <!-- Grid -->
+    <div id="tpl-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;"></div>
+
+    <!-- Bottom CTA -->
+    <div style="text-align:center;margin-top:64px;padding-top:64px;border-top:1px solid rgba(255,255,255,0.06);">
+      <p class="body-lg" style="font-size:0.95rem;margin-bottom:24px;">Nu ești sigur de stilul potrivit? Descrie afacerea ta și AI-ul se ocupă de tot.</p>
+      <button class="btn-acid" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'});setTimeout(function(){document.getElementById('main-description').focus();},600);">
+        Generează site-ul tău
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M9 3.5l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<style>
+.tpl-pill {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #666;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+.tpl-pill:hover { color: #fff; border-color: rgba(255,255,255,0.22); }
+.tpl-pill.active { color: #080808; background: #C8FF00; border-color: #C8FF00; }
+
+.tpl-card {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0A0A0A;
+  border: 1px solid rgba(255,255,255,0.07);
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 6px 28px rgba(0,0,0,0.4);
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease, border-color 0.28s ease;
+  display: flex;
+  flex-direction: column;
+}
+.tpl-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.75), 0 2px 8px rgba(0,0,0,0.5);
+  border-color: rgba(200,255,0,0.32);
+}
+.tpl-card-img-wrap {
+  position: relative;
+  overflow: hidden;
+  height: 300px;
+  flex-shrink: 0;
+}
+.tpl-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  transition: transform 0.55s ease;
+}
+.tpl-card:hover .tpl-card-img { transform: scale(1.05); }
+.tpl-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.05) 70%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px;
+  gap: 6px;
+}
+.tpl-card-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(200,255,0,0.15);
+  border: 1px solid rgba(200,255,0,0.3);
+  border-radius: 100px;
+  padding: 3px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #C8FF00;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+.tpl-card-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  line-height: 1.2;
+}
+.tpl-card-type {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.55);
+}
+.tpl-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #C8FF00;
+  color: #080808;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 7px 13px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  width: fit-content;
+  margin-top: 8px;
+  pointer-events: none;
+}
+.tpl-card:hover .tpl-card-btn {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Templates mobile */
+@media (max-width: 900px) {
+  #tpl-grid { grid-template-columns: repeat(3,1fr) !important; }
+}
+@media (max-width: 600px) {
+  #tpl-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
+  .tpl-card-img-wrap { height: 220px !important; }
+  #tpl-filters { gap: 6px !important; }
+  .tpl-pill { font-size: 0.72rem !important; padding: 6px 14px !important; }
+}
+</style>
+
+<script>
+(function() {
+  var BASE = "assets/templates/";
+  var TEMPLATES = [
+    { name:"Grill Love",       type:"Restaurant & BBQ",    cat:"restaurant", img:BASE+"t1.png",  prompt:"Restaurant BBQ premium wagyu, bucătărie coreeană, cu terasă și cocktailuri" },
+    { name:"Kikka Hirado",     type:"Hotel Boutique",      cat:"hotel",       img:BASE+"t2.png",  prompt:"Hotel boutique de lux în natură, design japonez minimalist, experiențe premium" },
+    { name:"Loft Coffee",      type:"Cafenea Specialty",   cat:"restaurant",  img:BASE+"t3.png",  prompt:"Cafenea specialty coffee, latte art, brunch, atmosferă modernă și relaxantă" },
+    { name:"ARCHIWORD",        type:"Studio Arhitectură",  cat:"arhitectura", img:BASE+"t4.png",  prompt:"Studio de arhitectură și design interior, proiecte rezidențiale și comerciale premium" },
+    { name:"Movilo",           type:"Servicii Mutări",     cat:"transport",   img:BASE+"t5.png",  prompt:"Companie profesională de servicii de mutare și transport mobilă, tarife transparente" },
+    { name:"Home Care",        type:"Îngrijire Medicală",  cat:"medical",     img:BASE+"t6.png",  prompt:"Servicii de îngrijire medicală și personală la domiciliu, asistenți calificați, disponibili 24/7" },
+    { name:"The Mark Studio",  type:"Studio Tatuaje",      cat:"beauty",      img:BASE+"t7.png",  prompt:"Studio de tatuaje profesional, artiști cu experiență internațională, programări online" },
+    { name:"Maritime Arts",    type:"Galerie de Artă",     cat:"beauty",      img:BASE+"t8.png",  prompt:"Galerie de artă contemporană, expoziții, colecții de pictură și sculptură" },
+    { name:"Pet Paradise",     type:"Magazin Animale",     cat:"ecommerce",   img:BASE+"t9.png",  prompt:"Magazin online pentru animale de companie, hrană premium, accesorii și servicii grooming" },
+    { name:"Holiday Luxuries", type:"Magazin Online",      cat:"ecommerce",   img:BASE+"t10.png", prompt:"Magazin online de decorațiuni și cadouri premium de sezon, livrare gratuită" },
+    { name:"MetaCity",         type:"Platformă Smart City",cat:"tech",        img:BASE+"t11.png", prompt:"Platformă tehnologică pentru orașe inteligente, soluții AI și IoT pentru administrație urbană" },
+    { name:"SuperConnector",   type:"Agent AI Marketing",  cat:"tech",        img:BASE+"t12.png", prompt:"Platformă SaaS cu agent AI pentru campanii de marketing personalizate și targeting precis" },
+    { name:"Ultramedia",       type:"Tururi Virtuale 360°",cat:"hotel",       img:BASE+"t13.png", prompt:"Servicii tururi virtuale 360° pentru hoteluri, imobiliare și spații comerciale" },
+  ];
+
+  var CATS = [
+    { key:"toate",       label:"Toate" },
+    { key:"restaurant",  label:"Restaurant" },
+    { key:"hotel",       label:"Hotel & Cazare" },
+    { key:"arhitectura", label:"Arhitectură" },
+    { key:"transport",   label:"Transport" },
+    { key:"medical",     label:"Medical" },
+    { key:"beauty",      label:"Beauty & Art" },
+    { key:"tech",        label:"Tech & SaaS" },
+    { key:"ecommerce",   label:"E-commerce" },
+  ];
+
+  var activeCat = 'toate';
+
+  // Build filter pills
+  var filtersEl = document.getElementById('tpl-filters');
+  CATS.forEach(function(c) {
+    var btn = document.createElement('button');
+    btn.className = 'tpl-pill' + (c.key === 'toate' ? ' active' : '');
+    btn.textContent = c.label;
+    btn.setAttribute('data-cat', c.key);
+    btn.addEventListener('click', function() {
+      activeCat = c.key;
+      filtersEl.querySelectorAll('.tpl-pill').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      renderGrid();
+    });
+    filtersEl.appendChild(btn);
+  });
+
+  function renderGrid() {
+    var grid = document.getElementById('tpl-grid');
+    grid.innerHTML = '';
+    var visible = activeCat === 'toate' ? TEMPLATES : TEMPLATES.filter(function(t){ return t.cat === activeCat; });
+
+    visible.forEach(function(t) {
+      var card = document.createElement('div');
+      card.className = 'tpl-card fade-up';
+
+      var imgWrap = document.createElement('div');
+      imgWrap.className = 'tpl-card-img-wrap';
+
+      var img = document.createElement('img');
+      img.className = 'tpl-card-img';
+      img.src = t.img;
+      img.alt = t.name;
+      img.loading = 'lazy';
+
+      var overlay = document.createElement('div');
+      overlay.className = 'tpl-card-overlay';
+
+      var catBadge = document.createElement('div');
+      catBadge.className = 'tpl-card-cat';
+      catBadge.innerHTML = '<svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#C8FF00"/></svg>' + t.type;
+
+      var name = document.createElement('div');
+      name.className = 'tpl-card-name';
+      name.textContent = t.name;
+
+      var btn = document.createElement('button');
+      btn.className = 'tpl-card-btn';
+      btn.innerHTML = 'Generează similar <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 2l4 4-4 4" stroke="#080808" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var inp = document.getElementById('main-description');
+        if(inp) inp.value = t.prompt;
+        document.getElementById('generator').scrollIntoView({behavior:'smooth'});
+        setTimeout(function(){ if(inp) inp.focus(); }, 600);
+      });
+
+      overlay.appendChild(catBadge);
+      overlay.appendChild(name);
+      overlay.appendChild(btn);
+      imgWrap.appendChild(img);
+      imgWrap.appendChild(overlay);
+      card.appendChild(imgWrap);
+      grid.appendChild(card);
+
+      // Trigger fade-in
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ card.classList.add('visible'); }); });
+    });
+
+    // If no results
+    if(visible.length === 0) {
+      var msg = document.createElement('div');
+      msg.style.cssText = 'grid-column:1/-1;text-align:center;padding:60px 24px;color:#444;font-family:Inter,sans-serif;font-size:0.9rem;';
+      msg.textContent = 'Niciun exemplu în această categorie momentan.';
+      grid.appendChild(msg);
+    }
+  }
+
+  renderGrid();
+})();
+</script>
 
 <!-- ══════════════════════ STATS ══════════════════════ -->
 <section style="padding:80px 24px;background:#020202;">
@@ -1146,7 +1512,7 @@
 </footer>
 
 <!-- ══════════════════════ GENERATE MODAL ══════════════════════ -->
-<div id="generate-overlay" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;">
+<div id="generate-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow-y:auto;">
 
   <!-- ── BRIEF FORM ── -->
   <div id="brief-panel" class="brief-outer" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px;">
@@ -1296,6 +1662,12 @@
           Regenerează
         </button>
         <span id="gallery-toast" style="display:none;font-family:'Inter',sans-serif;font-size:0.75rem;color:#C8FF00;background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:8px;padding:6px 12px;white-space:nowrap;">✓ Adăugat în galerie</span>
+        <button id="btn-save-account" style="display:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;white-space:nowrap;" onclick="manuallySaveToAccount()" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
+          💾 Salvează în cont
+        </button>
+        <a id="btn-my-sites" href="/dashboard" target="_blank" style="display:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;white-space:nowrap;text-decoration:none;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
+          Istoricul meu →
+        </a>
         <button id="btn-close-preview" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#888;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">
           ✕ Închide
         </button>
@@ -1320,6 +1692,7 @@
             <button class="editor-tab" data-tab="culori" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Culori</button>
             <button class="editor-tab" data-tab="contact" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Contact</button>
             <button class="editor-tab" data-tab="meniu" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Meniu</button>
+            <button class="editor-tab" data-tab="butoane" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Butoane</button>
           </div>
         </div>
         <!-- Tab content panels -->
@@ -1328,6 +1701,7 @@
         <div id="editor-panel-culori" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
         <div id="editor-panel-contact" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
         <div id="editor-panel-meniu" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-butoane" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
       </div>
     </div>
   </div>
@@ -1472,13 +1846,18 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
 
   /* ── Trigger: hero button ── */
-  document.getElementById('btn-generate-hero')?.addEventListener('click', openOverlay);
+  document.getElementById('btn-generate-hero')?.addEventListener('click', () => {
+    if (_wsSession()) { openOverlay(); } else { openLoginModal(() => openOverlay()); }
+  });
 
   /* ── Trigger: all other "Generează" / "Încearcă" buttons ── */
   document.querySelectorAll('.btn-acid, .btn-ghost').forEach(btn => {
     if (btn.id === 'btn-generate-hero') return;
     if (btn.getAttribute('href') === '#generator') {
-      btn.addEventListener('click', e => { e.preventDefault(); openOverlay(); });
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        if (_wsSession()) { openOverlay(); } else { openLoginModal(() => openOverlay()); }
+      });
     }
   });
 
@@ -1571,9 +1950,9 @@
   }
 
   /* ── Gemini config ── */
-  // Confirmat funcțional: gemini-2.5-flash (200), gemini-3-flash-preview (200)
-  const GEMINI_MODELS_FIRST = ['gemini-2.5-flash'];
-  const GEMINI_MODELS_REGEN = ['gemini-3-flash-preview', 'gemini-2.5-flash'];
+  const GEMINI_CANDIDATE_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+  let GEMINI_MODELS_FIRST = [...GEMINI_CANDIDATE_MODELS];
+  let GEMINI_MODELS_REGEN = [...GEMINI_CANDIDATE_MODELS];
   let _siteGenerated = false;
   let _geminiKey = null;
   async function getGeminiKey() {
@@ -1584,6 +1963,24 @@
     } catch(e) {}
     return null;
   }
+
+  // Detectează modelele disponibile pe cheia curentă
+  async function detectAvailableModels() {
+    const key = await getGeminiKey();
+    if (!key) return;
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+      if (!r.ok) return;
+      const data = await r.json();
+      const available = new Set((data.models || []).map(m => m.name.replace('models/', '')));
+      const filtered = GEMINI_CANDIDATE_MODELS.filter(m => available.has(m));
+      if (filtered.length > 0) {
+        GEMINI_MODELS_FIRST = filtered;
+        GEMINI_MODELS_REGEN = filtered;
+      }
+    } catch(e) {}
+  }
+  detectAvailableModels();
 
   const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. Generează un fișier HTML complet, de înaltă calitate, pentru o afacere românească.\n\n═══ OUTPUT ═══\n- Răspunde EXCLUSIV cu HTML complet valid (de la <!DOCTYPE html> până la </html>)\n- ZERO text în afara HTML-ului, ZERO markdown (fără \`\`\`html), ZERO explicații\n- Toate stilurile: în <style> în <head> SAU clase Tailwind pe elemente\n- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>\n- Google Fonts: 2 fonturi (1 display/serif pentru titluri, 1 sans-serif pentru body)\n\n═══ STRUCTURA PAGINII (obligatorie, în această ordine) ═══\n\n1. NAVBAR sticky (position: fixed, top:0, z-index:50, backdrop-blur)\n   - Container max-w-7xl mx-auto px-6, height 64px, flex items-center justify-between\n   - Stânga: logo (text mare, font-weight 700, culoarea brand)\n   - Dreapta: linkuri nav (gap-8, text-sm, font-medium) + 1 buton CTA distinct\n   - Hamburger menu pe mobile (block md:hidden)\n   - Background: semi-transparent cu backdrop-blur la scroll via JS scroll listener\n\n2. HERO (min-height: 100vh, position: relative, overflow: hidden)\n   - Background image: <img> cu position absolute inset-0, w-full h-full object-cover, style="filter:brightness(0.45) blur(2px) scale(1.08)"\n   - Overlay gradient: <div> position absolute inset-0, background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.65) 100%)\n   - Content: position relative z-10, flex flex-col items-center justify-center, text-center, px-6, pt-24\n   - H1: font-size clamp(2.8rem, 6vw, 5rem), font-weight 800, color #ffffff, letter-spacing -0.03em, text-shadow: 0 2px 20px rgba(0,0,0,0.5), max-w-4xl mx-auto, line-height 1.1\n   - Subtitle: font-size 1.1rem, color rgba(255,255,255,0.88), max-w-2xl mx-auto, mt-6, line-height 1.7\n   - Butoane CTA: flex gap-4 mt-10, buton primar (bg brand, text alb, px-8 py-4, rounded-lg, font-weight 600) + buton secundar (border 2px solid white, text alb, px-8 py-4, rounded-lg)\n   - Badge/tag deasupra H1 (opțional): text mic uppercase, letter-spacing 0.15em, culoarea brand, mb-4\n\n3. STATS BAR (secțiune separată după hero)\n   - Background: culoarea brand (închisă) sau gri închis\n   - Grid 4 coloane (md:grid-cols-4, grid-cols-2), py-16, gap-0 cu dividers\n   - Fiecare stat: număr mare (font-size 2.5rem, font-weight 800, color alb), label mic (text-sm, opacity 0.75, color alb)\n   - Text centered, padding px-8 py-6\n\n4. SERVICII (secțiune cu background alb sau gri foarte deschis #f8f8f8)\n   - Section header: text-center, mb-16 — supertitlu mic (uppercase, culoarea brand, letter-spacing 0.12em) + H2 mare (color #111, font-weight 800) + subtitlu (color #555, max-w-2xl mx-auto)\n   - Grid: grid-cols-1 md:grid-cols-2 lg:grid-cols-3, gap-8, max-w-7xl mx-auto px-6\n   - Fiecare card serviciu (STRUCTURA EXACTĂ):\n     <div style="border-radius:16px; overflow:hidden; background:#fff; box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); display:flex; flex-direction:column;">\n       <div style="position:relative; overflow:hidden; height:220px;">\n         <img src="https://placehold.co/WIDTHxHEIGHT" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.8);" />\n         <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%);"></div>\n       </div>\n       <div style="padding:24px 28px 28px; flex:1; display:flex; flex-direction:column;">\n         <h3 style="font-size:1.2rem;font-weight:700;color:#111;margin-bottom:10px;">Titlu serviciu</h3>\n         <p style="font-size:13px;color:#555;line-height:1.7;flex:1;">Descriere serviciu reală.</p>\n         <a href="#contact" style="display:inline-block;margin-top:20px;padding:10px 24px;background:[culoarea brand];color:#fff;border-radius:8px;font-weight:600;font-size:14px;text-align:center;">Programează Acum</a>\n       </div>\n     </div>\n   - Dimensiuni imagini în ordine: 400x220, 380x220, 420x220, 360x220, 410x220, 390x220\n\n5. DESPRE (secțiune cu background alb sau ușor colorat)\n   - Layout 2 coloane (lg:grid-cols-2), gap-16, items-center, max-w-7xl mx-auto px-6 py-24\n   - Coloana imagine: rounded-2xl overflow-hidden, shadow layered, position relative\n     - Imagine principală (600x500), filter brightness(0.85)\n     - Badge floating (position absolute, bottom-6 left-6): card mic cu shadow, stats (ex: „15+ ani experiență")\n   - Coloana text: supertitlu + H2 (font-size 2.5rem, font-weight 800, color #111) + paragraf + listă avantaje (checkmark SVG colorat + text) + buton CTA\n   - Lista avantaje: 3-4 items, fiecare cu icon SVG checkmark în culoarea brand\n\n6. TESTIMONIALE (background gri deschis #f4f4f4 sau culoare brand foarte deschisă)\n   - Section header centrat (supertitlu + H2 + subtitlu)\n   - Grid 3 coloane (lg:grid-cols-3, md:grid-cols-2, grid-cols-1), gap-6\n   - Fiecare card testimonial:\n     - Background alb, border-radius 16px, padding 28px, box-shadow subtil\n     - Stele (5 stele SVG, culoarea brand sau galben #f59e0b)\n     - STRUCTURA EXACTĂ card testimonial:\n     <div style=\"background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);display:flex;flex-direction:column;\">\n       <div style=\"display:flex;gap:3px;margin-bottom:14px;\">[5 stele SVG 16px]</div>\n       <p style=\"font-style:italic;color:#333;font-size:14px;line-height:1.75;flex:1;margin:0 0 20px;\">\"Text real.\"</p>\n       <div style=\"border-top:1px solid #f0f0f0;padding-top:16px;display:flex;align-items:center;gap:12px;\">\n         <img src=\"https://placehold.co/40x40\" style=\"width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;\" />\n         <div><div style=\"font-weight:700;color:#111;font-size:14px;\">Nume</div><div style=\"color:#888;font-size:12px;\">Rol</div></div>\n       </div>\n     </div>\n     - INTERZIS în testimoniale: imagini mari, avatar > 40px, position:absolute\n\n7. FAQ sau CTA BANNER (alege cel mai potrivit pentru afacere)\n   - FAQ: accordion simplu, max-w-3xl mx-auto, 5-6 întrebări relevante pentru afacere\n   - SAU CTA Banner: background culoarea brand, text alb centrat, H2 mare + subtitlu + buton (background alb, text brand)\n\n8. FOOTER (background #1a1a1a, color #e5e5e5)\n   - Grid 4 coloane (lg:grid-cols-4, md:grid-cols-2), gap-12, max-w-7xl mx-auto px-6 py-16\n   - Col 1: Logo + tagline (2-3 rânduri) + iconițe social (SVG Facebook, Instagram, LinkedIn, 24px, gap-3, hover: culoarea brand)\n   - Col 2: Linkuri rapide (Acasă, Servicii, Despre, Testimoniale, Contact) — fiecare <a> pe rând separat, text-sm, hover: culoarea brand\n   - Col 3: Contact (adresă cu SVG pin, telefon cu SVG phone, email cu SVG mail) — iconițe SVG inline 16px, gap-3 per item\n   - Col 4: Program / Certificări / De ce noi — 3-4 linii de text relevant\n   - Border-top 1px solid #333 + sub-footer: copyright centrat, py-6, text-xs, color #666\n\n═══ DESIGN ═══\n- Culori: paletă unică derivată din domeniu — NU blue-600, indigo-500, purple-600 Tailwind default\n- Definește culoarea brand ca variabilă CSS: :root { --brand: #HEX; --brand-dark: #HEX; --brand-light: #HEX; }\n- Tipografie: font display (tracking -0.03em) pentru H1/H2, font sans (line-height 1.7) pentru body\n- CONTRAST SECȚIUNI: fundal deschis (#f0+) → text #111. Fundal închis (#888-) → text #fff. NICIODATĂ text alb pe fundal alb/deschis\n- CONTRAST BUTOANE (OBLIGATORIU): buton alb/galben/bej/gri deschis → text #111 sau #000. Buton negru/închis/colorat → text #fff. VERIFICĂ fiecare buton: CTA Banner pe fundal colorat cu buton alb → text pe buton = culoarea brand sau #111, NU alb\n- Shadows: layered cu culori tintate — ex: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)\n- Animații: DOAR transform și opacity — NICIODATĂ transition-all\n- Hover pe carduri: transform translateY(-4px), shadow mai mare\n- Secțiunile alternează background: alb → gri deschis → alb → gri deschis\n\n═══ CONȚINUT ═══\n- Texte reale în română — ZERO Lorem Ipsum\n- Titluri H1/H2: impactante, orientate pe beneficiu (nu pe caracteristici)\n- Toate datele de contact (telefon, adresă, email): inventate veridic dacă nu sunt furnizate\n- Imagini: EXCLUSIV https://placehold.co/WIDTHxHEIGHT (fără parametri extra)\n\n═══ RESPONSIVE ═══\n- Mobile-first, funcțional la 375px și 1440px\n- Navbar: hamburger menu pe mobile cu toggle JS simplu\n- Toate grid-urile: grid-cols-1 pe mobile, 2-3 pe desktop\n- Hero H1: clamp() pentru font-size fluid\n\n═══ INTERZIS ═══\n- transition-all\n- Culorile default Tailwind ca brand (blue, indigo, purple)\n- Lorem ipsum\n- Butoane CTA fără stilizare (text simplu sau <a> fără padding/background)\n- Imagini fără filter brightness(0.8) sau mai mic\n- Secțiuni fără container (max-w + mx-auto + px)\n- Carduri de servicii fără imagine\n`;
 
@@ -1629,11 +2026,12 @@
           return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
         }
       }
-      const reason = data?.candidates?.[0]?.finishReason || '';
-      throw new Error(reason ? `Fără imagine (${reason})` : 'Nu s-a generat nicio imagine');
+      // No image in this model's response — try next model
+      lastErr = `${model}: nicio imagine în răspuns, încerc alt model...`;
+      continue;
     }
 
-    throw new Error('Toate modelele sunt suprasolicitate. Încearcă în câteva minute.');
+    throw new Error(lastErr || 'Toate modelele sunt suprasolicitate. Încearcă în câteva minute.');
   }
 
   /* ── Build role-based image prompts from brief ── */
@@ -1696,6 +2094,7 @@
   /* ── Generate ── */
   async function generate(brief) {
     lastBrief = brief;
+    window.lastBrief = brief;
     showPanel('loading');
     startProgress();
 
@@ -1719,7 +2118,7 @@
           }),
         });
 
-        if (res.status === 503 || res.status === 429) {
+        if (res.status === 503 || res.status === 429 || res.status === 404) {
           if (mi === modelList.length - 1) throw new Error('Toate modelele sunt suprasolicitate. Încearcă în 1-2 minute.');
           continue;
         }
@@ -1748,6 +2147,7 @@
       html = await injectAIImages(html, brief);
 
       generatedHtml = html;
+      window.generatedHtml = html;
       _siteGenerated = true;
       finishProgress(true);
 
@@ -1755,6 +2155,28 @@
       const isPublic = document.getElementById('bf-public')?.checked !== false;
       if (isPublic && brief.brandName && brief.activity) {
         saveToRecent(brief, html);
+      }
+
+      // Show save button if logged in
+      const wsSession = _wsSession();
+      if (wsSession) {
+        const saveBtn = document.getElementById('btn-save-account');
+        if (saveBtn) saveBtn.style.display = 'inline-block';
+        // Also try auto-save
+        if (brief.brandName) {
+          _saveUserSite(wsSession, html, brief)
+            .then(() => {
+              const saveBtn2 = document.getElementById('btn-save-account');
+              if (saveBtn2) { saveBtn2.textContent = '✓ Salvat'; saveBtn2.style.color = '#C8FF00'; saveBtn2.disabled = true; }
+              const mySites = document.getElementById('btn-my-sites');
+              if (mySites) mySites.style.display = 'inline-flex';
+              if (typeof _showSaveToast === 'function') _showSaveToast('✓ Site salvat în cont!', '#C8FF00');
+            })
+            .catch(e => {
+              console.warn('[auto-save]', e);
+              if (typeof _showSaveToast === 'function') _showSaveToast('⚠ Auto-save eșuat: ' + e.message, '#ff6b6b');
+            });
+        }
       }
 
       await new Promise(r => setTimeout(r, 500));
@@ -1772,7 +2194,9 @@
   function showPreview(html) {
     showPanel('preview');
     previewIframe.srcdoc = html;
+    previewIframe.addEventListener('load', () => { populateEditor(); }, { once: true });
   }
+  window.showPreview = showPreview;
 
   /* ── Form submit ── */
   document.getElementById('brief-form').addEventListener('submit', async e => {
@@ -1843,8 +2267,10 @@
     btnEdit.style.background = 'rgba(200,255,0,0.15)';
     btnEdit.style.color = '#C8FF00';
     btnEdit.style.border = '1px solid rgba(200,255,0,0.4)';
-    populateEditor();
+    // Editor is pre-populated when iframe loads; only populate if empty
+    if (!document.getElementById('editor-panel-texte').hasChildNodes()) populateEditor();
   }
+  window.openEditor = openEditor;
 
   function closeEditor() {
     editorSidebar.style.display = 'none';
@@ -1862,9 +2288,10 @@
   function syncHtml() {
     try {
       const doc = previewIframe.contentDocument;
-      if (doc) generatedHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      if (doc) { generatedHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML; window.generatedHtml = generatedHtml; }
     } catch(e) {}
   }
+  window.syncHtml = syncHtml;
 
   /* ── Helper: create a labeled input/textarea ── */
   function editorField({ label, value, type = 'textarea', onInput }) {
@@ -2192,16 +2619,55 @@
       uploadBtn.addEventListener('mouseleave', () => uploadBtn.style.background = 'rgba(200,255,0,0.07)');
       uploadBtn.addEventListener('click', () => fileInput.click());
 
-      fileInput.addEventListener('change', () => {
+      fileInput.addEventListener('change', async () => {
         const file = fileInput.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          img.src = e.target.result;
-          preview.src = e.target.result;
+        uploadBtn.textContent = '···';
+        uploadBtn.disabled = true;
+        try {
+          // Compress image via canvas (max 1200px wide, JPEG 0.85)
+          const compressed = await new Promise((resolve, reject) => {
+            const blobUrl = URL.createObjectURL(file);
+            const tmpImg = new Image();
+            tmpImg.onload = () => {
+              let w = tmpImg.width, h = tmpImg.height;
+              const MAX = 1200;
+              if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+              const canvas = document.createElement('canvas');
+              canvas.width = w; canvas.height = h;
+              canvas.getContext('2d').drawImage(tmpImg, 0, 0, w, h);
+              URL.revokeObjectURL(blobUrl);
+              canvas.toBlob(blob => {
+                const rd = new FileReader();
+                rd.onload = () => resolve({ data: rd.result.split(',')[1], mime: 'image/jpeg' });
+                rd.onerror = reject;
+                rd.readAsDataURL(blob);
+              }, 'image/jpeg', 0.85);
+            };
+            tmpImg.onerror = reject;
+            tmpImg.src = blobUrl;
+          });
+
+          // Upload to /api/img and get a persistent URL
+          const res = await fetch('/api/img', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(compressed),
+          });
+          if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Upload eșuat ' + res.status); }
+          const { key } = await res.json();
+          const url = '/api/img?k=' + key;
+
+          img.src = url;
+          preview.src = url;
           syncHtml();
-        };
-        reader.readAsDataURL(file);
+          uploadBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M3 8l4 4 6-7" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Salvat!';
+          uploadBtn.disabled = false;
+        } catch(e) {
+          uploadBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M8 1v9M4 4l4-4 4 4M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Încarcă imagine';
+          uploadBtn.disabled = false;
+          alert('Eroare upload imagine: ' + e.message);
+        }
       });
 
       // AI Generate button
@@ -2289,28 +2755,36 @@
       const prompt = textarea.value.trim();
       if (!prompt) { status.textContent = 'Scrie un prompt mai întâi.'; status.style.color = '#ff6b6b'; return; }
 
+      const MAX_ATTEMPTS = 6;
       genBtn.disabled = true;
       genBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:7px;animation:spin 0.8s linear infinite;vertical-align:-2px"><circle cx="12" cy="12" r="10" stroke="#080808" stroke-width="3" stroke-dasharray="40 20"/></svg>Generând...';
-      status.textContent = 'Se generează imaginea, poate dura 15-30 secunde...';
       status.style.color = '#888';
 
-      const resetBtn = () => {
-        genBtn.disabled = false;
-        genBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:7px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" fill="#080808" stroke="#080808" stroke-width="0.5"/></svg>Încearcă din nou';
-      };
-      try {
-        const dataUrl = await nanobanana2Generate(prompt);
-        imgEl.src = dataUrl;
-        if (previewEl) previewEl.src = dataUrl;
-        syncHtml();
-        status.textContent = '✓ Imagine generată cu succes!';
-        status.style.color = '#C8FF00';
-        setTimeout(() => overlay.remove(), 1200);
-      } catch(e) {
-        status.textContent = e.message;
-        status.style.color = '#ff6b6b';
-        resetBtn();
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        status.textContent = attempt === 1
+          ? 'Se generează imaginea...'
+          : `Se încearcă din nou (${attempt}/${MAX_ATTEMPTS})...`;
+        try {
+          const dataUrl = await nanobanana2Generate(prompt);
+          imgEl.src = dataUrl;
+          if (previewEl) previewEl.src = dataUrl;
+          syncHtml();
+          status.textContent = '✓ Imagine generată cu succes!';
+          status.style.color = '#C8FF00';
+          setTimeout(() => overlay.remove(), 1000);
+          return;
+        } catch(e) {
+          if (attempt < MAX_ATTEMPTS) {
+            await new Promise(r => setTimeout(r, 2000));
+          }
+        }
       }
+
+      // All attempts failed — reset button silently
+      genBtn.disabled = false;
+      genBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:7px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" fill="#080808" stroke="#080808" stroke-width="0.5"/></svg>Generează imaginea';
+      status.textContent = 'API-ul este suprasolicitat momentan. Încearcă din nou în câteva secunde.';
+      status.style.color = '#ff8c42';
     });
 
     // Close on overlay click
@@ -2498,6 +2972,107 @@
   }
 
   /* ── Master populate ── */
+  /* ── Butoane editor ── */
+  function populateButoane(doc) {
+    const panel = document.getElementById('editor-panel-butoane');
+    panel.innerHTML = '';
+    const SEC = (t) => { const d = document.createElement('div'); d.textContent = t; d.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;color:#555;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.06);'; return d; };
+    const LBL = (t) => { const d = document.createElement('div'); d.textContent = t; d.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.72rem;color:#888;margin-bottom:4px;'; return d; };
+    function rgbToHex(rgb) { const m = (rgb||'').match(/\d+/g); if (!m||m.length<3) return null; return '#'+[m[0],m[1],m[2]].map(n=>parseInt(n).toString(16).padStart(2,'0')).join(''); }
+
+    const btns = Array.from(doc.querySelectorAll('a, button')).filter(el => {
+      const t = el.textContent.trim();
+      if (!t || t.length < 2 || t.length > 80) return false;
+      if (el.closest('nav, [class*="nav"], [id*="nav"]')) return false;
+      if (el.querySelector('svg') && t.length < 3) return false;
+      try {
+        const cs = doc.defaultView.getComputedStyle(el);
+        const bg = cs.backgroundColor;
+        const hasBg = bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent';
+        const hasPad = parseFloat(cs.paddingTop) > 5 || parseFloat(cs.paddingLeft) > 10;
+        return hasBg || hasPad;
+      } catch(e) { return false; }
+    }).slice(0, 15);
+
+    if (!btns.length) {
+      panel.innerHTML = '<p style="font-family:\'Inter\',sans-serif;font-size:0.82rem;color:#555;text-align:center;padding:20px 0;">Nu s-au detectat butoane CTA.</p>';
+      return;
+    }
+
+    // ── Global controls ──
+    panel.appendChild(SEC('Toate butoanele'));
+
+    // Global bg color
+    const gbDiv = document.createElement('div'); gbDiv.style.cssText = 'margin-bottom:12px;';
+    gbDiv.appendChild(LBL('Culoare fundal (toate)'));
+    const gbRow = document.createElement('div'); gbRow.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    const gbP = document.createElement('input'); gbP.type = 'color'; gbP.value = '#000000';
+    try { const c = rgbToHex(doc.defaultView.getComputedStyle(btns[0]).backgroundColor); if (c) gbP.value = c; } catch(e){}
+    gbP.style.cssText = 'width:36px;height:30px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;cursor:pointer;padding:2px;background:none;';
+    const gbH = document.createElement('span'); gbH.textContent = gbP.value.toUpperCase(); gbH.style.cssText = 'font-family:monospace;font-size:0.72rem;color:#555;';
+    gbP.addEventListener('input', () => { gbH.textContent = gbP.value.toUpperCase(); btns.forEach(b => efApply(b,'background-color',gbP.value)); panel.querySelectorAll('[data-btn-bg]').forEach(p => p.value = gbP.value); syncHtml(); });
+    gbRow.appendChild(gbP); gbRow.appendChild(gbH); gbDiv.appendChild(gbRow); panel.appendChild(gbDiv);
+
+    // Global text color
+    const gtDiv = document.createElement('div'); gtDiv.style.cssText = 'margin-bottom:12px;';
+    gtDiv.appendChild(LBL('Culoare text (toate)'));
+    const gtRow = document.createElement('div'); gtRow.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    const gtP = document.createElement('input'); gtP.type = 'color'; gtP.value = '#ffffff';
+    try { const c = rgbToHex(doc.defaultView.getComputedStyle(btns[0]).color); if (c) gtP.value = c; } catch(e){}
+    gtP.style.cssText = 'width:36px;height:30px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;cursor:pointer;padding:2px;background:none;';
+    const gtH = document.createElement('span'); gtH.textContent = gtP.value.toUpperCase(); gtH.style.cssText = 'font-family:monospace;font-size:0.72rem;color:#555;';
+    gtP.addEventListener('input', () => { gtH.textContent = gtP.value.toUpperCase(); btns.forEach(b => efApply(b,'color',gtP.value)); panel.querySelectorAll('[data-btn-txt]').forEach(p => p.value = gtP.value); syncHtml(); });
+    gtRow.appendChild(gtP); gtRow.appendChild(gtH); gtDiv.appendChild(gtRow); panel.appendChild(gtDiv);
+
+    // Global font
+    const gfDiv = document.createElement('div'); gfDiv.style.cssText = 'margin-bottom:20px;';
+    gfDiv.appendChild(LBL('Font butoane (toate)'));
+    const gfSel = document.createElement('select');
+    ['','Inter','Roboto','Open Sans','Montserrat','Raleway','Poppins','Oswald','Syne','DM Sans','Space Grotesk'].forEach(f => { const o = document.createElement('option'); o.value=f; o.textContent=f||'— Font original —'; gfSel.appendChild(o); });
+    gfSel.style.cssText = 'width:100%;background:#1A1A1A;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;color:#ccc;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;cursor:pointer;';
+    gfSel.addEventListener('change', () => { if (!gfSel.value) return; const lnk = doc.createElement('link'); lnk.rel='stylesheet'; lnk.href=`https://fonts.googleapis.com/css2?family=${encodeURIComponent(gfSel.value)}:wght@400;600;700&display=swap`; doc.head.appendChild(lnk); btns.forEach(b => efApply(b,'font-family',`"${gfSel.value}",sans-serif`)); syncHtml(); });
+    gfDiv.appendChild(gfSel); panel.appendChild(gfDiv);
+
+    // ── Individual buttons ──
+    panel.appendChild(SEC('Butoane individuale'));
+    btns.forEach((btn, i) => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#1A1A1A;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:10px;';
+      const lbl = document.createElement('div'); lbl.textContent = `Buton ${i+1}`; lbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.68rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;';
+      card.appendChild(lbl);
+
+      // Text
+      const inp = document.createElement('input'); inp.type = 'text'; inp.value = btn.textContent.trim();
+      inp.style.cssText = 'width:100%;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;margin-bottom:10px;display:block;transition:border-color 0.15s;';
+      inp.addEventListener('focus', () => inp.style.borderColor='rgba(200,255,0,0.35)');
+      inp.addEventListener('blur',  () => inp.style.borderColor='rgba(255,255,255,0.08)');
+      inp.addEventListener('input', () => { btn.textContent = inp.value; syncHtml(); });
+      card.appendChild(inp);
+
+      // Colors row
+      const colorRow = document.createElement('div'); colorRow.style.cssText = 'display:flex;gap:10px;';
+
+      const bgW = document.createElement('div'); bgW.style.cssText = 'flex:1;';
+      bgW.appendChild(LBL('Fundal'));
+      const bgP = document.createElement('input'); bgP.type = 'color'; bgP.setAttribute('data-btn-bg','1');
+      try { const c = rgbToHex(doc.defaultView.getComputedStyle(btn).backgroundColor); bgP.value = c || '#000000'; } catch(e){ bgP.value='#000000'; }
+      bgP.style.cssText = 'width:100%;height:30px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;cursor:pointer;padding:2px;background:none;box-sizing:border-box;';
+      bgP.addEventListener('input', () => { efApply(btn,'background-color',bgP.value); syncHtml(); });
+      bgW.appendChild(bgP); colorRow.appendChild(bgW);
+
+      const txtW = document.createElement('div'); txtW.style.cssText = 'flex:1;';
+      txtW.appendChild(LBL('Text'));
+      const txtP = document.createElement('input'); txtP.type = 'color'; txtP.setAttribute('data-btn-txt','1');
+      try { const c = rgbToHex(doc.defaultView.getComputedStyle(btn).color); txtP.value = c || '#ffffff'; } catch(e){ txtP.value='#ffffff'; }
+      txtP.style.cssText = 'width:100%;height:30px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;cursor:pointer;padding:2px;background:none;box-sizing:border-box;';
+      txtP.addEventListener('input', () => { efApply(btn,'color',txtP.value); syncHtml(); });
+      txtW.appendChild(txtP); colorRow.appendChild(txtW);
+
+      card.appendChild(colorRow);
+      panel.appendChild(card);
+    });
+  }
+
   /* ── Meniu editor ── */
   function populateMeniu(doc) {
     const panel = document.getElementById('editor-panel-meniu');
@@ -2566,6 +3141,7 @@
     populateCulori(doc);
     populateContact(doc);
     populateMeniu(doc);
+    populateButoane(doc);
     // Reset to first tab
     editorTabs.forEach((t, i) => { t.classList.toggle('active-tab', i === 0); });
     editorPanels.forEach((p, i) => { p.style.display = i === 0 ? 'block' : 'none'; });
@@ -2588,7 +3164,8 @@
   #editor-panel-texte::-webkit-scrollbar,
   #editor-panel-culori::-webkit-scrollbar,
   #editor-panel-contact::-webkit-scrollbar,
-  #editor-panel-meniu::-webkit-scrollbar {
+  #editor-panel-meniu::-webkit-scrollbar,
+  #editor-panel-butoane::-webkit-scrollbar {
     width: 4px;
   }
   #editor-panel-texte::-webkit-scrollbar-track,
@@ -2860,8 +3437,12 @@
   var overlay = document.getElementById('publish-overlay');
   var btnOpen = document.getElementById('btn-publish');
   btnOpen && btnOpen.addEventListener('click', function() {
-    pubReset();
-    overlay.style.display = 'flex';
+    if (window._paymentDone) {
+      pubReset();
+      overlay.style.display = 'flex';
+    } else {
+      openPaymentModal();
+    }
   });
   overlay && overlay.addEventListener('click', function(e) {
     if (e.target === overlay) closePublishModal();
@@ -2902,7 +3483,10 @@ function pubGoStep(n) {
   if (n === 1) document.getElementById('pub-step-1').classList.add('active');
   else if (n === '2-own') document.getElementById('pub-step-2-own').classList.add('active');
   else if (n === '2-buy') document.getElementById('pub-step-2-buy').classList.add('active');
-  else if (n === 'success') document.getElementById('pub-step-success').classList.add('active');
+  else if (n === 'success') {
+    document.getElementById('pub-step-success').classList.add('active');
+    try { localStorage.removeItem('ws_paid_session'); } catch(e) {}
+  }
 }
 
 function pubSelectOption(type) {
@@ -3213,6 +3797,453 @@ async function saveToRecent(brief, html) {
 
 // Load on page init
 loadRecent(0, false);
+</script>
+
+<!-- ══════════════════════ LOGIN MODAL ══════════════════════ -->
+<div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);align-items:center;justify-content:center;">
+  <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 36px;max-width:400px;width:90%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.7);">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#fff;margin-bottom:8px;letter-spacing:-0.02em;">Bine ai venit la<br/><span style="color:#C8FF00;">WebsiteAI</span></div>
+    <p style="font-family:'Inter',sans-serif;font-size:0.85rem;color:#555;line-height:1.65;margin:0 0 32px;">Conectează-te pentru a genera site-uri și a le accesa oricând din dashboard.</p>
+    <div id="g-signin-btn" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
+    <div id="login-error" style="display:none;font-family:'Inter',sans-serif;font-size:0.78rem;color:#ff6b6b;margin-top:8px;"></div>
+    <div style="margin-top:20px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#333;line-height:1.6;">Prin conectare ești de acord cu<br/>folosirea datelor tale pentru autentificare.</div>
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+var _loginCallback = null;
+
+function _wsSession() {
+  try { return localStorage.getItem('ws_session'); } catch { return null; }
+}
+function _wsUser() {
+  try { return JSON.parse(localStorage.getItem('ws_user') || 'null'); } catch { return null; }
+}
+function _wsSetSession(token, user) {
+  try {
+    localStorage.setItem('ws_session', token);
+    localStorage.setItem('ws_user', JSON.stringify(user));
+  } catch {}
+}
+
+async function _initGoogleSignIn() {
+  try {
+    var r = await fetch('/api/auth/config');
+    if (!r.ok) return;
+    var d = await r.json();
+    if (!d.clientId) return;
+
+    google.accounts.id.initialize({
+      client_id: d.clientId,
+      callback: _handleGoogleCredential,
+      auto_select: false,
+      cancel_on_tap_outside: false,
+    });
+
+    google.accounts.id.renderButton(
+      document.getElementById('g-signin-btn'),
+      { theme: 'filled_black', size: 'large', text: 'continue_with', shape: 'pill', width: 280 }
+    );
+  } catch(e) {}
+}
+
+async function _handleGoogleCredential(response) {
+  var errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  try {
+    var res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential }),
+    });
+    var data = await res.json();
+    if (!data.token) throw new Error(data.error || 'Eroare autentificare');
+
+    _wsSetSession(data.token, data.user);
+    document.getElementById('login-overlay').style.display = 'none';
+
+    if (typeof _loginCallback === 'function') {
+      var cb = _loginCallback;
+      _loginCallback = null;
+      cb();
+    }
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+function openLoginModal(callback) {
+  _loginCallback = callback || null;
+  document.getElementById('login-overlay').style.display = 'flex';
+  // Init Google button when modal opens
+  if (window.google && window.google.accounts) {
+    _initGoogleSignIn();
+  } else {
+    var interval = setInterval(function() {
+      if (window.google && window.google.accounts) {
+        clearInterval(interval);
+        _initGoogleSignIn();
+      }
+    }, 200);
+  }
+}
+
+async function manuallySaveToAccount() {
+  var btn = document.getElementById('btn-save-account');
+  var session = _wsSession();
+  if (!session) { openLoginModal(function(){ manuallySaveToAccount(); }); return; }
+  if (!window.generatedHtml || !window.lastBrief) { alert('Generează mai întâi un site!'); return; }
+
+  // Sync latest HTML from iframe before saving
+  if (typeof syncHtml === 'function') syncHtml();
+
+  btn.textContent = '···';
+  btn.disabled = true;
+
+  try {
+    // If editing an existing site, delete the old entry first
+    if (window.editingSiteId) {
+      await fetch('/api/user/sites', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
+        body: JSON.stringify({ id: window.editingSiteId }),
+      }).catch(() => {});
+    }
+
+    var processedHtml = await _uploadBase64Images(window.generatedHtml);
+    var res = await fetch('/api/user/sites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
+      body: JSON.stringify({ html: processedHtml, brandName: window.lastBrief.brandName, activity: window.lastBrief.activity }),
+    });
+    if (res.status === 401) {
+      localStorage.removeItem('ws_session');
+      localStorage.removeItem('ws_user');
+      btn.textContent = '💾 Salvează modificările';
+      btn.disabled = false;
+      openLoginModal(function(){ manuallySaveToAccount(); });
+      return;
+    }
+    if (!res.ok) {
+      var err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Eroare server ' + res.status);
+    }
+    var saved = await res.json();
+    // Update editingSiteId to new id so next save replaces correctly
+    if (saved.site && saved.site.id) window.editingSiteId = saved.site.id;
+
+    btn.textContent = '✓ Salvat';
+    btn.style.color = '#C8FF00';
+    var mySites = document.getElementById('btn-my-sites');
+    if (mySites) mySites.style.display = 'inline-flex';
+    if (typeof _showSaveToast === 'function') _showSaveToast('✓ Modificările au fost salvate!', '#C8FF00');
+    // Re-enable after 3s so user can save again
+    setTimeout(function() {
+      btn.textContent = '💾 Salvează modificările';
+      btn.disabled = false;
+    }, 3000);
+  } catch(e) {
+    btn.textContent = '💾 Salvează modificările';
+    btn.disabled = false;
+    alert('Eroare la salvare: ' + e.message);
+  }
+}
+
+function _showSaveToast(msg, color) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#111;border:1px solid ' + (color||'#C8FF00') + '44;border-radius:10px;padding:12px 18px;z-index:9999;font-family:"Inter",sans-serif;font-size:0.8rem;color:' + (color||'#C8FF00') + ';box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.style.transition='opacity 0.4s'; t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 4000);
+}
+
+// ── Auto-open generator if ?generate=1 ──
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('generate') === '1') {
+    history.replaceState({}, '', window.location.pathname);
+    // Wait for page to fully init then open overlay
+    var attempts = 0;
+    var iv = setInterval(function() {
+      attempts++;
+      if (typeof openOverlay === 'function') {
+        clearInterval(iv);
+        if (_wsSession()) { openOverlay(); } else { openLoginModal(openOverlay); }
+      } else if (attempts > 30) { clearInterval(iv); }
+    }, 100);
+  }
+})();
+
+async function _compressDataUrl(dataUrl, maxWidth, quality) {
+  maxWidth = maxWidth || 1200; quality = quality || 0.82;
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(function(blob) {
+        var rd = new FileReader();
+        rd.onload = function() { resolve({ data: rd.result.split(',')[1], mime: 'image/jpeg' }); };
+        rd.onerror = function() { resolve(null); };
+        rd.readAsDataURL(blob);
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = dataUrl;
+  });
+}
+
+async function _uploadBase64Images(html) {
+  // Find all base64 image data URLs and upload them to /api/img
+  var matches = [];
+  var re = /src="(data:image\/[^"]+)"/g;
+  var m;
+  while ((m = re.exec(html)) !== null) matches.push({ full: m[0], dataUrl: m[1] });
+
+  for (var i = 0; i < matches.length; i++) {
+    var item = matches[i];
+    try {
+      var compressed = await _compressDataUrl(item.dataUrl);
+      if (!compressed) { html = html.replace(item.full, 'src="https://placehold.co/800x500"'); continue; }
+      var res = await fetch('/api/img', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(compressed),
+      });
+      if (res.ok) {
+        var json = await res.json();
+        html = html.split(item.full).join('src="/api/img?k=' + json.key + '"');
+      } else {
+        html = html.replace(item.full, 'src="https://placehold.co/800x500"');
+      }
+    } catch(e) {
+      html = html.replace(item.full, 'src="https://placehold.co/800x500"');
+    }
+  }
+  return html;
+}
+
+async function _saveUserSite(session, html, brief) {
+  const processedHtml = await _uploadBase64Images(html);
+  const res = await fetch('/api/user/sites', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
+    body: JSON.stringify({ html: processedHtml, brandName: brief.brandName, activity: brief.activity }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Save failed ' + res.status);
+  }
+  return res.json();
+}
+
+// ── Handle ?edit=siteId on load ──
+(async function checkEditParam() {
+  var params = new URLSearchParams(window.location.search);
+  var editId = params.get('edit');
+  var token  = params.get('token');
+  var brand  = params.get('brand') || '';
+  var act    = params.get('act')   || '';
+  if (!editId) return;
+
+  history.replaceState({}, '', window.location.pathname);
+
+  if (token) {
+    try {
+      var u = JSON.parse(localStorage.getItem('ws_user') || 'null');
+      if (u) localStorage.setItem('ws_session', token);
+    } catch {}
+  }
+
+  // Set brief so save button works
+  window.lastBrief = { brandName: brand, activity: act };
+  window.editingSiteId = editId;
+
+  try {
+    var res = await fetch('/api/preview?id=' + encodeURIComponent(editId));
+    if (!res.ok) { alert('Site-ul nu a putut fi încărcat (eroare ' + res.status + ')'); return; }
+    var html = await res.text();
+    if (html.length < 100) { alert('Site-ul salvat este gol.'); return; }
+    window.generatedHtml = html;
+    window._siteGenerated = true;
+
+    var attempts = 0;
+    var iv = setInterval(function() {
+      attempts++;
+      if (typeof openOverlay === 'function' && typeof showPreview === 'function') {
+        clearInterval(iv);
+        openOverlay();
+        showPreview(html);
+        setTimeout(function() {
+          if (typeof openEditor === 'function') openEditor();
+          // Show save button
+          var saveBtn = document.getElementById('btn-save-account');
+          if (saveBtn) {
+            saveBtn.textContent = '💾 Salvează modificările';
+            saveBtn.style.display = 'inline-block';
+          }
+        }, 900);
+      } else if (attempts > 50) {
+        clearInterval(iv);
+        alert('Eroare: pagina nu s-a inițializat corect. Reîncarcă pagina.');
+      }
+    }, 100);
+  } catch(e) { alert('Eroare la încărcarea site-ului: ' + e.message); }
+})();
+</script>
+
+<!-- ══════════════════════ PAYMENT MODAL ══════════════════════ -->
+<div id="payment-overlay" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.93);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);align-items:center;justify-content:center;">
+  <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 36px;max-width:420px;width:90%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.7);">
+    <div style="width:56px;height:56px;background:rgba(200,255,0,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(200,255,0,0.25);">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#C8FF00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.45rem;color:#fff;margin:0 0 10px;letter-spacing:-0.02em;">Site-ul tău este gata!</h2>
+    <p style="font-family:'Inter',sans-serif;font-size:0.85rem;color:#666;line-height:1.65;margin:0 0 28px;">Plătește o singură dată și primești site-ul complet, gata de publicat.</p>
+
+    <div style="background:#0e0e0e;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:22px 24px;margin-bottom:24px;text-align:left;">
+      <div style="text-align:center;margin-bottom:18px;">
+        <span style="font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;color:#C8FF00;letter-spacing:-0.03em;">1 RON</span>
+        <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;margin-top:4px;">pe lună · anulezi oricând</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;font-size:0.82rem;color:#999;"><span style="color:#C8FF00;font-size:1rem;flex-shrink:0;">✓</span> Fișier HTML descărcabil</div>
+        <div style="display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;font-size:0.82rem;color:#999;"><span style="color:#C8FF00;font-size:1rem;flex-shrink:0;">✓</span> Link de previzualizare activ 30 de zile</div>
+        <div style="display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;font-size:0.82rem;color:#999;"><span style="color:#C8FF00;font-size:1rem;flex-shrink:0;">✓</span> Instrucțiuni complete de publicare online</div>
+        <div style="display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;font-size:0.82rem;color:#999;"><span style="color:#C8FF00;font-size:1rem;flex-shrink:0;">✓</span> Abonament lunar · anulezi oricând</div>
+      </div>
+    </div>
+
+    <button id="btn-pay-now" onclick="startPayment()" style="width:100%;background:linear-gradient(135deg,#C8FF00 0%,#9FCC00 100%);border:none;border-radius:10px;padding:15px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;box-shadow:0 0 20px rgba(200,255,0,0.3);transition:opacity 0.15s;">
+      Plătește acum →
+    </button>
+    <div id="pay-error" style="display:none;font-family:'Inter',sans-serif;font-size:0.78rem;color:#ff6b6b;margin-top:10px;text-align:center;"></div>
+    <button onclick="closePaymentModal()" style="background:none;border:none;color:#444;font-family:'Inter',sans-serif;font-size:0.78rem;cursor:pointer;margin-top:14px;padding:4px 12px;">Anulează</button>
+  </div>
+</div>
+
+<script>
+window._paymentDone = false;
+
+function openPaymentModal() {
+  document.getElementById('pay-error').style.display = 'none';
+  var btn = document.getElementById('btn-pay-now');
+  btn.disabled = false;
+  btn.textContent = 'Plătește acum →';
+  document.getElementById('payment-overlay').style.display = 'flex';
+}
+
+function closePaymentModal() {
+  document.getElementById('payment-overlay').style.display = 'none';
+}
+
+async function startPayment() {
+  var btn = document.getElementById('btn-pay-now');
+  var errEl = document.getElementById('pay-error');
+  btn.disabled = true;
+  btn.textContent = '···';
+  errEl.style.display = 'none';
+
+  try {
+    var res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        html: window.generatedHtml || '',
+        brandName: window.lastBrief ? window.lastBrief.brandName : '',
+        origin: window.location.origin,
+      }),
+    });
+    var data = await res.json();
+    if (!data.url) throw new Error(data.error || 'Eroare la inițializarea plății.');
+    window.location.href = data.url;
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Plătește acum →';
+  }
+}
+
+// ── Handle return from Stripe ──
+(async function checkPaymentReturn() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('payment') !== 'success') return;
+
+  var sessionId = params.get('session_id');
+  var siteId    = params.get('site_id');
+  if (!sessionId || !siteId) return;
+
+  history.replaceState({}, '', window.location.pathname);
+
+  try {
+    var r = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
+    var data = await r.json();
+    if (!data.paid) return;
+
+    window._paymentDone = true;
+
+    // Persist payment so user can return to domain setup if modal is closed
+    try {
+      localStorage.setItem('ws_paid_session', JSON.stringify({ siteId: siteId, ts: Date.now() }));
+    } catch(e) {}
+
+    // Restore HTML from Redis and show preview
+    var htmlRes = await fetch('/api/preview?id=' + encodeURIComponent(siteId));
+    if (htmlRes.ok) {
+      var html = await htmlRes.text();
+      if (typeof showPreview === 'function') {
+        window.generatedHtml = html;
+        window._siteGenerated = true;
+        showPreview(html);
+      }
+    }
+
+    // Show success notification + open publish modal after short delay
+    _showPaymentSuccessNotif(siteId);
+    setTimeout(function() {
+      var overlay = document.getElementById('publish-overlay');
+      if (overlay && typeof pubReset === 'function') {
+        pubReset();
+        overlay.style.display = 'flex';
+      }
+    }, 1200);
+
+  } catch(e) {}
+})();
+
+// ── Restore domain modal if user paid but closed before entering domain ──
+(function restorePendingPayment() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('payment') === 'success') return; // Handled above
+  try {
+    var sess = JSON.parse(localStorage.getItem('ws_paid_session') || 'null');
+    if (!sess || !sess.siteId) return;
+    if (Date.now() - sess.ts > 86400000) { localStorage.removeItem('ws_paid_session'); return; }
+    window._paymentDone = true;
+  } catch(e) {}
+})();
+
+function _showPaymentSuccessNotif(siteId) {
+  var notif = document.createElement('div');
+  notif.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;border:1px solid rgba(200,255,0,0.4);border-radius:14px;padding:14px 20px;z-index:9999;display:flex;align-items:center;gap:14px;box-shadow:0 8px 40px rgba(0,0,0,0.7);white-space:nowrap;';
+  notif.innerHTML =
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(200,255,0,0.15)"/><path d="M7 12l4 4 6-7" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+    '<div><div style="font-family:\'Syne\',sans-serif;font-weight:700;color:#C8FF00;font-size:0.88rem;">Plată confirmată! 🎉</div>' +
+    '<div style="font-family:\'Inter\',sans-serif;color:#777;font-size:0.75rem;margin-top:2px;">Site-ul tău este gata de publicat.</div></div>' +
+    '<a href="/api/preview?id=' + siteId + '" target="_blank" style="background:rgba(200,255,0,0.12);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:6px 12px;color:#C8FF00;font-family:\'Syne\',sans-serif;font-weight:700;font-size:0.72rem;text-decoration:none;">Link →</a>';
+  document.body.appendChild(notif);
+  setTimeout(function() {
+    notif.style.transition = 'opacity 0.6s';
+    notif.style.opacity = '0';
+    setTimeout(function() { notif.remove(); }, 600);
+  }, 9000);
+}
 </script>
 </body>
 </html>

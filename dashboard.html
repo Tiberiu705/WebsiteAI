@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard — WebsiteAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#080808;color:#e0e0e0;font-family:'Inter',sans-serif;min-height:100vh;}
+a{color:inherit;text-decoration:none;}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#C8FF00;letter-spacing:-0.02em;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);}
+.user-avatar-placeholder{width:32px;height:32px;border-radius:50%;background:rgba(200,255,0,0.15);border:1px solid rgba(200,255,0,0.3);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;color:#C8FF00;}
+.user-name{font-size:0.82rem;color:#ccc;}
+.btn-logout{background:none;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;color:#666;font-family:'Inter',sans-serif;font-size:0.78rem;cursor:pointer;transition:color 0.15s,border-color 0.15s;}
+.btn-logout:hover{color:#fff;border-color:rgba(255,255,255,0.3);}
+.btn-new{background:#C8FF00;border:none;border-radius:8px;padding:8px 18px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;cursor:pointer;transition:opacity 0.15s;}
+.btn-new:hover{opacity:0.88;}
+
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;padding:40px 24px;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:#fff;letter-spacing:-0.03em;margin-bottom:6px;}
+.page-sub{font-size:0.85rem;color:#555;margin-bottom:36px;}
+
+/* STATS BAR */
+.stats-bar{display:flex;gap:12px;margin-bottom:36px;flex-wrap:wrap;}
+.stat-card{background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 20px;min-width:120px;}
+.stat-num{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:#C8FF00;}
+.stat-lbl{font-size:0.72rem;color:#555;margin-top:2px;text-transform:uppercase;letter-spacing:0.06em;}
+
+/* GRID */
+.sites-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
+.site-card{background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;transition:border-color 0.2s,transform 0.2s;}
+.site-card:hover{border-color:rgba(200,255,0,0.2);transform:translateY(-2px);}
+
+/* CARD PREVIEW */
+.card-preview{position:relative;height:180px;background:#0a0a0a;overflow:hidden;cursor:pointer;}
+.card-iframe-wrap{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;}
+.card-iframe{width:1280px;height:800px;border:none;transform-origin:top left;pointer-events:none;}
+.card-initial{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:rgba(255,255,255,0.15);}
+.card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%);display:flex;align-items:flex-end;padding:14px;opacity:0;transition:opacity 0.2s;}
+.site-card:hover .card-overlay{opacity:1;}
+.card-open-btn{background:rgba(200,255,0,0.9);border:none;border-radius:8px;padding:7px 14px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.75rem;cursor:pointer;}
+
+/* CARD BODY */
+.card-body{padding:16px 18px 18px;}
+.card-brand{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-activity{font-size:0.75rem;color:#555;margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-date{font-size:0.7rem;color:#444;margin-bottom:14px;}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-activate-card{flex:1;background:linear-gradient(135deg,#C8FF00,#9FCC00);border:none;border-radius:8px;padding:8px 0;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.75rem;cursor:pointer;transition:opacity 0.15s;text-align:center;}
+.btn-activate-card:hover{opacity:0.88;}
+.btn-activate-card.btn-paid{background:rgba(200,255,0,0.10);border:1px solid rgba(200,255,0,0.35);color:#C8FF00;font-size:0.72rem;letter-spacing:0.02em;}
+.btn-activate-card.btn-paid:hover{background:rgba(200,255,0,0.18);opacity:1;}
+.btn-edit-card{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 0;color:#ccc;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;cursor:pointer;transition:background 0.15s;text-align:center;}
+.btn-edit-card:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.btn-open-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;color:#666;font-family:'Inter',sans-serif;font-size:0.75rem;cursor:pointer;transition:background 0.15s;}
+.btn-open-card:hover{background:rgba(255,255,255,0.08);color:#aaa;}
+.btn-delete-card{background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.15);border-radius:8px;padding:7px 10px;color:#ff6b6b;font-family:'Inter',sans-serif;font-size:0.75rem;cursor:pointer;transition:background 0.15s;}
+.btn-delete-card:hover{background:rgba(255,80,80,0.15);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:80px 20px;}
+.empty-icon{font-size:3rem;opacity:0.2;margin-bottom:16px;}
+.empty-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#333;margin-bottom:8px;}
+.empty-sub{font-size:0.82rem;color:#444;margin-bottom:24px;}
+
+/* LOADING */
+.skeleton{background:linear-gradient(90deg,#1a1a1a 25%,#222 50%,#1a1a1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:16px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* CONFIRM DELETE MODAL */
+#confirm-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;}
+.confirm-box{background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:360px;width:90%;text-align:center;}
+.confirm-box h3{font-family:'Syne',sans-serif;font-size:1.1rem;color:#fff;margin-bottom:10px;}
+.confirm-box p{font-size:0.82rem;color:#666;margin-bottom:24px;line-height:1.6;}
+.confirm-btns{display:flex;gap:10px;}
+.btn-confirm-del{flex:1;background:#ff4444;border:none;border-radius:8px;padding:10px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;}
+.btn-confirm-cancel{flex:1;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;color:#888;font-family:'Inter',sans-serif;font-size:0.85rem;cursor:pointer;}
+
+@media(max-width:640px){
+  /* Header */
+  .header{padding:0 14px;height:54px;}
+  .logo{font-size:1rem;}
+  .user-name{display:none;}
+  .btn-logout{padding:5px 10px;font-size:0.72rem;}
+  .btn-new{padding:7px 12px;font-size:0.75rem;}
+  .header-right{gap:8px;}
+
+  /* Main */
+  .main{padding:20px 14px;}
+  .page-title{font-size:1.4rem;}
+  .page-sub{margin-bottom:20px;}
+
+  /* Stats */
+  .stats-bar{gap:8px;margin-bottom:20px;}
+  .stat-card{padding:12px 16px;min-width:0;flex:1;}
+  .stat-num{font-size:1.3rem;}
+
+  /* Grid — 1 column pe mobil */
+  .sites-grid{grid-template-columns:1fr;gap:14px;}
+
+  /* Card actions — 2 rânduri */
+  .card-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .btn-activate-card{padding:9px 0;font-size:0.78rem;}
+  .btn-edit-card{padding:8px 0;font-size:0.78rem;}
+  .btn-open-card{grid-column:1;padding:8px 0;text-align:center;}
+  .btn-delete-card{grid-column:2;padding:8px 0;text-align:center;}
+
+  /* Card body */
+  .card-body{padding:14px;}
+  .card-brand{font-size:0.9rem;}
+}
+
+/* ── DOMAIN ACTIVATION MODAL ── */
+#domain-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);overflow-y:auto;align-items:flex-start;justify-content:center;padding:20px;}
+.dom-modal{background:#0E0E0E;border:1px solid rgba(200,255,0,0.15);border-radius:20px;width:100%;max-width:820px;margin:auto;position:relative;box-shadow:0 0 80px rgba(200,255,0,0.06),0 32px 80px rgba(0,0,0,0.7);}
+.dom-header{padding:32px 36px 0;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:24px;}
+.dom-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:#fff;letter-spacing:-0.03em;margin-bottom:6px;}
+.dom-subtitle{font-size:0.875rem;color:#555;font-family:'Inter',sans-serif;line-height:1.5;}
+.dom-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;width:34px;height:34px;color:#888;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;}
+.dom-close:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.dom-body{padding:28px 36px 36px;}
+.dom-step{display:none;}
+.dom-step.active{display:block;}
+
+/* Selection cards */
+.dom-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.dom-card{background:#111;border:2px solid rgba(255,255,255,0.07);border-radius:14px;padding:28px 24px;cursor:pointer;transition:border-color 0.2s,background 0.2s,transform 0.2s;position:relative;}
+.dom-card:hover{border-color:rgba(200,255,0,0.35);background:#141414;transform:translateY(-2px);}
+.dom-card.selected{border-color:#C8FF00;background:rgba(200,255,0,0.04);}
+.dom-card-icon{width:44px;height:44px;border-radius:10px;background:rgba(200,255,0,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:1.3rem;}
+.dom-card-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:8px;}
+.dom-card-desc{font-size:0.82rem;color:#666;line-height:1.55;font-family:'Inter',sans-serif;}
+.dom-card-badge{position:absolute;top:14px;right:14px;background:rgba(200,255,0,0.12);border:1px solid rgba(200,255,0,0.25);border-radius:100px;padding:3px 10px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.65rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;}
+
+/* Domain search */
+.dom-search-wrap{display:flex;gap:10px;margin-bottom:16px;}
+.dom-search-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s;}
+.dom-search-input:focus{border-color:rgba(200,255,0,0.45);}
+.dom-search-btn{background:#C8FF00;border:none;border-radius:10px;padding:12px 20px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;cursor:pointer;white-space:nowrap;transition:opacity 0.15s;}
+.dom-search-btn:hover{opacity:0.88;}
+.dom-tld-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.dom-tld-pill{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:5px 14px;font-family:'Inter',sans-serif;font-size:0.78rem;color:#888;cursor:pointer;transition:all 0.15s;}
+.dom-tld-pill:hover,.dom-tld-pill.active{background:rgba(200,255,0,0.1);border-color:rgba(200,255,0,0.3);color:#C8FF00;}
+.dom-results{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;min-height:60px;}
+.dom-result-row{display:flex;align-items:center;justify-content:space-between;background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 16px;transition:border-color 0.15s;}
+.dom-result-row:hover{border-color:rgba(200,255,0,0.2);}
+.dom-result-name{font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#fff;}
+.dom-result-price{font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:#C8FF00;}
+.dom-result-avail{font-size:0.72rem;color:#555;font-family:'Inter',sans-serif;}
+.dom-result-taken{opacity:0.4;}
+.dom-result-btn{background:#C8FF00;border:none;border-radius:8px;padding:7px 14px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.75rem;cursor:pointer;transition:opacity 0.15s;}
+.dom-result-btn:hover{opacity:0.88;}
+
+/* DNS Connect section */
+.dom-method-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px;margin-bottom:20px;}
+.dom-method-tab{flex:1;padding:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;text-align:center;}
+.dom-method-tab.active{background:#C8FF00;color:#080808;}
+.dom-method-tab:not(.active){background:transparent;color:#666;}
+.dom-dns-block{background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;margin-bottom:16px;}
+.dom-dns-label{font-family:'Syne',sans-serif;font-weight:700;font-size:0.72rem;color:#C8FF00;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:12px;}
+.dom-dns-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.dom-dns-row:last-child{margin-bottom:0;}
+.dom-dns-field{flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;display:flex;justify-content:space-between;align-items:center;min-width:0;}
+.dom-dns-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:0.8rem;color:#ccc;}
+.dom-copy-btn{background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:6px;padding:6px 12px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.7rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background 0.15s;}
+.dom-copy-btn:hover{background:rgba(200,255,0,0.15);}
+.dom-copy-btn.copied{background:rgba(200,255,0,0.2);color:#C8FF00;}
+.dom-steps-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+.dom-step-item{display:flex;gap:14px;align-items:flex-start;}
+.dom-step-num{width:24px;height:24px;border-radius:50%;background:rgba(200,255,0,0.12);border:1px solid rgba(200,255,0,0.25);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:0.7rem;color:#C8FF00;flex-shrink:0;margin-top:1px;}
+.dom-step-text{font-family:'Inter',sans-serif;font-size:0.85rem;color:#888;line-height:1.55;}
+.dom-step-text strong{color:#ccc;font-weight:600;}
+
+/* Status */
+.dom-status-box{background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:28px;text-align:center;margin-bottom:20px;}
+.dom-status-icon{font-size:2.5rem;margin-bottom:12px;}
+.dom-status-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:6px;}
+.dom-status-desc{font-family:'Inter',sans-serif;font-size:0.82rem;color:#666;line-height:1.6;max-width:380px;margin:0 auto;}
+.dom-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:#C8FF00;margin-right:8px;animation:pulse-dot 1.5s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
+
+/* FAQ */
+.dom-faq{margin-top:24px;}
+.dom-faq-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#555;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px;}
+.dom-faq-item{border-bottom:1px solid rgba(255,255,255,0.05);}
+.dom-faq-q{width:100%;background:none;border:none;text-align:left;padding:12px 0;font-family:'Inter',sans-serif;font-size:0.85rem;color:#888;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:color 0.15s;}
+.dom-faq-q:hover{color:#ccc;}
+.dom-faq-q .arrow{font-size:0.7rem;transition:transform 0.2s;flex-shrink:0;}
+.dom-faq-q.open .arrow{transform:rotate(180deg);}
+.dom-faq-a{display:none;padding:0 0 12px;font-family:'Inter',sans-serif;font-size:0.82rem;color:#555;line-height:1.65;}
+.dom-faq-a.open{display:block;}
+
+/* Nav buttons row */
+.dom-nav{display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.05);}
+.dom-btn-primary{background:#C8FF00;border:none;border-radius:10px;padding:12px 28px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;transition:opacity 0.15s;display:inline-flex;align-items:center;gap:8px;}
+.dom-btn-primary:hover{opacity:0.88;}
+.dom-btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+.dom-btn-secondary{background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 24px;color:#888;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s;}
+.dom-btn-secondary:hover{border-color:rgba(255,255,255,0.25);color:#ccc;}
+.dom-btn-back{background:none;border:none;color:#555;font-family:'Inter',sans-serif;font-size:0.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:0;transition:color 0.15s;}
+.dom-btn-back:hover{color:#aaa;}
+
+/* Paid badge on card */
+.paid-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:6px;padding:3px 8px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.65rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;}
+
+@media(max-width:640px){
+  .dom-modal{border-radius:14px;}
+  .dom-header{padding:24px 20px 20px;}
+  .dom-body{padding:20px 20px 28px;}
+  .dom-title{font-size:1.25rem;}
+  .dom-cards{grid-template-columns:1fr;}
+  .dom-search-wrap{flex-direction:column;}
+  .dom-search-btn{width:100%;}
+  .dom-nav{flex-direction:column-reverse;gap:10px;}
+  .dom-btn-primary,.dom-btn-secondary,.dom-btn-back{width:100%;justify-content:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a href="/" class="logo">WebsiteAI</a>
+  <div class="header-right">
+    <div class="user-info">
+      <div id="user-avatar-wrap"></div>
+      <span id="user-name" class="user-name"></span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Deconectare</button>
+    <a href="/?generate=1" class="btn-new" style="text-decoration:none;display:inline-flex;align-items:center;">+ Site nou</a>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px;">
+    <div class="page-title">Istoric website-uri</div>
+    <button onclick="loadSites()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 16px;color:#666;font-family:'Inter',sans-serif;font-size:0.78rem;cursor:pointer;">↺ Reîmprospătează</button>
+  </div>
+  <div class="page-sub" id="page-sub">Site-urile tale generate cu WebsiteAI</div>
+
+  <div class="stats-bar" id="stats-bar" style="display:none;">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-lbl">Site-uri generate</div>
+    </div>
+  </div>
+
+  <div id="sites-container">
+    <!-- skeletons -->
+    <div class="sites-grid" id="skeleton-grid">
+      <div class="skeleton" style="height:280px;"></div>
+      <div class="skeleton" style="height:280px;"></div>
+      <div class="skeleton" style="height:280px;"></div>
+    </div>
+  </div>
+</main>
+
+<!-- CONFIRM DELETE -->
+<div id="confirm-overlay" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div class="confirm-box">
+    <h3>Ștergi site-ul?</h3>
+    <p>Această acțiune este ireversibilă. Site-ul și previzualizarea vor fi șterse permanent.</p>
+    <div class="confirm-btns">
+      <button class="btn-confirm-del" id="confirm-del-btn">Șterge</button>
+      <button class="btn-confirm-cancel" onclick="closeConfirm()">Anulează</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DOMAIN ACTIVATION MODAL ══ -->
+<div id="domain-overlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);overflow-y:auto;padding:20px;">
+  <div class="dom-modal" style="margin:auto;">
+    <!-- Header -->
+    <div class="dom-header">
+      <div class="dom-title">Activează domeniul</div>
+      <div class="dom-subtitle">Alege cum vrei să publici website-ul tău</div>
+      <button class="dom-close" onclick="closeDomainModal()">✕</button>
+    </div>
+
+    <div class="dom-body">
+
+      <!-- STEP 1: Select method -->
+      <div class="dom-step active" id="dom-step-select">
+        <div class="dom-cards">
+          <div class="dom-card" id="dom-card-buy" onclick="selectDomainMethod('buy')">
+            <div class="dom-card-badge">Recomandat</div>
+            <div class="dom-card-icon">🛒</div>
+            <div class="dom-card-title">Cumpără domeniu</div>
+            <div class="dom-card-desc">Caută, cumpără și conectează automat un domeniu nou. Cel mai simplu mod de a publica.</div>
+          </div>
+          <div class="dom-card" id="dom-card-connect" onclick="selectDomainMethod('connect')">
+            <div class="dom-card-icon">🔗</div>
+            <div class="dom-card-title">Conectează domeniu existent</div>
+            <div class="dom-card-desc">Ai deja un domeniu? Conectează-l în câteva minute prin Nameservere sau CNAME.</div>
+          </div>
+        </div>
+        <!-- FAQ in step 1 -->
+        <div class="dom-faq">
+          <div class="dom-faq-title">Întrebări frecvente</div>
+          <div class="dom-faq-item">
+            <button class="dom-faq-q" onclick="toggleFaq(this)">Ce metodă aleg? <span class="arrow">▼</span></button>
+            <div class="dom-faq-a">Dacă nu ai un domeniu, alege <strong>Cumpără domeniu</strong> — totul se conectează automat. Dacă ai deja un domeniu la alt registrar (GoDaddy, NAMECHEAP, RoTLD etc.), alege <strong>Conectează domeniu existent</strong>.</div>
+          </div>
+          <div class="dom-faq-item">
+            <button class="dom-faq-q" onclick="toggleFaq(this)">Cât durează propagarea DNS? <span class="arrow">▼</span></button>
+            <div class="dom-faq-a">Propagarea DNS durează de obicei <strong>15–60 minute</strong>, dar poate dura până la 48 de ore în cazuri rare. Putem verifica automat statusul pentru tine.</div>
+          </div>
+          <div class="dom-faq-item">
+            <button class="dom-faq-q" onclick="toggleFaq(this)">Cum verific că domenul s-a conectat? <span class="arrow">▼</span></button>
+            <div class="dom-faq-a">După ce adaugi înregistrările DNS, apasă <strong>"Verifică conectarea"</strong>. Verificăm automat și îți afișăm statusul în timp real. Primești și un email de confirmare.</div>
+          </div>
+        </div>
+        <div class="dom-nav" style="justify-content:flex-end;">
+          <button class="dom-btn-primary" onclick="goToDomainStep()" id="dom-btn-continue" disabled>
+            Continuă
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 3l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2A: Buy domain -->
+      <div class="dom-step" id="dom-step-buy">
+        <button class="dom-btn-back" onclick="goToStep('dom-step-select')" style="margin-bottom:20px;">← Înapoi</button>
+        <div style="margin-bottom:20px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:6px;">Caută domeniu</div>
+          <div style="font-size:0.82rem;color:#555;font-family:'Inter',sans-serif;">Introdu numele dorit. Recomandăm .ro pentru Romania.</div>
+        </div>
+        <div class="dom-search-wrap">
+          <input class="dom-search-input" id="dom-search-input" type="text" placeholder="ex: salonluxe" oninput="updateDomainSearch(this.value)" />
+          <button class="dom-search-btn" onclick="searchDomains()">Caută</button>
+        </div>
+        <div class="dom-tld-pills" id="dom-tld-pills">
+          <div class="dom-tld-pill active" data-tld=".ro" onclick="toggleTld(this)">.ro</div>
+          <div class="dom-tld-pill" data-tld=".com" onclick="toggleTld(this)">.com</div>
+          <div class="dom-tld-pill" data-tld=".net" onclick="toggleTld(this)">.net</div>
+          <div class="dom-tld-pill" data-tld=".io" onclick="toggleTld(this)">.io</div>
+        </div>
+        <div class="dom-results" id="dom-results">
+          <div style="text-align:center;padding:20px;color:#444;font-size:0.82rem;font-family:'Inter',sans-serif;">Introdu un nume de domeniu pentru a vedea disponibilitatea și prețurile</div>
+        </div>
+        <div class="dom-faq" style="margin-top:0;">
+          <div class="dom-faq-title">Info</div>
+          <div class="dom-faq-item">
+            <button class="dom-faq-q" onclick="toggleFaq(this)">Ce include prețul? <span class="arrow">▼</span></button>
+            <div class="dom-faq-a">Prețul afișat este pentru înregistrarea pe <strong>1 an</strong> și include conectarea automată la website-ul tău. Reînnoirea se face manual înainte de expirare.</div>
+          </div>
+          <div class="dom-faq-item">
+            <button class="dom-faq-q" onclick="toggleFaq(this)">Pot transfera domeniul mai târziu? <span class="arrow">▼</span></button>
+            <div class="dom-faq-a">Da, poți transfera domeniul la orice alt registrar oricând. Domeniul îți aparține complet.</div>
+          </div>
+        </div>
+        <div class="dom-nav">
+          <button class="dom-btn-back" onclick="goToStep('dom-step-select')">← Înapoi</button>
+          <button class="dom-btn-secondary" onclick="goToStep('dom-step-status', 'buying')">Skip (demo)</button>
+        </div>
+      </div>
+
+      <!-- STEP 2B: Connect existing domain -->
+      <div class="dom-step" id="dom-step-connect">
+        <button class="dom-btn-back" onclick="goToStep('dom-step-select')" style="margin-bottom:20px;">← Înapoi</button>
+        <div style="margin-bottom:20px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:6px;">Conectează domeniu existent</div>
+          <div style="font-size:0.82rem;color:#555;font-family:'Inter',sans-serif;">Introdu domeniu-ul tău, apoi adaugă înregistrările DNS la registrarul tău.</div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">Domeniu</label>
+          <input class="dom-search-input" id="dom-existing-input" type="text" placeholder="ex: salonluxe.ro" oninput="updateExistingDomain(this.value)" />
+        </div>
+        <!-- Method tabs -->
+        <div class="dom-method-tabs">
+          <button class="dom-method-tab active" id="tab-ns" onclick="switchDnsMethod('ns')">Nameservere</button>
+          <button class="dom-method-tab" id="tab-cname" onclick="switchDnsMethod('cname')">CNAME</button>
+        </div>
+
+        <!-- Nameservers panel -->
+        <div id="dns-panel-ns">
+          <div style="font-size:0.82rem;color:#666;font-family:'Inter',sans-serif;margin-bottom:14px;line-height:1.6;">Cea mai simplă metodă. Înlocuiește nameserverele curente ale domeniului cu cele de mai jos. Gestionăm tot DNS-ul pentru tine.</div>
+          <div class="dom-dns-block">
+            <div class="dom-dns-label">Nameservere WebsiteAI</div>
+            <div class="dom-dns-row">
+              <div class="dom-dns-field"><span class="dom-dns-val">ns1.websiteai.ro</span></div>
+              <button class="dom-copy-btn" onclick="copyDns(this,'ns1.websiteai.ro')">Copiază</button>
+            </div>
+            <div class="dom-dns-row">
+              <div class="dom-dns-field"><span class="dom-dns-val">ns2.websiteai.ro</span></div>
+              <button class="dom-copy-btn" onclick="copyDns(this,'ns2.websiteai.ro')">Copiază</button>
+            </div>
+          </div>
+          <div class="dom-steps-list">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:4px;">Pași de urmat</div>
+            <div class="dom-step-item"><div class="dom-step-num">1</div><div class="dom-step-text">Intră în panoul de control al registrarului (ex: GoDaddy, Namecheap, RoTLD)</div></div>
+            <div class="dom-step-item"><div class="dom-step-num">2</div><div class="dom-step-text">Găsește secțiunea <strong>Nameservere</strong> sau <strong>DNS Management</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">3</div><div class="dom-step-text">Selectează <strong>Custom / Personal Nameservers</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">4</div><div class="dom-step-text">Înlocuiește nameserverele existente cu <strong>ns1.websiteai.ro</strong> și <strong>ns2.websiteai.ro</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">5</div><div class="dom-step-text">Salvează și apasă <strong>Verifică conectarea</strong> mai jos</div></div>
+          </div>
+        </div>
+
+        <!-- CNAME panel -->
+        <div id="dns-panel-cname" style="display:none;">
+          <div style="font-size:0.82rem;color:#666;font-family:'Inter',sans-serif;margin-bottom:14px;line-height:1.6;">Adaugă înregistrările CNAME la registrarul tău. Recomandat dacă vrei să păstrezi alte servicii (email etc.) pe același domeniu.</div>
+          <div class="dom-dns-block">
+            <div class="dom-dns-label">Înregistrări CNAME</div>
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:8px;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.05);">
+              <div style="font-family:'Syne',sans-serif;font-size:0.7rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;align-self:center;">Tip</div>
+              <div style="font-family:'Syne',sans-serif;font-size:0.7rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Valoare</div>
+            </div>
+            <div class="dom-dns-row">
+              <div style="width:72px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;flex-shrink:0;">www</div>
+              <div class="dom-dns-field"><span class="dom-dns-val">sites.websiteai.ro</span></div>
+              <button class="dom-copy-btn" onclick="copyDns(this,'sites.websiteai.ro')">Copiază</button>
+            </div>
+            <div class="dom-dns-row">
+              <div style="width:72px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;flex-shrink:0;">@</div>
+              <div class="dom-dns-field"><span class="dom-dns-val">185.199.108.153</span></div>
+              <button class="dom-copy-btn" onclick="copyDns(this,'185.199.108.153')">Copiază</button>
+            </div>
+          </div>
+          <div class="dom-steps-list">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:4px;">Pași de urmat</div>
+            <div class="dom-step-item"><div class="dom-step-num">1</div><div class="dom-step-text">Intră în panoul DNS al registrarului tău</div></div>
+            <div class="dom-step-item"><div class="dom-step-num">2</div><div class="dom-step-text">Adaugă înregistrare CNAME: <strong>www</strong> → <strong>sites.websiteai.ro</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">3</div><div class="dom-step-text">Adaugă înregistrare A: <strong>@</strong> (root) → <strong>185.199.108.153</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">4</div><div class="dom-step-text">Salvează și apasă <strong>Verifică conectarea</strong></div></div>
+          </div>
+        </div>
+
+        <!-- Tutorial embed -->
+        <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;margin-bottom:16px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span>▶</span> Tutorial video — Cum conectezi un domeniu
+          </div>
+          <div style="background:#0a0a0a;border-radius:8px;height:140px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(255,255,255,0.05);" onclick="openTutorialVideo()">
+            <div style="text-align:center;">
+              <div style="width:48px;height:48px;border-radius:50%;background:rgba(200,255,0,0.12);border:2px solid rgba(200,255,0,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:1.2rem;">▶</div>
+              <div style="font-family:'Inter',sans-serif;font-size:0.78rem;color:#555;">Durată: ~3 minute</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dom-faq">
+          <div class="dom-faq-title">Întrebări</div>
+          <div class="dom-faq-item">
+            <button class="dom-faq-q" onclick="toggleFaq(this)">Ce metodă e mai bună, NS sau CNAME? <span class="arrow">▼</span></button>
+            <div class="dom-faq-a"><strong>Nameservere</strong> – simplu și complet. Recomandat dacă nu ai alt serviciu pe domeniu (email, etc.).<br/><strong>CNAME</strong> – mai flexibil, ideal dacă vrei să păstrezi emailul sau alte servicii DNS existente.</div>
+          </div>
+          <div class="dom-faq-item">
+            <button class="dom-faq-q" onclick="toggleFaq(this)">Site-ul meu va fi offline în timpul propagării? <span class="arrow">▼</span></button>
+            <div class="dom-faq-a">Posibil câteva minute. Propagarea DNS se face treptat — unii vizitatori vor vedea site-ul nou, alții pe cel vechi, pentru max. 48h. De obicei sub o oră.</div>
+          </div>
+        </div>
+
+        <div class="dom-nav">
+          <button class="dom-btn-back" onclick="goToStep('dom-step-select')">← Înapoi</button>
+          <button class="dom-btn-primary" onclick="startDnsVerification()" id="dom-btn-verify">
+            Verifică conectarea
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Status -->
+      <div class="dom-step" id="dom-step-status">
+        <div class="dom-status-box" id="dom-status-box">
+          <div class="dom-status-icon" id="dom-status-icon">⏳</div>
+          <div class="dom-status-title" id="dom-status-title">Se verifică configurarea...</div>
+          <div class="dom-status-desc" id="dom-status-desc">Verificăm înregistrările DNS. Poate dura câteva secunde.</div>
+        </div>
+        <div id="dom-status-details" style="display:none;background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;margin-bottom:16px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#C8FF00;margin-bottom:12px;letter-spacing:0.06em;text-transform:uppercase;">Detalii verificare</div>
+          <div id="dom-status-checks" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+        <div id="dom-status-error-fix" style="display:none;background:rgba(255,60,60,0.06);border:1px solid rgba(255,60,60,0.15);border-radius:12px;padding:20px;margin-bottom:16px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:#ff8080;margin-bottom:8px;">Ce trebuie corectat:</div>
+          <div id="dom-status-error-detail" style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#ff6060;line-height:1.65;"></div>
+        </div>
+        <div class="dom-nav" id="dom-status-nav">
+          <button class="dom-btn-back" onclick="goToStep('dom-step-connect')" id="dom-back-to-dns">← Verifică setările</button>
+          <button class="dom-btn-primary" onclick="retryDnsCheck()" id="dom-btn-retry" style="display:none;">
+            Verifică din nou
+          </button>
+          <button class="dom-btn-secondary" onclick="closeDomainModal()" id="dom-btn-done" style="display:none;">
+            Finalizează
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /.dom-body -->
+  </div><!-- /.dom-modal -->
+</div>
+
+<script>
+var _session = null;
+var _user = null;
+var _sites = [];
+var _deleteTarget = null;
+
+// ── Auth ──
+function getSession() {
+  try { return localStorage.getItem('ws_session'); } catch { return null; }
+}
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('ws_user') || 'null'); } catch { return null; }
+}
+function logout() {
+  localStorage.removeItem('ws_session');
+  localStorage.removeItem('ws_user');
+  window.location.href = '/';
+}
+
+// ── Init ──
+(async function init() {
+  _session = getSession();
+  _user = getUser();
+
+  if (!_session || !_user) {
+    window.location.href = '/';
+    return;
+  }
+
+  // Render user info
+  var avatarWrap = document.getElementById('user-avatar-wrap');
+  if (_user.picture) {
+    var img = document.createElement('img');
+    img.src = _user.picture;
+    img.className = 'user-avatar';
+    img.alt = _user.name;
+    avatarWrap.appendChild(img);
+  } else {
+    var placeholder = document.createElement('div');
+    placeholder.className = 'user-avatar-placeholder';
+    placeholder.textContent = (_user.name || 'U')[0].toUpperCase();
+    avatarWrap.appendChild(placeholder);
+  }
+  document.getElementById('user-name').textContent = _user.name || _user.email;
+
+  await loadSites();
+  handlePaymentReturn();
+})();
+
+// ── Load sites ──
+async function loadSites() {
+  try {
+    var res = await fetch('/api/user/sites', {
+      headers: { Authorization: 'Bearer ' + _session }
+    });
+
+    if (res.status === 401) { logout(); return; }
+
+    var data = await res.json();
+    _sites = data.sites || [];
+    document.getElementById('page-sub').textContent = _sites.length
+      ? 'Site-urile tale generate cu WebsiteAI'
+      : 'Generează primul tău site și va apărea aici automat.';
+    renderSites();
+  } catch(e) {
+    document.getElementById('sites-container').innerHTML =
+      '<p style="color:#ff6b6b;font-size:0.82rem;text-align:center;padding:40px;background:rgba(255,80,80,0.05);border-radius:12px;margin-top:20px;">Eroare la încărcarea site-urilor: ' + e.message + '<br/><br/><button onclick="loadSites()" style="background:none;border:1px solid rgba(255,80,80,0.3);border-radius:8px;padding:6px 16px;color:#ff6b6b;cursor:pointer;font-size:0.78rem;">Încearcă din nou</button></p>';
+  }
+}
+
+// ── Render ──
+function renderSites() {
+  var container = document.getElementById('sites-container');
+  var statsBar = document.getElementById('stats-bar');
+
+  if (_sites.length > 0) {
+    statsBar.style.display = 'flex';
+    document.getElementById('stat-total').textContent = _sites.length;
+  }
+
+  if (!_sites.length) {
+    container.innerHTML = '<div class="empty-state">' +
+      '<div class="empty-icon">✦</div>' +
+      '<div class="empty-title">Niciun site generat încă</div>' +
+      '<div class="empty-sub">Generează primul tău site web cu AI</div>' +
+      '<a href="/?generate=1" class="btn-new" style="display:inline-flex;align-items:center;text-decoration:none;margin-top:8px;">Generează acum</a>' +
+      '</div>';
+    return;
+  }
+
+  var grid = document.createElement('div');
+  grid.className = 'sites-grid';
+
+  _sites.forEach(function(site) {
+    grid.appendChild(buildCard(site));
+  });
+
+  container.innerHTML = '';
+  container.appendChild(grid);
+}
+
+function buildCard(site) {
+  var card = document.createElement('div');
+  card.className = 'site-card';
+
+  var date = '';
+  try { date = new Date(site.generatedAt).toLocaleDateString('ro-RO', {day:'numeric',month:'long',year:'numeric'}); } catch{}
+
+  card.innerHTML =
+    '<div class="card-preview" onclick="openSite(\'' + site.id + '\')">' +
+      '<div class="card-iframe-wrap" id="wrap-' + site.id + '">' +
+        '<div class="card-initial">' + (site.brandName || '?')[0].toUpperCase() + '</div>' +
+      '</div>' +
+      '<div class="card-overlay">' +
+        '<button class="card-open-btn">Deschide previzualizare</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="card-body">' +
+      '<div class="card-brand">' + _esc(site.brandName || 'Site web') + '</div>' +
+      '<div class="card-activity">' + _esc(site.activity || '') + '</div>' +
+      (site.sku ? '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+        '<span style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:0.7rem;color:#C8FF00;background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:6px;padding:3px 8px;letter-spacing:0.08em;">' + _esc(site.sku) + '</span>' +
+        '<button onclick="navigator.clipboard.writeText(window.location.origin+\'/site/' + _esc(site.sku) + '\')" style="background:none;border:none;color:#555;font-size:0.7rem;cursor:pointer;font-family:\'Inter\',sans-serif;padding:0;" title="Copiază link">📋 copiază link</button>' +
+      '</div>' : '') +
+      '<div class="card-date">' + date + '</div>' +
+      '<div class="card-actions">' +
+        '<button class="btn-activate-card' + (site.paid || mockCheckPayment(site.id) ? ' btn-paid' : '') + '" onclick="activateSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\')">' + (site.paid || mockCheckPayment(site.id) ? '✓ Activat' : 'Activează') + '</button>' +
+        '<button class="btn-edit-card" onclick="editSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\', \'' + _esc(site.activity || '') + '\')">✏ Editează</button>' +
+        '<button class="btn-open-card" onclick="openSite(\'' + site.id + '\')">↗</button>' +
+        '<button class="btn-delete-card" onclick="confirmDelete(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\')">✕</button>' +
+      '</div>' +
+    '</div>';
+
+  // Load iframe preview after short delay
+  setTimeout(function() {
+    var wrap = document.getElementById('wrap-' + site.id);
+    if (!wrap) return;
+    var initial = wrap.querySelector('.card-initial');
+    var iframe = document.createElement('iframe');
+    iframe.className = 'card-iframe';
+    iframe.style.opacity = '0';
+    iframe.src = '/api/preview?id=' + site.id;
+    iframe.loading = 'lazy';
+    // Scale to fill the wrap width exactly
+    var scale = wrap.offsetWidth / 1280;
+    iframe.style.transform = 'scale(' + scale + ')';
+    iframe.onload = function() {
+      iframe.style.transition = 'opacity 0.4s';
+      iframe.style.opacity = '1';
+      if (initial) initial.style.display = 'none';
+    };
+    wrap.appendChild(iframe);
+  }, 300);
+
+  return card;
+}
+
+function _esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Actions ──
+function openSite(id) {
+  window.open('/api/preview?id=' + id, '_blank');
+}
+
+async function activateSite(id, brandName) {
+  // Check if already paid (from API or localStorage) — open domain modal directly
+  var _site = _sites.find(function(s) { return s.id === id; });
+  if ((_site && _site.paid) || mockCheckPayment(id)) {
+    openDomainModal(id);
+    return;
+  }
+  // Otherwise go to Stripe checkout
+  var btn = event.target;
+  var origText = btn.textContent;
+  btn.textContent = '···';
+  btn.disabled = true;
+  try {
+    var htmlRes = await fetch('/api/preview?id=' + encodeURIComponent(id));
+    var html = htmlRes.ok ? await htmlRes.text() : '';
+    var res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ html: html, brandName: brandName, origin: window.location.origin, originSiteId: id }),
+    });
+    var data = await res.json();
+    if (!data.url) throw new Error(data.error || 'Eroare la plată');
+    window.location.href = data.url;
+  } catch(e) {
+    btn.textContent = origText;
+    btn.disabled = false;
+    alert('Eroare: ' + e.message);
+  }
+}
+
+function editSite(id, brand, activity) {
+  window.location.href = '/?edit=' + id
+    + '&token=' + encodeURIComponent(_session)
+    + '&brand=' + encodeURIComponent(brand || '')
+    + '&act='   + encodeURIComponent(activity || '');
+}
+
+function confirmDelete(id, name) {
+  _deleteTarget = id;
+  var overlay = document.getElementById('confirm-overlay');
+  overlay.style.display = 'flex';
+  document.getElementById('confirm-del-btn').onclick = function() { deleteSite(id); };
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').style.display = 'none';
+  _deleteTarget = null;
+}
+
+async function deleteSite(id) {
+  closeConfirm();
+  try {
+    await fetch('/api/user/sites', {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + _session, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    _sites = _sites.filter(function(s) { return s.id !== id; });
+    renderSites();
+  } catch(e) {}
+}
+
+function _showPaymentToast() {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;border:1px solid rgba(200,255,0,0.4);border-radius:14px;padding:14px 22px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 8px 40px rgba(0,0,0,0.7);white-space:nowrap;';
+  t.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(200,255,0,0.15)"/><path d="M7 12l4 4 6-7" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    + '<div><div style="font-family:\'Syne\',sans-serif;font-weight:700;color:#C8FF00;font-size:0.85rem;">Plată confirmată!</div>'
+    + '<div style="font-family:\'Inter\',sans-serif;color:#777;font-size:0.73rem;margin-top:2px;">Acum conectează domeniul tău.</div></div>';
+  document.body.appendChild(t);
+  setTimeout(function() {
+    t.style.transition = 'opacity 0.5s';
+    t.style.opacity = '0';
+    setTimeout(function() { t.remove(); }, 500);
+  }, 6000);
+}
+
+function handlePaymentReturn() {
+  var params = new URLSearchParams(window.location.search);
+  var payment = params.get('payment');
+  var sessionId = params.get('session_id');
+  var siteId = params.get('site_id');
+
+  // New flow: returning from Stripe via dashboard success_url
+  if (payment === 'success' && sessionId && siteId) {
+    window.history.replaceState({}, '', '/dashboard');
+    _showPaymentToast();
+    // Mark as paid in localStorage immediately (instant UI update)
+    mockMarkPaid(siteId);
+    // Try to persist paid status in Redis; open domain modal regardless
+    fetch('/api/user/sites', {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + _session, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: siteId, sessionId: sessionId }),
+    })
+      .then(function(r) { return r.json(); })
+      .catch(function() { return {}; })
+      .then(function() {
+        return loadSites();
+      })
+      .then(function() {
+        setTimeout(function() { openDomainModal(siteId); }, 400);
+      })
+      .catch(function() {
+        renderSites();
+        setTimeout(function() { openDomainModal(siteId); }, 400);
+      });
+    return;
+  }
+
+  // Legacy flow: ?paid=1&site_id=...
+  var paid = params.get('paid');
+  if (paid === '1' && siteId) {
+    mockMarkPaid(siteId);
+    window.history.replaceState({}, '', '/dashboard');
+    setTimeout(function() { openDomainModal(siteId); }, 600);
+  }
+}
+
+// ════════════════════════════════════
+// DOMAIN ACTIVATION FLOW
+// ════════════════════════════════════
+var _activeSiteId = null;
+var _domainMethod = null;
+var _selectedTlds = ['.ro'];
+var _dnsCheckInterval = null;
+var _dnsCheckCount = 0;
+
+// ── Mock APIs ──
+var _mockDomainPrices = {'.ro':39,'.com':59,'.net':49,'.io':119};
+
+function mockCheckPayment(siteId) {
+  // Returns true if site has been paid (stored in localStorage)
+  try {
+    var paid = JSON.parse(localStorage.getItem('ws_paid_sites') || '{}');
+    return !!paid[siteId];
+  } catch { return false; }
+}
+function mockMarkPaid(siteId) {
+  try {
+    var paid = JSON.parse(localStorage.getItem('ws_paid_sites') || '{}');
+    paid[siteId] = true;
+    localStorage.setItem('ws_paid_sites', JSON.stringify(paid));
+  } catch {}
+}
+function mockSearchDomains(query, tlds) {
+  // Simulates domain availability check
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      var results = tlds.map(function(tld) {
+        var available = Math.random() > 0.35;
+        return {
+          domain: query.toLowerCase().replace(/[^a-z0-9-]/g,'') + tld,
+          available: available,
+          price: _mockDomainPrices[tld] || 49,
+          tld: tld
+        };
+      });
+      resolve(results);
+    }, 600);
+  });
+}
+function mockBuyDomain(domain) {
+  return new Promise(function(resolve) {
+    setTimeout(function() { resolve({ success: true, domain: domain }); }, 1200);
+  });
+}
+function mockCheckDns(domain) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      _dnsCheckCount++;
+      if (_dnsCheckCount >= 3) {
+        // After 3 checks, simulate success
+        resolve({
+          success: true,
+          checks: [
+            { label: 'Nameserver 1', ok: true, value: 'ns1.websiteai.ro' },
+            { label: 'Nameserver 2', ok: true, value: 'ns2.websiteai.ro' },
+            { label: 'Propagare DNS', ok: true, value: 'Activ' }
+          ]
+        });
+      } else {
+        resolve({
+          success: false,
+          checks: [
+            { label: 'Nameserver 1', ok: false, value: 'ns1.alte-servere.ro (greșit)' },
+            { label: 'Nameserver 2', ok: false, value: 'ns2.alte-servere.ro (greșit)' },
+            { label: 'Propagare DNS', ok: false, value: 'Pending' }
+          ],
+          error: 'Nameserverele nu au fost actualizate încă. Asigură-te că ai salvat ns1.websiteai.ro și ns2.websiteai.ro la registrarul tău.'
+        });
+      }
+    }, 1500);
+  });
+}
+function mockActivateDomain(siteId, domain) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      mockMarkPaid(siteId);
+      resolve({ success: true, url: 'https://' + domain });
+    }, 800);
+  });
+}
+
+// ── Open/Close modal ──
+function openDomainModal(siteId) {
+  _activeSiteId = siteId;
+  _domainMethod = null;
+  _dnsCheckCount = 0;
+  if (_dnsCheckInterval) { clearInterval(_dnsCheckInterval); _dnsCheckInterval = null; }
+
+  // Reset state
+  goToStep('dom-step-select', null, true);
+  document.getElementById('dom-card-buy').classList.remove('selected');
+  document.getElementById('dom-card-connect').classList.remove('selected');
+  document.getElementById('dom-btn-continue').disabled = true;
+  document.getElementById('dom-search-input').value = '';
+  document.getElementById('dom-existing-input').value = '';
+  document.getElementById('dom-results').innerHTML = '<div style="text-align:center;padding:20px;color:#444;font-size:0.82rem;font-family:\'Inter\',sans-serif;">Introdu un nume de domeniu pentru a vedea disponibilitatea și prețurile</div>';
+
+  var overlay = document.getElementById('domain-overlay');
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'flex-start';
+  overlay.style.justifyContent = 'center';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDomainModal() {
+  document.getElementById('domain-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  if (_dnsCheckInterval) { clearInterval(_dnsCheckInterval); _dnsCheckInterval = null; }
+}
+
+// ── Step navigation ──
+function goToStep(stepId, context, skipSave) {
+  document.querySelectorAll('.dom-step').forEach(function(s){ s.classList.remove('active'); });
+  var el = document.getElementById(stepId);
+  if (el) el.classList.add('active');
+  // scroll to top of modal
+  var overlay = document.getElementById('domain-overlay');
+  if (overlay) overlay.scrollTop = 0;
+}
+
+function goToDomainStep() {
+  if (!_domainMethod) return;
+  if (_domainMethod === 'buy') goToStep('dom-step-buy');
+  else goToStep('dom-step-connect');
+}
+
+function selectDomainMethod(method) {
+  _domainMethod = method;
+  document.getElementById('dom-card-buy').classList.toggle('selected', method === 'buy');
+  document.getElementById('dom-card-connect').classList.toggle('selected', method === 'connect');
+  document.getElementById('dom-btn-continue').disabled = false;
+}
+
+// ── Domain search ──
+var _searchTimeout = null;
+function updateDomainSearch(val) {
+  clearTimeout(_searchTimeout);
+  if (!val.trim()) return;
+  _searchTimeout = setTimeout(function(){ searchDomains(); }, 500);
+}
+
+function toggleTld(el) {
+  var tld = el.getAttribute('data-tld');
+  if (el.classList.contains('active')) {
+    if (_selectedTlds.length === 1) return;
+    _selectedTlds = _selectedTlds.filter(function(t){ return t !== tld; });
+    el.classList.remove('active');
+  } else {
+    _selectedTlds.push(tld);
+    el.classList.add('active');
+  }
+}
+
+async function searchDomains() {
+  var query = document.getElementById('dom-search-input').value.trim();
+  if (!query) return;
+  var resultsEl = document.getElementById('dom-results');
+  resultsEl.innerHTML = '<div style="text-align:center;padding:16px;color:#555;font-size:0.82rem;font-family:\'Inter\',sans-serif;"><span class="dom-pulse"></span>Se verifică disponibilitatea...</div>';
+  var results = await mockSearchDomains(query, _selectedTlds);
+  renderDomainResults(results);
+}
+
+function renderDomainResults(results) {
+  var el = document.getElementById('dom-results');
+  if (!results.length) { el.innerHTML = '<div style="text-align:center;padding:16px;color:#555;font-size:0.82rem;">Niciun rezultat</div>'; return; }
+  el.innerHTML = '';
+  results.forEach(function(r) {
+    var row = document.createElement('div');
+    row.className = 'dom-result-row' + (!r.available ? ' dom-result-taken' : '');
+    row.innerHTML =
+      '<div>' +
+        '<div class="dom-result-name">' + r.domain + '</div>' +
+        '<div class="dom-result-avail">' + (r.available ? '✓ Disponibil' : '✗ Indisponibil') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<div class="dom-result-price">' + (r.available ? r.price + ' RON/an' : '') + '</div>' +
+        (r.available ? '<button class="dom-result-btn" onclick="buyDomain(\''+r.domain+'\','+r.price+')">Cumpără și conectează</button>' : '') +
+      '</div>';
+    el.appendChild(row);
+  });
+}
+
+async function buyDomain(domain, price) {
+  var btns = document.querySelectorAll('.dom-result-btn');
+  btns.forEach(function(b){ b.disabled=true; b.textContent='...'; });
+  goToStep('dom-step-status');
+  updateStatus('pending', '⏳', 'Se procesează comanda...', 'Cumpărăm domeniu-ul <strong>' + domain + '</strong> și îl conectăm automat la website-ul tău.');
+  var res = await mockBuyDomain(domain);
+  if (res.success) {
+    await mockActivateDomain(_activeSiteId, domain);
+    updateStatus('success', '✅', 'Domeniu activat!', 'Website-ul tău este acum live la <strong>https://' + domain + '</strong>. Poate dura câteva minute pentru propagarea completă.');
+    document.getElementById('dom-back-to-dns').style.display = 'none';
+    document.getElementById('dom-btn-done').style.display = 'inline-flex';
+    refreshActivateButton(_activeSiteId);
+  }
+}
+
+// ── DNS Connect ──
+function switchDnsMethod(method) {
+  document.getElementById('tab-ns').classList.toggle('active', method === 'ns');
+  document.getElementById('tab-cname').classList.toggle('active', method === 'cname');
+  document.getElementById('dns-panel-ns').style.display = method === 'ns' ? 'block' : 'none';
+  document.getElementById('dns-panel-cname').style.display = method === 'cname' ? 'block' : 'none';
+}
+
+function updateExistingDomain(val) { /* live validation could go here */ }
+
+function copyDns(btn, text) {
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = '✓ Copiat';
+    btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+async function startDnsVerification() {
+  var domain = document.getElementById('dom-existing-input').value.trim();
+  if (!domain) { alert('Introdu domeniu-ul mai întâi.'); return; }
+  _dnsCheckCount = 0;
+  goToStep('dom-step-status');
+  runDnsCheck(domain);
+  _dnsCheckInterval = setInterval(function(){ runDnsCheck(domain); }, 8000);
+}
+
+async function runDnsCheck(domain) {
+  updateStatus('pending', '<span class="dom-pulse" style="display:inline-block;margin-right:4px;"></span>', 'Verificăm configurarea DNS...', 'Poate dura câteva secunde. Verificăm automat la fiecare 8 secunde.');
+  var result = await mockCheckDns(domain);
+  renderDnsChecks(result.checks);
+  if (result.success) {
+    clearInterval(_dnsCheckInterval); _dnsCheckInterval = null;
+    await mockActivateDomain(_activeSiteId, domain);
+    updateStatus('success', '✅', 'Domeniu conectat!', 'Website-ul tău este acum accesibil la <strong>https://' + domain + '</strong>');
+    document.getElementById('dom-status-error-fix').style.display = 'none';
+    document.getElementById('dom-back-to-dns').style.display = 'none';
+    document.getElementById('dom-btn-retry').style.display = 'none';
+    document.getElementById('dom-btn-done').style.display = 'inline-flex';
+    refreshActivateButton(_activeSiteId);
+  } else {
+    updateStatus('error', '⚠️', 'DNS neconfirmat', 'Înregistrările DNS nu au propagat încă. Continuăm verificarea automat.');
+    document.getElementById('dom-status-error-fix').style.display = 'block';
+    document.getElementById('dom-status-error-detail').textContent = result.error || 'Verifică setările DNS.';
+    document.getElementById('dom-btn-retry').style.display = 'inline-flex';
+  }
+}
+
+function retryDnsCheck() {
+  _dnsCheckCount = 0;
+  var domain = document.getElementById('dom-existing-input').value.trim() || 'domeniu.ro';
+  if (_dnsCheckInterval) clearInterval(_dnsCheckInterval);
+  runDnsCheck(domain);
+  _dnsCheckInterval = setInterval(function(){ runDnsCheck(domain); }, 8000);
+}
+
+function renderDnsChecks(checks) {
+  var el = document.getElementById('dom-status-details');
+  el.style.display = 'block';
+  var checksEl = document.getElementById('dom-status-checks');
+  checksEl.innerHTML = '';
+  checks.forEach(function(c) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;';
+    row.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span style="color:' + (c.ok ? '#C8FF00' : '#ff6060') + ';font-size:0.9rem;">' + (c.ok ? '✓' : '✗') + '</span>' +
+        '<span style="font-family:\'Inter\',sans-serif;font-size:0.82rem;color:#aaa;">' + c.label + '</span>' +
+      '</div>' +
+      '<span style="font-family:monospace;font-size:0.75rem;color:' + (c.ok ? '#888' : '#ff6060') + ';text-align:right;">' + c.value + '</span>';
+    checksEl.appendChild(row);
+  });
+}
+
+function updateStatus(type, icon, title, desc) {
+  var iconEl = document.getElementById('dom-status-icon');
+  var titleEl = document.getElementById('dom-status-title');
+  var descEl = document.getElementById('dom-status-desc');
+  var box = document.getElementById('dom-status-box');
+  iconEl.innerHTML = icon;
+  titleEl.textContent = title;
+  descEl.innerHTML = desc;
+  box.style.borderColor = type === 'success' ? 'rgba(200,255,0,0.25)' : type === 'error' ? 'rgba(255,80,80,0.2)' : 'rgba(255,255,255,0.07)';
+}
+
+// ── Refresh Activează button after activation ──
+function refreshActivateButton(siteId) {
+  // Mark as paid/activated in local state so button updates
+  var btns = document.querySelectorAll('[onclick*="activateSite(\'' + siteId + '\'"]');
+  btns.forEach(function(b) {
+    b.textContent = '✓ Activat — conectează domeniu';
+    b.classList.add('btn-paid');
+    b.style.background = '';
+    b.style.color = '';
+    b.style.border = '';
+    b.disabled = false;
+  });
+}
+
+// ── Tutorial ──
+function openTutorialVideo() {
+  alert('Tutorialul video va fi disponibil în curând. Între timp, urmează pașii descriși mai jos.');
+}
+
+// ── FAQ accordion ──
+function toggleFaq(btn) {
+  var answer = btn.nextElementSibling;
+  var isOpen = answer.classList.contains('open');
+  // Close all in same container
+  btn.closest('.dom-faq').querySelectorAll('.dom-faq-a').forEach(function(a){ a.classList.remove('open'); });
+  btn.closest('.dom-faq').querySelectorAll('.dom-faq-q').forEach(function(q){ q.classList.remove('open'); });
+  if (!isOpen) { answer.classList.add('open'); btn.classList.add('open'); }
+}
+</script>
+</body>
+</html>

@@ -24,3 +24,5 @@ nanobanana-output/
 CLAUDE.md
 front-end skill.md
 SKILL.md
+.vercel
+.env*.local

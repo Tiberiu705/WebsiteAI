@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>WebsiteAI — Site</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#080808;color:#e0e0e0;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
+.msg{text-align:center;padding:40px 24px;}
+.msg h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;margin-bottom:10px;letter-spacing:-0.02em;}
+.msg p{font-size:0.85rem;color:#666;margin-bottom:24px;line-height:1.6;}
+.btn{display:inline-block;background:#C8FF00;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;padding:10px 24px;border-radius:10px;text-decoration:none;cursor:pointer;border:none;}
+.sku-badge{display:inline-block;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:6px 14px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#C8FF00;letter-spacing:0.06em;margin-bottom:24px;}
+.spin{width:32px;height:32px;border:2px solid rgba(200,255,0,0.15);border-top-color:#C8FF00;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<div class="msg" id="state-loading">
+  <div class="spin"></div>
+  <p style="color:#555;">Se încarcă site-ul...</p>
+</div>
+
+<div class="msg" id="state-auth" style="display:none;">
+  <div style="font-size:2.5rem;margin-bottom:16px;opacity:0.3;">🔒</div>
+  <h2>Autentificare necesară</h2>
+  <p>Acest site este privat. Conectează-te cu contul tău pentru a-l accesa.</p>
+  <a href="/" class="btn" id="btn-login">Conectează-te</a>
+</div>
+
+<div class="msg" id="state-forbidden" style="display:none;">
+  <div style="font-size:2.5rem;margin-bottom:16px;opacity:0.3;">🚫</div>
+  <h2>Acces interzis</h2>
+  <p>Nu ai permisiunea să accesezi acest site. El aparține altui cont.</p>
+  <a href="/dashboard" class="btn">Înapoi la dashboard</a>
+</div>
+
+<div class="msg" id="state-notfound" style="display:none;">
+  <div style="font-size:2.5rem;margin-bottom:16px;opacity:0.3;">✦</div>
+  <h2>Site negăsit</h2>
+  <p>Codul SKU nu corespunde niciunui site sau site-ul a expirat.</p>
+  <a href="/dashboard" class="btn">Înapoi la dashboard</a>
+</div>
+
+<script>
+(async function() {
+  // Extract SKU from URL path: /site/WEB-XXXXXX
+  var sku = window.location.pathname.split('/').pop().toUpperCase();
+
+  function show(id) {
+    ['state-loading','state-auth','state-forbidden','state-notfound'].forEach(function(s) {
+      document.getElementById(s).style.display = s === id ? 'block' : 'none';
+    });
+  }
+
+  if (!sku || !/^WEB-[A-Z0-9]{6}$/.test(sku)) { show('state-notfound'); return; }
+
+  var session = '';
+  try { session = localStorage.getItem('ws_session') || ''; } catch {}
+
+  if (!session) { show('state-auth'); return; }
+
+  try {
+    var res = await fetch('/api/site?sku=' + encodeURIComponent(sku), {
+      headers: { Authorization: 'Bearer ' + session }
+    });
+
+    if (res.status === 401) { show('state-auth'); return; }
+    if (res.status === 403) { show('state-forbidden'); return; }
+    if (res.status === 404) { show('state-notfound'); return; }
+    if (!res.ok) { show('state-notfound'); return; }
+
+    var html = await res.text();
+    // Replace current page with the site HTML
+    document.open();
+    document.write(html);
+    document.close();
+  } catch(e) {
+    show('state-notfound');
+  }
+})();
+</script>
+</body>
+</html>
