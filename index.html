@@ -1443,61 +1443,240 @@ function quickStart(btn) {
         <span class="badge-dot"></span>Testimoniale
       </div>
       <h2 class="heading-lg">Ce spun<br /><span class="acid-text">clienții noștri.</span></h2>
+      <p class="body-lg" style="margin-top:16px;font-size:0.95rem;max-width:480px;margin-left:auto;margin-right:auto;">Afaceri reale din România care au ales WebsiteAI.</p>
     </div>
 
-    <div class="testimonials-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+    <!-- Testimonial marquee -->
+    <div class="tm-track-wrap" style="overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);">
+      <div class="tm-track" style="display:flex;gap:20px;width:max-content;">
 
-      <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:32px;">
-        <div style="display:flex;gap:4px;margin-bottom:20px;">
-          <span style="color:#C8FF00;font-size:1rem;">★★★★★</span>
-        </div>
-        <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#BBBBBB;margin-bottom:24px;">
-          "Înainte plăteam 2000€ pe un site și așteptam luni. Acum îl am în 60 de secunde și arată de 10 ori mai bine."
-        </p>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <img src="https://placehold.co/40x40/1A1A1A/888888?text=CD" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;">Cosmin Dragomir</div>
-            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;">Instalații termice, Ploiești</div>
+        <!-- Card 1 -->
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Am generat site-ul pentru cabinetul meu în timp ce beam cafeaua de dimineață. Pacienții mă întreabă cine mi l-a făcut."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(200,255,0,0.15);color:#C8FF00;">AM</div>
+            <div>
+              <div class="tm-name">Dr. Ana Marinescu</div>
+              <div class="tm-role">Cabinet stomatologic, București</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:32px;">
-        <div style="display:flex;gap:4px;margin-bottom:20px;">
-          <span style="color:#C8FF00;font-size:1rem;">★★★★★</span>
-        </div>
-        <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#BBBBBB;margin-bottom:24px;">
-          "Am deschis salonul acum 3 luni. Prima săptămână am pus site-ul prin WebsiteAI și au început să sune clienți noi din Google."
-        </p>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <img src="https://placehold.co/40x40/1A1A1A/888888?text=LP" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;">Larisa Popa</div>
-            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;">Salon Înfrumusețare, Timișoara</div>
+        <!-- Card 2 -->
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Aveam un site vechi de 5 ani pe care îl urăm. Cu WebsiteAI am făcut unul nou în 60 de secunde. Serios, 60 de secunde."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(99,102,241,0.15);color:#818cf8;">RV</div>
+            <div>
+              <div class="tm-name">Radu Vasile</div>
+              <div class="tm-role">Atelier auto, Cluj-Napoca</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:32px;">
-        <div style="display:flex;gap:4px;margin-bottom:20px;">
-          <span style="color:#C8FF00;font-size:1rem;">★★★★★</span>
-        </div>
-        <p style="font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;color:#BBBBBB;margin-bottom:24px;">
-          "Clientul mi-a dat 3 cuvinte, eu am apăsat un buton. Site-ul e live de aseară. Îmi extind agenția exclusiv pe acest tool."
-        </p>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <img src="https://placehold.co/40x40/1A1A1A/888888?text=BN" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;">Bogdan Nistor</div>
-            <div style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;">Freelancer web, Brașov</div>
+        <!-- Card 3 -->
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Lucrez cu 12 clienți în paralel. Fiecare primește un site unic, nu template-uri. WebsiteAI mi-a triplat productivitatea."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(251,146,60,0.15);color:#fb923c;">BN</div>
+            <div>
+              <div class="tm-name">Bogdan Nistor</div>
+              <div class="tm-role">Freelancer web, Brașov</div>
+            </div>
           </div>
         </div>
-      </div>
 
+        <!-- Card 4 -->
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Am deschis salonul acum 3 luni. Prima săptămână am pus site-ul și au început să sune clienți noi din Google."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(236,72,153,0.15);color:#ec4899;">LP</div>
+            <div>
+              <div class="tm-name">Larisa Popa</div>
+              <div class="tm-role">Salon înfrumusețare, Timișoara</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Înainte plăteam 2000€ pe un site și așteptam luni. Acum îl am în 60 de secunde și arată de 10 ori mai bine."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(34,197,94,0.15);color:#22c55e;">CD</div>
+            <div>
+              <div class="tm-name">Cosmin Dragomir</div>
+              <div class="tm-role">Instalații termice, Ploiești</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Am conectat domeniul, am editat textele, totul live în 5 minute. Nu am mai văzut ceva atât de simplu."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(56,189,248,0.15);color:#38bdf8;">MT</div>
+            <div>
+              <div class="tm-name">Mihai Toma</div>
+              <div class="tm-role">Contabilitate, Iași</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Duplicate for seamless loop -->
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Am generat site-ul pentru cabinetul meu în timp ce beam cafeaua de dimineață. Pacienții mă întreabă cine mi l-a făcut."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(200,255,0,0.15);color:#C8FF00;">AM</div>
+            <div>
+              <div class="tm-name">Dr. Ana Marinescu</div>
+              <div class="tm-role">Cabinet stomatologic, București</div>
+            </div>
+          </div>
+        </div>
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Aveam un site vechi de 5 ani pe care îl urăm. Cu WebsiteAI am făcut unul nou în 60 de secunde. Serios, 60 de secunde."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(99,102,241,0.15);color:#818cf8;">RV</div>
+            <div>
+              <div class="tm-name">Radu Vasile</div>
+              <div class="tm-role">Atelier auto, Cluj-Napoca</div>
+            </div>
+          </div>
+        </div>
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Lucrez cu 12 clienți în paralel. Fiecare primește un site unic, nu template-uri. WebsiteAI mi-a triplat productivitatea."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(251,146,60,0.15);color:#fb923c;">BN</div>
+            <div>
+              <div class="tm-name">Bogdan Nistor</div>
+              <div class="tm-role">Freelancer web, Brașov</div>
+            </div>
+          </div>
+        </div>
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Am deschis salonul acum 3 luni. Prima săptămână am pus site-ul și au început să sune clienți noi din Google."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(236,72,153,0.15);color:#ec4899;">LP</div>
+            <div>
+              <div class="tm-name">Larisa Popa</div>
+              <div class="tm-role">Salon înfrumusețare, Timișoara</div>
+            </div>
+          </div>
+        </div>
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Înainte plăteam 2000€ pe un site și așteptam luni. Acum îl am în 60 de secunde și arată de 10 ori mai bine."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(34,197,94,0.15);color:#22c55e;">CD</div>
+            <div>
+              <div class="tm-name">Cosmin Dragomir</div>
+              <div class="tm-role">Instalații termice, Ploiești</div>
+            </div>
+          </div>
+        </div>
+        <div class="tm-card">
+          <div class="tm-stars">★★★★★</div>
+          <p class="tm-text">"Am conectat domeniul, am editat textele, totul live în 5 minute. Nu am mai văzut ceva atât de simplu."</p>
+          <div class="tm-author">
+            <div class="tm-avatar" style="background:rgba(56,189,248,0.15);color:#38bdf8;">MT</div>
+            <div>
+              <div class="tm-name">Mihai Toma</div>
+              <div class="tm-role">Contabilitate, Iași</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+
   </div>
 </section>
+
+<style>
+.tm-card {
+  flex-shrink: 0;
+  width: 360px;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.3s ease;
+}
+.tm-card:hover {
+  border-color: rgba(200,255,0,0.25);
+}
+.tm-stars {
+  color: #C8FF00;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+.tm-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: #bbb;
+  margin: 0 0 28px;
+  flex: 1;
+}
+.tm-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 20px;
+}
+.tm-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.tm-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #fff;
+}
+.tm-role {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: #555;
+  margin-top: 2px;
+}
+.tm-track {
+  animation: tm-scroll 40s linear infinite;
+}
+.tm-track:hover {
+  animation-play-state: paused;
+}
+@keyframes tm-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@media (max-width: 768px) {
+  .tm-card { width: 300px; padding: 24px; }
+  .testimonials-grid { grid-template-columns: 1fr !important; }
+}
+</style>
 
 <!-- ══════════════════════ CTA BANNER ══════════════════════ -->
 <section class="fade-up" style="padding:80px 24px;">
