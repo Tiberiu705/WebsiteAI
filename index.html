@@ -2036,6 +2036,18 @@ async function submitContactForm(e) {
         if (window.editedContent[key]) el.innerHTML = window.editedContent[key].html;
       } catch(e) {}
     });
+
+    // Prevent all link navigation inside iframe (srcdoc has no useful targets)
+    iframeDoc.addEventListener('click', function(e) {
+      var link = e.target.closest('a[href]');
+      if (link) {
+        var href = link.getAttribute('href') || '';
+        // Allow anchor-only links for smooth scroll within iframe
+        if (href.startsWith('#')) return;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
   }
 
   /* ── Force white inline color on Badge-uri 1 and Texte 1 ── */
