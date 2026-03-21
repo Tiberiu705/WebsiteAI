@@ -3156,6 +3156,42 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     const panel = document.getElementById('editor-panel-texte');
     panel.innerHTML = '';
 
+    // ── Brand name field (first thing in Texte) ──
+    var brandName = '';
+    // Try to detect brand name from logo text, nav first link, or brief
+    var logoEl = doc.querySelector('nav a, header a, .logo, [class*="logo"]');
+    if (logoEl) {
+      var logoText = '';
+      logoEl.childNodes.forEach(n => { if (n.nodeType === 3 && n.textContent.trim()) logoText = n.textContent.trim(); });
+      if (!logoText && logoEl.textContent.trim().length < 40) logoText = logoEl.textContent.trim();
+      brandName = logoText;
+    }
+    if (!brandName && window.lastBrief) brandName = window.lastBrief.brandName || '';
+
+    panel.appendChild(editorSectionHead('Numele brandului'));
+    panel.appendChild(editorField({
+      label: 'Numele afacerii',
+      value: brandName,
+      type: 'text',
+      onInput: function(val) {
+        if (!val.trim() || !brandName) return;
+        var oldName = brandName;
+        // Replace brand name in all text nodes across the document
+        var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+        var node;
+        while (node = walker.nextNode()) {
+          if (node.parentElement && node.parentElement.closest('script,style,noscript')) continue;
+          if (node.textContent.includes(oldName)) {
+            node.textContent = node.textContent.split(oldName).join(val.trim());
+          }
+        }
+        // Update <title>
+        if (doc.title.includes(oldName)) doc.title = doc.title.split(oldName).join(val.trim());
+        brandName = val.trim();
+        syncHtml();
+      },
+    }));
+
     const groups = [
       { head: 'Titluri principale',  query: 'h1', limit: 3 },
       { head: 'Titluri secțiuni',    query: 'h2', limit: 6 },
