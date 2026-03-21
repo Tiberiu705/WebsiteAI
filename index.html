@@ -2202,24 +2202,26 @@ async function submitContactForm(e) {
     if (iframeDoc.body.hasAttribute('data-nav-guard')) return;
     iframeDoc.body.setAttribute('data-nav-guard', '1');
 
-    // 1) Block ALL clicks on interactive elements (links + buttons) during editing
+    // 1) Handle clicks on links/buttons: open real URLs in new tab, allow anchors to scroll
     iframeDoc.addEventListener('click', function(e) {
       var link = e.target.closest('a[href]');
       if (link) {
         var href = link.getAttribute('href') || '';
-        // Allow tel: and mailto: only
+        // Allow tel: and mailto: natively
         if (href.startsWith('tel:') || href.startsWith('mailto:')) return;
+        // Allow # anchors to scroll within iframe
+        if (href.startsWith('#')) return;
+        // Real URLs → open in new tab instead of navigating inside iframe
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
+        window.open(href, '_blank');
         return false;
       }
-      // Block ALL button clicks (not just submit) except mobile menu toggle
+      // Block non-link button clicks (except mobile menu toggle)
       var btn = e.target.closest('button');
       if (btn && btn.id !== 'mob-btn') {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
         return false;
       }
     }, true);
@@ -2906,14 +2908,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
           ':"<svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 20 20\\" fill=\\"none\\"><line x1=\\"3\\" y1=\\"5\\" x2=\\"17\\" y2=\\"5\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"10\\" x2=\\"17\\" y2=\\"10\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"15\\" x2=\\"17\\" y2=\\"15\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/></svg>"});}' +
         '}' +
         'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}' +
-        // Block ALL link and button clicks (tel/mailto only allowed)
+        // Handle clicks: real URLs open in new tab, anchors scroll, buttons blocked
         'document.addEventListener("click",function(e){' +
           'var a=e.target.closest("a[href]");' +
           'if(a){var h=a.getAttribute("href")||"";' +
             'if(h.indexOf("tel:")===0||h.indexOf("mailto:")===0)return;' +
-            'e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();return false;}' +
+            'if(h.charAt(0)==="#")return;' +
+            'e.preventDefault();e.stopPropagation();' +
+            'try{window.top.open(h,"_blank");}catch(x){window.open(h,"_blank");}return false;}' +
           'var btn=e.target.closest("button");' +
-          'if(btn&&btn.id!=="mob-btn"){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();return false;}' +
+          'if(btn&&btn.id!=="mob-btn"){e.preventDefault();e.stopPropagation();return false;}' +
         '},true);' +
         'document.addEventListener("submit",function(e){e.preventDefault();e.stopPropagation();return false;},true);' +
         'document.querySelectorAll("base").forEach(function(b){b.remove();});' +
