@@ -78,9 +78,17 @@ module.exports = async function handler(req, res) {
   try { event = JSON.parse(rawBody); }
   catch { return res.status(400).json({ error: 'JSON invalid' }); }
 
-  // Get the dashboard site ID from metadata (set at checkout creation)
+  // Get the site ID from metadata — check object, subscription_details, and lines
   const obj = event.data?.object || {};
-  const siteId = obj.metadata?.origin_site_id || obj.metadata?.site_id;
+  let siteId = obj.metadata?.origin_site_id || obj.metadata?.site_id;
+
+  // For invoice events, metadata is on the subscription, not the invoice
+  if (!siteId && obj.subscription_details?.metadata) {
+    siteId = obj.subscription_details.metadata.origin_site_id || obj.subscription_details.metadata.site_id;
+  }
+  if (!siteId && obj.lines?.data?.[0]?.metadata) {
+    siteId = obj.lines.data[0].metadata.origin_site_id || obj.lines.data[0].metadata.site_id;
+  }
 
   if (siteId && REST_URL && REST_TOKEN) {
     switch (event.type) {

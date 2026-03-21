@@ -21,6 +21,69 @@ module.exports = async function handler(req, res) {
 
   if (!REST_URL || !REST_TOKEN) return res.status(503).json({ error: 'Storage neconfigurat' });
 
+  // Domain serving branch (replaces api/serve-domain.js)
+  if (req.query.domain) {
+    const domain = req.query.domain.split(':')[0].toLowerCase();
+    try {
+      const mapping = await redis(['GET', `domain:${domain}`]);
+      if (!mapping) return res.status(404).send(`
+        <html><body style="font-family:sans-serif;text-align:center;padding:60px;background:#000;color:#fff;">
+          <h2>Domeniu neconectat</h2>
+          <p style="color:#666;">Domeniul <strong>${domain}</strong> nu este conectat la niciun site.</p>
+        </body></html>
+      `);
+      const { siteId } = JSON.parse(mapping);
+
+      // Check if site is paid (subscription active)
+      const meta = await redis(['GET', `site:meta:${siteId}`]);
+      if (meta) {
+        const { userId } = JSON.parse(meta);
+        const members = await redis(['ZRANGE', `user:sites:${userId}`, 0, -1]);
+        let siteActive = true;
+        for (const m of (members || [])) {
+          try {
+            const s = JSON.parse(m);
+            if (s.id === siteId && s.paid === false) { siteActive = false; break; }
+          } catch {}
+        }
+        if (!siteActive) {
+          return res.status(402).send(`
+            <!DOCTYPE html>
+            <html lang="ro">
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+            <title>Site Suspendat</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+            </head>
+            <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#080808;font-family:'Inter',sans-serif;">
+              <div style="text-align:center;max-width:480px;padding:40px 24px;">
+                <div style="width:64px;height:64px;background:rgba(255,60,60,0.1);border:1.5px solid rgba(255,60,60,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#ff4d4d" stroke-width="1.8"/><path d="M12 8v4M12 16h.01" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:#fff;margin:0 0 12px;">Site suspendat</h1>
+                <p style="color:#666;font-size:0.9rem;line-height:1.7;margin:0 0 28px;">Abonamentul pentru acest site a expirat sau plata nu a putut fi procesată. Contactează proprietarul site-ului sau echipa WebsiteAI pentru reactivare.</p>
+                <a href="https://websiteai.ro" style="display:inline-block;background:#C8FF00;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;padding:12px 28px;border-radius:10px;text-decoration:none;">websiteai.ro</a>
+              </div>
+            </body>
+            </html>
+          `);
+        }
+      }
+
+      const html = await redis(['GET', `site:html:${siteId}`]);
+      if (!html) return res.status(404).send(`
+        <html><body style="font-family:sans-serif;text-align:center;padding:60px;background:#000;color:#fff;">
+          <h2>Site indisponibil</h2>
+          <p style="color:#666;">Site-ul pentru <strong>${domain}</strong> nu mai este disponibil.</p>
+        </body></html>
+      `);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      return res.status(200).send(html);
+    } catch (e) {
+      return res.status(500).send('Eroare server');
+    }
+  }
+
   const sku = (req.query.sku || '').toUpperCase().trim();
   if (!sku || !/^WEB-[A-Z0-9]{6}$/.test(sku)) return res.status(400).json({ error: 'SKU invalid' });
 
