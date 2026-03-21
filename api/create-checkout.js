@@ -12,9 +12,28 @@ async function redisSave(id, html) {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(204).end();
+
+  // GET: verify payment session (replaces api/verify-payment.js)
+  if (req.method === 'GET') {
+    const { session_id } = req.query;
+    if (!session_id) return res.status(400).json({ error: 'session_id required' });
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) return res.status(500).json({ error: 'Stripe not configured' });
+    const stripeRes = await fetch(
+      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(session_id)}`,
+      { headers: { Authorization: `Bearer ${key}` } }
+    );
+    const session = await stripeRes.json();
+    if (!stripeRes.ok) return res.status(400).json({ error: session.error?.message || 'Eroare Stripe' });
+    return res.status(200).json({
+      paid: session.payment_status === 'paid',
+      siteId: session.metadata?.site_id || null,
+    });
+  }
+
   if (req.method !== 'POST') return res.status(405).end();
 
   const key = process.env.STRIPE_SECRET_KEY;
@@ -41,9 +60,10 @@ module.exports = async function handler(req, res) {
     'line_items[0][price_data][product_data][name]': productName,
     'line_items[0][price_data][product_data][description]': 'Site web profesional generat cu WebsiteAI.ro — abonament lunar',
     'line_items[0][price_data][recurring][interval]': 'month',
-    'line_items[0][price_data][unit_amount]': '100',
+    'line_items[0][price_data][unit_amount]': '14900',
     'line_items[0][quantity]': '1',
     'mode': 'subscription',
+    'subscription_data[trial_period_days]': '7',
     'success_url': successUrl,
     'cancel_url': `${origin}/dashboard`,
     'subscription_data[metadata][site_id]': siteId,
