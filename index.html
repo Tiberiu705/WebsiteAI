@@ -2202,21 +2202,24 @@ async function submitContactForm(e) {
     if (iframeDoc.body.hasAttribute('data-nav-guard')) return;
     iframeDoc.body.setAttribute('data-nav-guard', '1');
 
-    // 1) Block all link clicks except anchors (#), tel:, mailto:
+    // 1) Block ALL clicks on interactive elements (links + buttons) during editing
     iframeDoc.addEventListener('click', function(e) {
       var link = e.target.closest('a[href]');
       if (link) {
         var href = link.getAttribute('href') || '';
-        if (href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
+        // Allow tel: and mailto: only
+        if (href.startsWith('tel:') || href.startsWith('mailto:')) return;
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
         return false;
       }
-      // Also block button elements that have onclick with location/href changes
-      var btn = e.target.closest('button[onclick],button[type="submit"]');
-      if (btn && btn.type === 'submit') {
+      // Block ALL button clicks (not just submit) to prevent onclick handlers
+      var btn = e.target.closest('button');
+      if (btn) {
         e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         return false;
       }
     }, true);
@@ -2234,6 +2237,11 @@ async function submitContactForm(e) {
     // 4) Remove target="_top" / target="_parent" from all links
     iframeDoc.querySelectorAll('[target="_top"],[target="_parent"]').forEach(function(el) {
       el.removeAttribute('target');
+    });
+
+    // 4b) Strip onclick attributes from all buttons to prevent inline JS execution
+    iframeDoc.querySelectorAll('button[onclick],a[onclick]').forEach(function(el) {
+      el.removeAttribute('onclick');
     });
 
     // 5) Override window.location setter inside iframe to prevent navigation
@@ -2265,9 +2273,10 @@ async function submitContactForm(e) {
       '  outline:2px solid rgba(99,102,241,.9)!important;',
       '  outline-offset:3px;border-radius:4px;}',
       // Hover for buttons/CTA links (not contenteditable, but still interactive in editor)
-      'a[href]:not([contenteditable]):hover,button:hover{',
-      '  outline:2px dashed rgba(200,255,0,.5)!important;',
-      '  outline-offset:3px;border-radius:4px;cursor:pointer!important;}',
+      'a[href]:not([contenteditable]):hover,button:not([contenteditable]):hover{',
+      '  outline:2px dashed rgba(200,255,0,.6)!important;',
+      '  outline-offset:3px!important;border-radius:4px!important;cursor:pointer!important;',
+      '  box-shadow:0 0 0 2px rgba(200,255,0,.35)!important;}',
     ].join('');
     (iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
@@ -4310,7 +4319,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       linkInp.addEventListener('focus', () => linkInp.style.borderColor='rgba(200,255,0,0.35)');
       linkInp.addEventListener('blur', () => {
         linkInp.style.borderColor='rgba(255,255,255,0.08)';
-        const nv = linkInp.value.trim();
+        let nv = linkInp.value.trim();
+        // Auto-prepend https:// for URLs without protocol
+        if (nv && !nv.startsWith('#') && !nv.startsWith('http://') && !nv.startsWith('https://') && !nv.startsWith('mailto:') && !nv.startsWith('tel:') && !nv.startsWith('/')) {
+          nv = 'https://' + nv;
+          linkInp.value = nv;
+        }
         if (btn.tagName === 'A') {
           btn.setAttribute('href', nv || '#');
         } else if (btn.tagName === 'BUTTON' && nv) {
@@ -4335,12 +4349,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       goBtn.addEventListener('mouseenter', () => goBtn.style.background='rgba(200,255,0,0.2)');
       goBtn.addEventListener('mouseleave', () => goBtn.style.background='rgba(200,255,0,0.1)');
       goBtn.addEventListener('click', () => {
-        const url = linkInp.value.trim();
+        let url = linkInp.value.trim();
         if (!url) return;
         if (url.startsWith('#')) {
           // Scroll to section inside iframe
           try { const el = previewIframe.contentDocument.querySelector(url); if (el) el.scrollIntoView({behavior:'smooth'}); } catch(e){}
         } else {
+          // Auto-prepend https:// if missing
+          if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
+            url = 'https://' + url;
+            linkInp.value = url;
+          }
           window.open(url, '_blank');
         }
       });
