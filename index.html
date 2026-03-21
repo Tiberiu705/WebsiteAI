@@ -2417,6 +2417,11 @@ async function submitContactForm(e) {
 
   /* ── Close overlay ── */
   function closeOverlay() {
+    // If user came from dashboard (?edit=), redirect back to dashboard
+    if (window.editingSiteId) {
+      window.location.href = '/dashboard';
+      return;
+    }
     overlay.style.display = 'none';
     document.body.style.overflow = '';
     // Refresh gallery when user closes overlay
