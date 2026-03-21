@@ -2294,10 +2294,11 @@ async function submitContactForm(e) {
       'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"])::before,button:not([contenteditable])::before{',
       '  content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;',
       '  border-radius:inherit!important;pointer-events:auto!important;}',
-      // Pop-up hover (exclude tel/mailto)
+      // Pop-up hover (exclude tel/mailto): outline extends beyond button
       'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover,button:not([contenteditable]):hover{',
       '  transform:scale(1.06) translateY(-3px)!important;',
-      '  box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;',
+      '  outline:2px dashed rgba(251,146,60,.6)!important;outline-offset:8px!important;',
+      '  box-shadow:0 8px 25px rgba(251,146,60,.25)!important;',
       '  border-radius:inherit!important;z-index:10!important;}',
       // Floating open-link badge on hover
       '.we-open-badge{position:absolute!important;top:-10px!important;right:-10px!important;width:26px!important;height:26px!important;',
@@ -2905,7 +2906,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       '[contenteditable]:focus{outline:2px solid #6366f1!important;outline-offset:3px;border-radius:4px;}' +
       'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]),button:not([contenteditable]){transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;cursor:pointer!important;position:relative!important;}' +
       'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"])::before,button:not([contenteditable])::before{content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;border-radius:inherit!important;pointer-events:auto!important;}' +
-      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover,button:not([contenteditable]):hover{transform:scale(1.06) translateY(-3px)!important;box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;border-radius:inherit!important;z-index:10!important;}' +
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover,button:not([contenteditable]):hover{transform:scale(1.06) translateY(-3px)!important;outline:2px dashed rgba(251,146,60,.6)!important;outline-offset:8px!important;box-shadow:0 8px 25px rgba(251,146,60,.25)!important;border-radius:inherit!important;z-index:10!important;}' +
       '.we-open-badge{position:absolute!important;top:-10px!important;right:-10px!important;width:26px!important;height:26px!important;background:#fb923c!important;border-radius:50%!important;display:none!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:20!important;box-shadow:0 2px 8px rgba(0,0,0,0.3)!important;transition:transform 0.15s ease!important;pointer-events:auto!important;}' +
       '.we-open-badge:hover{transform:scale(1.15)!important;}' +
       '.we-open-badge svg{width:14px!important;height:14px!important;stroke:#fff!important;fill:none!important;stroke-width:2.2!important;}' +
