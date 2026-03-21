@@ -77,6 +77,45 @@ a{color:inherit;text-decoration:none;}
 .skeleton{background:linear-gradient(90deg,#1a1a1a 25%,#222 50%,#1a1a1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:16px;}
 @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:12px;margin-bottom:28px;flex-wrap:wrap;}
+.search-wrap{position:relative;flex:1;min-width:180px;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#444;pointer-events:none;display:flex;}
+.dash-search{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:9px 14px 9px 36px;color:#fff;font-family:'Inter',sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.2s;}
+.dash-search:focus{border-color:rgba(200,255,0,0.35);}
+.dash-search::placeholder{color:#444;}
+.filter-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:10px;padding:3px;flex-shrink:0;}
+.filter-tab{background:transparent;border:none;border-radius:8px;padding:7px 16px;color:#555;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.filter-tab.active{background:#1a1a1a;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);}
+.filter-tab:hover:not(.active){color:#aaa;}
+
+/* STAR BUTTON */
+.star-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;z-index:2;color:#888;font-size:0.85rem;line-height:1;}
+.star-btn:hover{border-color:rgba(200,255,0,0.4);color:#C8FF00;}
+.star-btn.starred{background:rgba(200,255,0,0.15);border-color:rgba(200,255,0,0.4);color:#C8FF00;}
+
+/* UPGRADE BANNER */
+.upgrade-banner{background:linear-gradient(135deg,rgba(200,255,0,0.06) 0%,rgba(200,255,0,0.02) 100%);border:1px solid rgba(200,255,0,0.15);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:28px;cursor:pointer;transition:border-color 0.2s;}
+.upgrade-banner:hover{border-color:rgba(200,255,0,0.3);}
+.upgrade-banner-icon{width:38px;height:38px;border-radius:10px;background:rgba(200,255,0,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;}
+.upgrade-banner-text{flex:1;min-width:0;}
+.upgrade-banner-title{font-family:'Syne',sans-serif;font-weight:800;font-size:0.88rem;color:#fff;margin-bottom:2px;}
+.upgrade-banner-sub{font-size:0.75rem;color:#555;font-family:'Inter',sans-serif;}
+.upgrade-banner-btn{background:#C8FF00;border:none;border-radius:8px;padding:8px 16px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.75rem;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;flex-shrink:0;}
+.upgrade-banner:hover .upgrade-banner-btn{opacity:0.88;}
+
+/* EMPTY STATE TEMPLATES */
+.template-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px;}
+.template-chip{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:7px 16px;font-family:'Inter',sans-serif;font-size:0.78rem;color:#888;cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-block;}
+.template-chip:hover{background:rgba(200,255,0,0.08);border-color:rgba(200,255,0,0.25);color:#C8FF00;}
+
+@media(max-width:640px){
+  .filter-bar{gap:8px;}
+  .filter-tab{padding:7px 10px;font-size:0.7rem;}
+  .upgrade-banner{padding:14px 16px;gap:12px;}
+  .upgrade-banner-sub{display:none;}
+}
+
 /* CONFIRM DELETE MODAL */
 #confirm-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;}
 .confirm-box{background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:360px;width:90%;text-align:center;}
@@ -243,16 +282,43 @@ a{color:inherit;text-decoration:none;}
 
 <!-- MAIN -->
 <main class="main">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px;">
-    <div class="page-title">Istoric website-uri</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px;">
+    <div class="page-title">Site-urile mele</div>
     <button onclick="loadSites()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 16px;color:#666;font-family:'Inter',sans-serif;font-size:0.78rem;cursor:pointer;">↺ Reîmprospătează</button>
   </div>
   <div class="page-sub" id="page-sub">Site-urile tale generate cu WebsiteAI</div>
+
+  <!-- Upgrade banner -->
+  <div class="upgrade-banner" id="upgrade-banner" onclick="window.location.href='/?generate=1'" style="display:none;">
+    <div class="upgrade-banner-icon">⚡</div>
+    <div class="upgrade-banner-text">
+      <div class="upgrade-banner-title">Generează un site nou cu AI</div>
+      <div class="upgrade-banner-sub">Descrie afacerea ta și primești un site complet în câteva secunde</div>
+    </div>
+    <button class="upgrade-banner-btn" onclick="event.stopPropagation();window.location.href='/?generate=1'">+ Site nou →</button>
+  </div>
+
+  <!-- Filter bar: search + tabs -->
+  <div class="filter-bar" id="filter-bar" style="display:none;">
+    <div class="search-wrap">
+      <span class="search-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#444" stroke-width="1.4"/><path d="M10 10l2.5 2.5" stroke="#444" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+      <input class="dash-search" id="dash-search" type="text" placeholder="Caută după nume sau domeniu…" oninput="filterSites()"/>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all" onclick="setFilter('all',this)">Toate</button>
+      <button class="filter-tab" data-filter="recent" onclick="setFilter('recent',this)">Recente</button>
+      <button class="filter-tab" data-filter="favorites" onclick="setFilter('favorites',this)">★ Favorite</button>
+    </div>
+  </div>
 
   <div class="stats-bar" id="stats-bar" style="display:none;">
     <div class="stat-card">
       <div class="stat-num" id="stat-total">0</div>
       <div class="stat-lbl">Site-uri generate</div>
+    </div>
+    <div class="stat-card" id="stat-fav-card" style="display:none;">
+      <div class="stat-num" id="stat-fav">0</div>
+      <div class="stat-lbl">Favorite</div>
     </div>
   </div>
 
@@ -479,6 +545,55 @@ var _session = null;
 var _user = null;
 var _sites = [];
 var _deleteTarget = null;
+var _currentFilter = 'all';
+var _searchQuery = '';
+var _favorites = new Set();
+
+function _loadFavorites() {
+  try { _favorites = new Set(JSON.parse(localStorage.getItem('ws_favorites') || '[]')); } catch { _favorites = new Set(); }
+}
+function _saveFavorites() {
+  try { localStorage.setItem('ws_favorites', JSON.stringify([..._favorites])); } catch {}
+}
+function toggleFavorite(id, btn) {
+  if (_favorites.has(id)) { _favorites.delete(id); } else { _favorites.add(id); }
+  _saveFavorites();
+  btn.classList.toggle('starred', _favorites.has(id));
+  btn.title = _favorites.has(id) ? 'Elimină din favorite' : 'Adaugă la favorite';
+  // Update fav stat
+  var statFav = document.getElementById('stat-fav');
+  var statFavCard = document.getElementById('stat-fav-card');
+  if (statFav) statFav.textContent = _favorites.size;
+  if (statFavCard) statFavCard.style.display = _favorites.size ? 'block' : 'none';
+  // If on favorites tab, re-render
+  if (_currentFilter === 'favorites') filterSites();
+}
+function setFilter(filter, btn) {
+  _currentFilter = filter;
+  document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  filterSites();
+}
+function filterSites() {
+  _searchQuery = (document.getElementById('dash-search')?.value || '').trim().toLowerCase();
+  renderSites();
+}
+function getFilteredSites() {
+  var now = Date.now();
+  var sevenDays = 7 * 24 * 60 * 60 * 1000;
+  return _sites.filter(function(s) {
+    if (_currentFilter === 'favorites' && !_favorites.has(s.id)) return false;
+    if (_currentFilter === 'recent') {
+      var ts = new Date(s.generatedAt).getTime();
+      if (now - ts > sevenDays) return false;
+    }
+    if (_searchQuery) {
+      var haystack = ((s.brandName || '') + ' ' + (s.activity || '') + ' ' + (s.domain || '')).toLowerCase();
+      if (!haystack.includes(_searchQuery)) return false;
+    }
+    return true;
+  });
+}
 
 // ── Auth ──
 function getSession() {
@@ -497,6 +612,7 @@ function logout() {
 (async function init() {
   _session = getSession();
   _user = getUser();
+  _loadFavorites();
 
   if (!_session || !_user) {
     window.location.href = '/';
@@ -548,26 +664,56 @@ async function loadSites() {
 function renderSites() {
   var container = document.getElementById('sites-container');
   var statsBar = document.getElementById('stats-bar');
+  var filterBar = document.getElementById('filter-bar');
+  var upgradeBanner = document.getElementById('upgrade-banner');
+  var statFavCard = document.getElementById('stat-fav-card');
 
+  // Show/hide persistent UI based on total sites
   if (_sites.length > 0) {
     statsBar.style.display = 'flex';
+    filterBar.style.display = 'flex';
+    upgradeBanner.style.display = 'flex';
     document.getElementById('stat-total').textContent = _sites.length;
+    if (_favorites.size > 0) {
+      document.getElementById('stat-fav').textContent = _favorites.size;
+      statFavCard.style.display = 'block';
+    }
   }
 
+  var filtered = getFilteredSites();
+
+  // Empty state
   if (!_sites.length) {
     container.innerHTML = '<div class="empty-state">' +
       '<div class="empty-icon">✦</div>' +
       '<div class="empty-title">Niciun site generat încă</div>' +
-      '<div class="empty-sub">Generează primul tău site web cu AI</div>' +
-      '<a href="/?generate=1" class="btn-new" style="display:inline-flex;align-items:center;text-decoration:none;margin-top:8px;">Generează acum</a>' +
+      '<div class="empty-sub">Alege un template sau descrie afacerea ta</div>' +
+      '<a href="/?generate=1" class="btn-new" style="display:inline-flex;align-items:center;text-decoration:none;margin-top:8px;">+ Generează primul site</a>' +
+      '<div class="template-chips">' +
+        '<a class="template-chip" href="/?generate=1">🍽 Restaurant</a>' +
+        '<a class="template-chip" href="/?generate=1">💆 Salon beauty</a>' +
+        '<a class="template-chip" href="/?generate=1">🏋 Sală fitness</a>' +
+        '<a class="template-chip" href="/?generate=1">🔧 Service auto</a>' +
+        '<a class="template-chip" href="/?generate=1">🏠 Agenție imobiliară</a>' +
+        '<a class="template-chip" href="/?generate=1">🦷 Cabinet dentar</a>' +
+      '</div>' +
       '</div>';
+    return;
+  }
+
+  // No results after filter
+  if (!filtered.length) {
+    var emptyMsg = _currentFilter === 'favorites'
+      ? '<div class="empty-state"><div class="empty-icon">★</div><div class="empty-title">Niciun site favorit</div><div class="empty-sub">Apasă steluța de pe un card pentru a-l adăuga la favorite.</div></div>'
+      : '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Niciun rezultat</div><div class="empty-sub">Încearcă un alt termen de căutare.</div></div>';
+    container.innerHTML = emptyMsg;
     return;
   }
 
   var grid = document.createElement('div');
   grid.className = 'sites-grid';
 
-  _sites.forEach(function(site) {
+  filtered.forEach(function(site) {
     grid.appendChild(buildCard(site));
   });
 
@@ -582,11 +728,13 @@ function buildCard(site) {
   var date = '';
   try { date = new Date(site.generatedAt).toLocaleDateString('ro-RO', {day:'numeric',month:'long',year:'numeric'}); } catch{}
 
+  var isStarred = _favorites.has(site.id);
   card.innerHTML =
-    '<div class="card-preview" onclick="openSite(\'' + site.id + '\')">' +
+    '<div class="card-preview" style="position:relative;" onclick="openSite(\'' + site.id + '\')">' +
       '<div class="card-iframe-wrap" id="wrap-' + site.id + '">' +
         '<div class="card-initial">' + (site.brandName || '?')[0].toUpperCase() + '</div>' +
       '</div>' +
+      '<button class="star-btn' + (isStarred ? ' starred' : '') + '" id="star-' + site.id + '" title="' + (isStarred ? 'Elimină din favorite' : 'Adaugă la favorite') + '" onclick="event.stopPropagation();toggleFavorite(\'' + site.id + '\',this)">★</button>' +
       '<div class="card-overlay">' +
         '<button class="card-open-btn">Deschide previzualizare</button>' +
       '</div>' +
@@ -601,7 +749,7 @@ function buildCard(site) {
       '<div class="card-date">' + date + '</div>' +
       '<div class="card-actions">' +
         '<button class="btn-activate-card' + (site.paid || mockCheckPayment(site.id) ? ' btn-paid' : '') + '" onclick="activateSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\')">' + (site.paid || mockCheckPayment(site.id) ? '✓ Activat' : 'Activează') + '</button>' +
-        '<button class="btn-edit-card" onclick="editSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\', \'' + _esc(site.activity || '') + '\')">✏ Editează</button>' +
+        '<button class="btn-edit-card" onclick="editSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\', \'' + _esc(site.activity || '') + '\', \'' + _esc(site.sku || '') + '\')">✏ Editează</button>' +
         '<button class="btn-open-card" onclick="openSite(\'' + site.id + '\')">↗</button>' +
         '<button class="btn-delete-card" onclick="confirmDelete(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\')">✕</button>' +
       '</div>' +
@@ -670,11 +818,12 @@ async function activateSite(id, brandName) {
   }
 }
 
-function editSite(id, brand, activity) {
+function editSite(id, brand, activity, sku) {
   window.location.href = '/?edit=' + id
     + '&token=' + encodeURIComponent(_session)
     + '&brand=' + encodeURIComponent(brand || '')
-    + '&act='   + encodeURIComponent(activity || '');
+    + '&act='   + encodeURIComponent(activity || '')
+    + (sku ? '&sku=' + encodeURIComponent(sku) : '');
 }
 
 function confirmDelete(id, name) {
@@ -806,33 +955,39 @@ function mockBuyDomain(domain) {
     setTimeout(function() { resolve({ success: true, domain: domain }); }, 1200);
   });
 }
-function mockCheckDns(domain) {
-  return new Promise(function(resolve) {
-    setTimeout(function() {
-      _dnsCheckCount++;
-      if (_dnsCheckCount >= 3) {
-        // After 3 checks, simulate success
-        resolve({
-          success: true,
-          checks: [
-            { label: 'Nameserver 1', ok: true, value: 'ns1.websiteai.ro' },
-            { label: 'Nameserver 2', ok: true, value: 'ns2.websiteai.ro' },
-            { label: 'Propagare DNS', ok: true, value: 'Activ' }
-          ]
-        });
-      } else {
-        resolve({
-          success: false,
-          checks: [
-            { label: 'Nameserver 1', ok: false, value: 'ns1.alte-servere.ro (greșit)' },
-            { label: 'Nameserver 2', ok: false, value: 'ns2.alte-servere.ro (greșit)' },
-            { label: 'Propagare DNS', ok: false, value: 'Pending' }
-          ],
-          error: 'Nameserverele nu au fost actualizate încă. Asigură-te că ai salvat ns1.websiteai.ro și ns2.websiteai.ro la registrarul tău.'
-        });
-      }
-    }, 1500);
-  });
+async function checkDnsReal(domain) {
+  var rootDomain = domain.replace(/^www\./, '');
+  var aOk = false, cnameOk = false, aValue = 'negăsit', cnameValue = 'negăsit';
+
+  try {
+    var aRes = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(rootDomain) + '&type=A');
+    var aData = await aRes.json();
+    var aAnswers = aData.Answer || [];
+    var aRecord = aAnswers.find(function(r){ return r.type === 1; });
+    if (aRecord) {
+      aValue = aRecord.data;
+      aOk = aRecord.data === '76.76.21.21';
+    }
+  } catch(e) {}
+
+  try {
+    var cRes = await fetch('https://dns.google/resolve?name=www.' + encodeURIComponent(rootDomain) + '&type=CNAME');
+    var cData = await cRes.json();
+    var cAnswers = cData.Answer || [];
+    var cRecord = cAnswers.find(function(r){ return r.type === 5; });
+    if (cRecord) {
+      cnameValue = cRecord.data.replace(/\.$/, '');
+      cnameOk = cnameValue === 'cname.vercel-dns.com';
+    }
+  } catch(e) {}
+
+  var success = aOk && cnameOk;
+  var checks = [
+    { label: 'A Record (@)', ok: aOk, value: aOk ? aValue : (aValue !== 'negăsit' ? aValue + ' (greșit, trebuie 76.76.21.21)' : 'negăsit') },
+    { label: 'CNAME (www)', ok: cnameOk, value: cnameOk ? cnameValue : (cnameValue !== 'negăsit' ? cnameValue + ' (greșit)' : 'negăsit') },
+  ];
+  var error = !success ? 'DNS-ul nu a propagat încă. Verifică că ai salvat corect înregistrările A și CNAME în panoul registrarului tău.' : null;
+  return { success: success, checks: checks, error: error };
 }
 function mockActivateDomain(siteId, domain) {
   return new Promise(function(resolve) {
@@ -985,14 +1140,13 @@ async function startDnsVerification() {
 
   // Register domain → site mapping in Redis and add to Vercel
   try {
-    await fetch('/api/add-domain', {
-      method: 'POST',
+    await fetch('/api/user/sites', {
+      method: 'PUT',
       headers: { Authorization: 'Bearer ' + _session, 'Content-Type': 'application/json' },
       body: JSON.stringify({ domain: domain, siteId: _activeSiteId }),
     });
   } catch(e) { /* continue anyway */ }
 
-  _dnsCheckCount = 0;
   goToStep('dom-step-status');
   runDnsCheck(domain);
   _dnsCheckInterval = setInterval(function(){ runDnsCheck(domain); }, 8000);
@@ -1000,7 +1154,7 @@ async function startDnsVerification() {
 
 async function runDnsCheck(domain) {
   updateStatus('pending', '<span class="dom-pulse" style="display:inline-block;margin-right:4px;"></span>', 'Verificăm configurarea DNS...', 'Poate dura câteva secunde. Verificăm automat la fiecare 8 secunde.');
-  var result = await mockCheckDns(domain);
+  var result = await checkDnsReal(domain);
   renderDnsChecks(result.checks);
   if (result.success) {
     clearInterval(_dnsCheckInterval); _dnsCheckInterval = null;

@@ -5442,9 +5442,15 @@ async function _saveUserSite(session, html, brief) {
   var token  = params.get('token');
   var brand  = params.get('brand') || '';
   var act    = params.get('act')   || '';
+  var sku    = params.get('sku')   || '';
   if (!editId) return;
 
-  history.replaceState({}, '', window.location.pathname);
+  // Update URL to show /site/SKU (unique per site)
+  if (sku) {
+    history.replaceState({}, '', '/site/' + sku);
+  } else {
+    history.replaceState({}, '', window.location.pathname);
+  }
 
   if (token) {
     try {
