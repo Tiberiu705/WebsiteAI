@@ -545,7 +545,14 @@ section:first-of-type p {
 })();
 </script>`;
 
-      html = html.replace(/<footer[\s>]/i, function(m){ return contactSection + '\n' + m; });
+      // Inject contact section: before <footer> if it exists, otherwise before </body>
+      if (/<footer[\s>]/i.test(html)) {
+        html = html.replace(/<footer[\s>]/i, function(m){ return contactSection + '\n' + m; });
+      } else if (/<\/body>/i.test(html)) {
+        html = html.replace(/<\/body>/i, contactSection + '\n</body>');
+      } else {
+        html += '\n' + contactSection;
+      }
 
       break;
     }
