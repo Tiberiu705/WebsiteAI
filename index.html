@@ -2525,14 +2525,28 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     html = html.replace(/new Date\(\)\.getFullYear\(\)/g, '2026');
     // Inject editing script directly into HTML (runs inside iframe — most reliable approach)
     if (!html.includes('id="we-s"')) {
-      html = html.replace(/<\/body>/i, _inlineEditBlock() + '\n</body>');
+      var editBlock = _inlineEditBlock();
+      if (/<\/body>/i.test(html)) {
+        html = html.replace(/<\/body>/i, editBlock + '\n</body>');
+      } else if (/<\/html>/i.test(html)) {
+        html = html.replace(/<\/html>/i, editBlock + '\n</html>');
+      } else {
+        html += '\n' + editBlock;
+      }
     }
     window.generatedHtml = html;
     if (!keepEdits) window.editedContent = {};
     showPanel('preview');
     previewIframe.srcdoc = html;
     previewIframe.addEventListener('load', () => {
-      try { populateEditor(); } catch(e) {}
+      try {
+        // Fallback: if injected script didn't run, set up editing from parent frame
+        var iDoc = previewIframe.contentDocument;
+        if (iDoc && iDoc.body && !iDoc.body.hasAttribute('data-we-ready')) {
+          setupInlineEditing(iDoc);
+        }
+        populateEditor();
+      } catch(e) {}
     }, { once: true });
   }
   window.showPreview = showPreview;
@@ -4553,6 +4567,9 @@ function loadMoreRecent() {
 
 async function saveToRecent(brief, html) {
   try {
+    // Limit HTML to 3MB to avoid Vercel's 4.5MB body limit
+    const MAX_HTML = 3 * 1024 * 1024;
+    const htmlPayload = html ? html.slice(0, MAX_HTML) : '';
     const r = await fetch('/api/recent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -4560,9 +4577,13 @@ async function saveToRecent(brief, html) {
         brandName: brief.brandName,
         activity: brief.activity,
         publishedUrl: null,
-        html: html || '',
+        html: htmlPayload,
       }),
     });
+    if (!r.ok) {
+      console.warn('[gallery] save failed with status:', r.status);
+      return;
+    }
     const d = await r.json();
     if (d.ok) {
       // Show toast in toolbar
