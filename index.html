@@ -2285,14 +2285,18 @@ async function submitContactForm(e) {
       '[contenteditable]:focus{',
       '  outline:2px solid rgba(99,102,241,.9)!important;',
       '  outline-offset:3px;border-radius:4px;}',
-      // Buttons/CTA: base transition for pop-up effect
+      // Buttons/CTA: base + invisible hover zone extending outside the button
       'a[href]:not([contenteditable]),button:not([contenteditable]){',
-      '  transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;cursor:pointer!important;}',
+      '  transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;',
+      '  cursor:pointer!important;position:relative!important;}',
+      'a[href]:not([contenteditable])::before,button:not([contenteditable])::before{',
+      '  content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;',
+      '  border-radius:inherit!important;pointer-events:auto!important;}',
       // Pop-up hover: lift + scale + glow shadow
       'a[href]:not([contenteditable]):hover,button:not([contenteditable]):hover{',
       '  transform:scale(1.06) translateY(-3px)!important;',
       '  box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;',
-      '  border-radius:inherit!important;z-index:10!important;position:relative!important;}',
+      '  border-radius:inherit!important;z-index:10!important;}',
     ].join('');
     (iframeDoc.body || iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
@@ -2868,8 +2872,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     return '<style id="we-s">' +
       '[contenteditable]:hover:not(:focus){outline:2px dashed rgba(99,102,241,.7)!important;outline-offset:3px;border-radius:4px;cursor:text!important;}' +
       '[contenteditable]:focus{outline:2px solid #6366f1!important;outline-offset:3px;border-radius:4px;}' +
-      'a[href]:not([contenteditable]),button:not([contenteditable]){transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;cursor:pointer!important;}' +
-      'a[href]:not([contenteditable]):hover,button:not([contenteditable]):hover{transform:scale(1.06) translateY(-3px)!important;box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;border-radius:inherit!important;z-index:10!important;position:relative!important;}' +
+      'a[href]:not([contenteditable]),button:not([contenteditable]){transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;cursor:pointer!important;position:relative!important;}' +
+      'a[href]:not([contenteditable])::before,button:not([contenteditable])::before{content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;border-radius:inherit!important;pointer-events:auto!important;}' +
+      'a[href]:not([contenteditable]):hover,button:not([contenteditable]):hover{transform:scale(1.06) translateY(-3px)!important;box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;border-radius:inherit!important;z-index:10!important;}' +
       '</style>' +
       '<scr' + 'ipt id="we-e">(function(){' +
         'function init(){' +
