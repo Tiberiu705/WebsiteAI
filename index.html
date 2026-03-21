@@ -2481,30 +2481,59 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
   }
 
 
-/* ── Show preview ── */
+/* ── Inline editing block injected directly into generated HTML ── */
+  function _inlineEditBlock() {
+    return '<style id="we-s">' +
+      '[contenteditable]:hover:not(:focus){outline:2px dashed rgba(99,102,241,.7)!important;outline-offset:3px;border-radius:4px;cursor:text!important;}' +
+      '[contenteditable]:focus{outline:2px solid #6366f1!important;outline-offset:3px;border-radius:4px;}' +
+      '</style>' +
+      '<scr' + 'ipt id="we-e">(function(){' +
+        'function init(){' +
+          'document.querySelectorAll("h1,h2,h3,h4,h5,p,button,li,span").forEach(function(el){' +
+            'try{' +
+              'if(el.closest("script,style,noscript,svg,iframe"))return;' +
+              'var t=el.textContent.trim();' +
+              'if(t.length<2||t.length>400)return;' +
+              'var bad=Array.from(el.children).some(function(c){return/^(DIV|SECTION|UL|OL|TABLE|NAV|HEADER|FOOTER|MAIN|ARTICLE)$/.test(c.tagName);});' +
+              'if(bad)return;' +
+              'if(el.closest("[contenteditable=\\"true\\"]"))return;' +
+              'el.setAttribute("contenteditable","true");' +
+              'el.setAttribute("spellcheck","false");' +
+              'var orig=el.innerHTML;' +
+              'el.addEventListener("focus",function(){orig=el.innerHTML;});' +
+              'el.addEventListener("keydown",function(e){' +
+                'if(e.key==="Escape"){e.preventDefault();el.innerHTML=orig;el.blur();}' +
+                'if(e.key==="Enter"&&!e.shiftKey&&(el.tagName==="BUTTON"||/^H\\d$/.test(el.tagName))){e.preventDefault();el.blur();}' +
+              '});' +
+              'el.addEventListener("blur",function(){' +
+                'var nv=el.innerHTML.trim();' +
+                'if(!nv){el.innerHTML=orig;return;}' +
+                'if(nv!==orig){' +
+                  'try{var p=window.parent||window;if(p.editedContent){var k="ek_"+el.tagName+"_"+t.slice(0,15);el.setAttribute("data-ek",k);p.editedContent[k]={html:nv};}}catch(x){}' +
+                '}' +
+              '});' +
+            '}catch(e){}' +
+          '});' +
+        '}' +
+        'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}' +
+      '})();<\/scr' + 'ipt>';
+  }
+
+  /* ── Show preview ── */
   function showPreview(html, keepEdits) {
     html = html.replace(/©\s*\d{4}/g, '© 2026');
     html = html.replace(/new Date\(\)\.getFullYear\(\)/g, '2026');
+    // Inject editing script directly into HTML (runs inside iframe — most reliable approach)
+    if (!html.includes('id="we-s"')) {
+      html = html.replace(/<\/body>/i, _inlineEditBlock() + '\n</body>');
+    }
     window.generatedHtml = html;
     if (!keepEdits) window.editedContent = {};
     showPanel('preview');
     previewIframe.srcdoc = html;
     previewIframe.addEventListener('load', () => {
-      try {
-        setupInlineEditing(previewIframe.contentDocument);
-        populateEditor();
-      } catch(e) { console.error('[we] load handler error:', e); }
+      try { populateEditor(); } catch(e) {}
     }, { once: true });
-    // Fallback: retry after delay in case load fired before listener was attached
-    setTimeout(() => {
-      try {
-        const d = previewIframe.contentDocument;
-        if (d && d.body && !d.body.hasAttribute('data-we-ready')) {
-          setupInlineEditing(d);
-          populateEditor();
-        }
-      } catch(e) {}
-    }, 1000);
   }
   window.showPreview = showPreview;
 
