@@ -504,6 +504,9 @@ section:first-of-type p {
   // Brand name for notification
   var bName=document.title||(document.querySelector('h1')?document.querySelector('h1').textContent.trim().slice(0,60):'');
 
+  // Extract siteId from URL path (/site/WEB-XXXXXX)
+  var siteId=(function(){var m=window.location.pathname.match(/\\/site\\/(WEB-[A-Z0-9]+)/i);return m?m[1]:null;})();
+
   // Form submit
   var form=document.getElementById('wai-contact-form');
   var statusEl=document.getElementById('wai-f-status');
@@ -525,7 +528,7 @@ section:first-of-type p {
     fetch('https://websiteai.ro/api/contact',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name:name,email:email,phone:phone||null,message:msg,brand:bName||null,hp:hp?hp.value:''})
+      body:JSON.stringify({name:name,email:email,phone:phone||null,message:msg,brand:bName||null,siteId:siteId||null,hp:hp?hp.value:''})
     }).then(function(r){return r.json();}).then(function(d){
       if(d.ok){
         statusEl.style.display='block';statusEl.style.color='#276749';statusEl.style.background='#f0fff4';

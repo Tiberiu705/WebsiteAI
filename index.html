@@ -4163,6 +4163,94 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       wrap.appendChild(input);
       panel.appendChild(wrap);
     });
+
+    // ── Email notificări (primește mesajele din formularul de contact) ──
+    panel.appendChild(editorSectionHead('Notificări formular'));
+
+    const notifWrap = document.createElement('div');
+    notifWrap.style.cssText = 'margin-bottom:18px;';
+    const notifLbl = document.createElement('div');
+    notifLbl.textContent = 'Email notificări';
+    notifLbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#555;margin-bottom:6px;';
+    notifWrap.appendChild(notifLbl);
+
+    const notifHint = document.createElement('div');
+    notifHint.textContent = 'Mesajele din formularul de contact vor fi trimise la acest email';
+    notifHint.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.68rem;color:#444;margin-bottom:8px;line-height:1.4;';
+    notifWrap.appendChild(notifHint);
+
+    const notifInp = document.createElement('input');
+    notifInp.type = 'email';
+    notifInp.placeholder = 'email@exemplu.ro';
+    notifInp.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.15s;';
+    notifInp.addEventListener('focus', () => notifInp.style.borderColor = 'rgba(200,255,0,0.35)');
+    notifInp.addEventListener('blur',  () => notifInp.style.borderColor = 'rgba(255,255,255,0.08)');
+
+    const notifStatus = document.createElement('div');
+    notifStatus.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.72rem;margin-top:6px;display:none;';
+
+    // Load saved notification email
+    const siteId = window.editingSiteId;
+    if (siteId) {
+      fetch('/api/contact?action=get-email&siteId=' + encodeURIComponent(siteId))
+        .then(r => r.json())
+        .then(d => { if (d.email) notifInp.value = d.email; })
+        .catch(() => {});
+    }
+
+    const notifBtn = document.createElement('button');
+    notifBtn.textContent = 'Salvează email';
+    notifBtn.style.cssText = 'margin-top:8px;width:100%;padding:10px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:8px;color:#818cf8;font-family:"Inter",sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.15s;';
+    notifBtn.addEventListener('mouseenter', () => notifBtn.style.background = 'rgba(99,102,241,0.25)');
+    notifBtn.addEventListener('mouseleave', () => notifBtn.style.background = 'rgba(99,102,241,0.15)');
+    notifBtn.addEventListener('click', () => {
+      const email = notifInp.value.trim();
+      if (!email || !email.includes('@')) {
+        notifStatus.style.display = 'block';
+        notifStatus.style.color = '#f87171';
+        notifStatus.textContent = 'Email invalid';
+        return;
+      }
+      if (!siteId) {
+        notifStatus.style.display = 'block';
+        notifStatus.style.color = '#f87171';
+        notifStatus.textContent = 'Salvează site-ul mai întâi';
+        return;
+      }
+      notifBtn.disabled = true;
+      notifBtn.textContent = 'Se salvează...';
+      const session = localStorage.getItem('ws_session') || '';
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set-email', siteId, notificationEmail: email, token: session }),
+      })
+        .then(r => r.json())
+        .then(d => {
+          notifStatus.style.display = 'block';
+          if (d.ok) {
+            notifStatus.style.color = '#4ade80';
+            notifStatus.textContent = '✓ Email salvat! Vei primi mesajele aici.';
+          } else {
+            notifStatus.style.color = '#f87171';
+            notifStatus.textContent = d.error || 'Eroare la salvare';
+          }
+          notifBtn.disabled = false;
+          notifBtn.textContent = 'Salvează email';
+        })
+        .catch(() => {
+          notifStatus.style.display = 'block';
+          notifStatus.style.color = '#f87171';
+          notifStatus.textContent = 'Eroare de rețea';
+          notifBtn.disabled = false;
+          notifBtn.textContent = 'Salvează email';
+        });
+    });
+
+    notifWrap.appendChild(notifInp);
+    notifWrap.appendChild(notifBtn);
+    notifWrap.appendChild(notifStatus);
+    panel.appendChild(notifWrap);
   }
 
   /* ── Replace text across all text nodes in doc ── */
