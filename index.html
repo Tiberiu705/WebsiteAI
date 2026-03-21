@@ -2312,10 +2312,9 @@ async function submitContactForm(e) {
       '[contenteditable]:focus{',
       '  outline:2px solid rgba(99,102,241,.9)!important;',
       '  outline-offset:3px;border-radius:4px;}',
-      // Tel/email links: bigger click/hover area
+      // Tel/email links: keep natural size
       'a[href^="tel:"][contenteditable],a[href^="mailto:"][contenteditable]{',
-      '  padding:8px 14px!important;margin:-8px -14px!important;display:inline-block!important;',
-      '  border-radius:6px!important;cursor:text!important;}',
+      '  display:inline-block!important;cursor:text!important;}',
     ].join('');
     (iframeDoc.body || iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
@@ -3021,7 +3020,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     return '<style id="we-s">' +
       '[contenteditable]:hover:not(:focus){outline:2px dashed rgba(99,102,241,.7)!important;outline-offset:3px;border-radius:4px;cursor:text!important;}' +
       '[contenteditable]:focus{outline:2px solid #6366f1!important;outline-offset:3px;border-radius:4px;}' +
-      'a[href^="tel:"][contenteditable],a[href^="mailto:"][contenteditable]{padding:8px 14px!important;margin:-8px -14px!important;display:inline-block!important;border-radius:6px!important;cursor:text!important;}' +
+      'a[href^="tel:"][contenteditable],a[href^="mailto:"][contenteditable]{display:inline-block!important;cursor:text!important;}' +
       '</style>' +
       '<scr' + 'ipt id="we-e">(function(){' +
         'function init(){' +
