@@ -2264,6 +2264,10 @@ async function submitContactForm(e) {
       '[contenteditable]:focus{',
       '  outline:2px solid rgba(99,102,241,.9)!important;',
       '  outline-offset:3px;border-radius:4px;}',
+      // Hover for buttons/CTA links (not contenteditable, but still interactive in editor)
+      'a[href]:not([contenteditable]):hover,button:hover{',
+      '  outline:2px dashed rgba(200,255,0,.5)!important;',
+      '  outline-offset:3px;border-radius:4px;cursor:pointer!important;}',
     ].join('');
     (iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
@@ -4298,10 +4302,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
 
       // Link URL
       card.appendChild(LBL('Link'));
+      const linkRow = document.createElement('div'); linkRow.style.cssText = 'display:flex;gap:6px;margin-bottom:10px;';
       const linkInp = document.createElement('input'); linkInp.type = 'text';
       linkInp.value = btn.getAttribute('href') || btn.getAttribute('onclick')?.match(/href=['"](.*?)['"]/)?.[1] || '';
       linkInp.placeholder = '#contact sau https://...';
-      linkInp.style.cssText = 'width:100%;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;margin-bottom:10px;display:block;transition:border-color 0.15s;';
+      linkInp.style.cssText = 'flex:1;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;transition:border-color 0.15s;';
       linkInp.addEventListener('focus', () => linkInp.style.borderColor='rgba(200,255,0,0.35)');
       linkInp.addEventListener('blur', () => {
         linkInp.style.borderColor='rgba(255,255,255,0.08)';
@@ -4309,7 +4314,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
         if (btn.tagName === 'A') {
           btn.setAttribute('href', nv || '#');
         } else if (btn.tagName === 'BUTTON' && nv) {
-          // Convert <button> to <a> with same styling
           const a = doc.createElement('a');
           a.href = nv;
           a.textContent = btn.textContent;
@@ -4323,7 +4327,26 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
         }
         syncHtml();
       });
-      card.appendChild(linkInp);
+      // Open link button
+      const goBtn = document.createElement('button');
+      goBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+      goBtn.title = 'Deschide link-ul';
+      goBtn.style.cssText = 'background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:6px 10px;color:#C8FF00;cursor:pointer;flex-shrink:0;display:flex;align-items:center;transition:background 0.15s;';
+      goBtn.addEventListener('mouseenter', () => goBtn.style.background='rgba(200,255,0,0.2)');
+      goBtn.addEventListener('mouseleave', () => goBtn.style.background='rgba(200,255,0,0.1)');
+      goBtn.addEventListener('click', () => {
+        const url = linkInp.value.trim();
+        if (!url) return;
+        if (url.startsWith('#')) {
+          // Scroll to section inside iframe
+          try { const el = previewIframe.contentDocument.querySelector(url); if (el) el.scrollIntoView({behavior:'smooth'}); } catch(e){}
+        } else {
+          window.open(url, '_blank');
+        }
+      });
+      linkRow.appendChild(linkInp);
+      linkRow.appendChild(goBtn);
+      card.appendChild(linkRow);
 
       // Colors row
       const colorRow = document.createElement('div'); colorRow.style.cssText = 'display:flex;gap:10px;';
