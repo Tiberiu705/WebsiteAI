@@ -2207,7 +2207,8 @@ async function submitContactForm(e) {
       var link = e.target.closest('a[href]');
       if (link) {
         var href = link.getAttribute('href') || '';
-        if (href.startsWith('tel:') || href.startsWith('mailto:')) return;
+        // Tel/mailto: block native action, let contenteditable focus
+        if (href.startsWith('tel:') || href.startsWith('mailto:')) { e.preventDefault(); return; }
         if (href.startsWith('#')) return;
         e.preventDefault();
         e.stopPropagation();
@@ -2827,7 +2828,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
         'document.addEventListener("click",function(e){' +
           'var a=e.target.closest("a[href]");' +
           'if(a){var h=a.getAttribute("href")||"";' +
-            'if(h.indexOf("tel:")===0||h.indexOf("mailto:")===0)return;' +
+            'if(h.indexOf("tel:")===0||h.indexOf("mailto:")===0){e.preventDefault();return;}' +
             'if(h.charAt(0)==="#")return;' +
             'e.preventDefault();e.stopPropagation();' +
             'try{window.top.open(h,"_blank");}catch(x){window.open(h,"_blank");}return false;}' +
