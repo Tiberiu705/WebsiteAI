@@ -550,7 +550,7 @@
   <div style="max-width:1280px;margin:0 auto;padding:0 20px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
     <!-- Logo -->
     <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;">
-      <img src="websiteai-logo.png" alt="WebsiteAI" style="height:32px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+      <img src="websiteai-logo.png" alt="WebsiteAI" style="height:32px;width:auto;object-fit:contain;display:block;" />
     </a>
 
     <!-- Links desktop -->
@@ -755,7 +755,7 @@
 
       <!-- Floating type indicator -->
       <div style="position:absolute;bottom:-16px;left:-16px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.6);">
-        <img src="websiteai-logo.png" style="height:20px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+        <img src="websiteai-logo.png" style="height:20px;width:auto;object-fit:contain;display:block;" />
         <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#fff;">Generat de <span style="color:#C8FF00;">WebsiteAI</span></span>
       </div>
     </div>
@@ -1837,7 +1837,7 @@ async function submitContactForm(e) {
       <!-- Brand col -->
       <div class="footer-brand">
         <a href="#generator" style="display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:20px;">
-          <img src="websiteai-logo.png" alt="WebsiteAI" style="height:30px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+          <img src="websiteai-logo.png" alt="WebsiteAI" style="height:30px;width:auto;object-fit:contain;display:block;" />
         </a>
         <p style="font-family:'Inter',sans-serif;font-size:0.875rem;line-height:1.7;color:#555;max-width:260px;">
           Generăm site-uri profesionale pentru afacerile românești, cu ajutorul inteligenței artificiale.
@@ -1901,7 +1901,7 @@ async function submitContactForm(e) {
       <button id="close-brief" style="position:absolute;top:18px;right:18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;width:36px;height:36px;color:#888;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseleave="this.style.background='rgba(255,255,255,0.06)';this.style.color='#888'">✕</button>
 
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px;">
-        <img src="websiteai-logo.png" style="height:22px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+        <img src="websiteai-logo.png" style="height:22px;width:auto;object-fit:contain;display:block;" />
         <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#666;letter-spacing:0.04em;">GENERATOR AI</span>
       </div>
 
@@ -1981,7 +1981,7 @@ async function submitContactForm(e) {
 
   <!-- ── LOADING STATE ── -->
   <div id="loading-panel" style="display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:40px 24px;">
-    <img src="websiteai-logo.png" style="height:32px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);opacity:0.9;" />
+    <img src="websiteai-logo.png" style="height:32px;width:auto;object-fit:contain;display:block;opacity:0.9;" />
     <div style="text-align:center;">
       <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;letter-spacing:-0.03em;color:#fff;margin-bottom:12px;">
         AI generează site-ul tău<span id="loading-dots"></span>
@@ -2013,7 +2013,7 @@ async function submitContactForm(e) {
     <!-- Toolbar -->
     <div style="background:#080808;border-bottom:1px solid rgba(200,255,0,0.15);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:12px;">
-        <img src="websiteai-logo.png" style="height:20px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
+        <img src="websiteai-logo.png" style="height:20px;width:auto;object-fit:contain;display:block;" />
         <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;">SITE GENERAT</span>
       </div>
       <div class="preview-toolbar-btns" style="display:flex;align-items:center;gap:10px;">
@@ -2058,7 +2058,11 @@ async function submitContactForm(e) {
         <div style="padding:16px 20px 0;flex-shrink:0;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;color:#fff;">Editează site-ul</span>
-            <button id="btn-close-editor" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;width:28px;height:28px;color:#666;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='#666'">✕</button>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button id="btn-undo" title="Undo (Ctrl+Z)" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;width:28px;height:28px;color:#555;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseleave="this.style.color='#555';this.style.borderColor='rgba(255,255,255,0.08)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6.69 3L3 13"/></svg></button>
+              <button id="btn-redo" title="Redo (Ctrl+Y)" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;width:28px;height:28px;color:#555;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseleave="this.style.color='#555';this.style.borderColor='rgba(255,255,255,0.08)'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 019-9 9 9 0 016.69 3L21 13"/></svg></button>
+              <button id="btn-close-editor" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:6px;width:28px;height:28px;color:#666;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='#666'">✕</button>
+            </div>
           </div>
           <!-- Tabs -->
           <div style="display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px;">
@@ -2982,6 +2986,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     btnEdit.style.border = '1px solid rgba(200,255,0,0.4)';
     // Editor is pre-populated when iframe loads; only populate if empty
     if (!document.getElementById('editor-panel-texte').hasChildNodes()) populateEditor();
+    // Save initial state for undo
+    if (!_undoStack.length) _pushUndo();
   }
   window.openEditor = openEditor;
 
@@ -3005,6 +3011,89 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     } catch(e) {}
   }
   window.syncHtml = syncHtml;
+
+  /* ── Undo / Redo system ── */
+  const _undoStack = [];
+  const _redoStack = [];
+  let _undoTimer = null;
+
+  function _pushUndo() {
+    try {
+      const doc = previewIframe.contentDocument;
+      if (!doc || !doc.documentElement) return;
+      const snap = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      if (_undoStack.length && _undoStack[_undoStack.length - 1] === snap) return;
+      _undoStack.push(snap);
+      if (_undoStack.length > 40) _undoStack.shift();
+      _redoStack.length = 0;
+      _updateUndoRedoBtns();
+    } catch(e) {}
+  }
+
+  // Debounced: save snapshot before edits
+  const _origSyncHtml = syncHtml;
+  syncHtml = function() {
+    if (!_undoStack.length) _pushUndo(); // save initial state
+    clearTimeout(_undoTimer);
+    _undoTimer = setTimeout(() => _pushUndo(), 800);
+    _origSyncHtml();
+  };
+  window.syncHtml = syncHtml;
+
+  function _applySnapshot(html) {
+    window.generatedHtml = html;
+    generatedHtml = html;
+    previewIframe.srcdoc = html;
+    previewIframe.addEventListener('load', () => {
+      try {
+        var iDoc = previewIframe.contentDocument;
+        _installNavPrevention(iDoc);
+        if (iDoc && iDoc.body && !iDoc.body.hasAttribute('data-we-ready')) {
+          setupInlineEditing(iDoc);
+        }
+        populateEditor();
+      } catch(e) {}
+    }, { once: true });
+  }
+
+  function editorUndo() {
+    if (_undoStack.length < 2) return;
+    const current = _undoStack.pop();
+    _redoStack.push(current);
+    const prev = _undoStack[_undoStack.length - 1];
+    _applySnapshot(prev);
+    _updateUndoRedoBtns();
+  }
+
+  function editorRedo() {
+    if (!_redoStack.length) return;
+    const snap = _redoStack.pop();
+    _undoStack.push(snap);
+    _applySnapshot(snap);
+    _updateUndoRedoBtns();
+  }
+
+  function _updateUndoRedoBtns() {
+    const ub = document.getElementById('btn-undo');
+    const rb = document.getElementById('btn-redo');
+    if (ub) ub.style.opacity = _undoStack.length > 1 ? '1' : '0.3';
+    if (rb) rb.style.opacity = _redoStack.length > 0 ? '1' : '0.3';
+  }
+
+  document.getElementById('btn-undo').addEventListener('click', editorUndo);
+  document.getElementById('btn-redo').addEventListener('click', editorRedo);
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      if (editorSidebar.style.display === 'flex') { e.preventDefault(); editorUndo(); }
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      if (editorSidebar.style.display === 'flex') { e.preventDefault(); editorRedo(); }
+    }
+  });
+
+  _updateUndoRedoBtns();
 
   /* ── Helper: create a labeled input/textarea ── */
   function editorField({ label, value, type = 'textarea', onInput }) {
@@ -4200,12 +4289,25 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       card.appendChild(lbl);
 
       // Text
+      card.appendChild(LBL('Text'));
       const inp = document.createElement('input'); inp.type = 'text'; inp.value = btn.textContent.trim();
       inp.style.cssText = 'width:100%;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;margin-bottom:10px;display:block;transition:border-color 0.15s;';
       inp.addEventListener('focus', () => inp.style.borderColor='rgba(200,255,0,0.35)');
       inp.addEventListener('blur',  () => inp.style.borderColor='rgba(255,255,255,0.08)');
       inp.addEventListener('input', () => { btn.textContent = inp.value; syncHtml(); });
       card.appendChild(inp);
+
+      // Link URL
+      card.appendChild(LBL('Link'));
+      const linkInp = document.createElement('input'); linkInp.type = 'text';
+      linkInp.value = btn.getAttribute('href') || '';
+      linkInp.placeholder = '#contact sau https://...';
+      linkInp.style.cssText = 'width:100%;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;margin-bottom:10px;display:block;transition:border-color 0.15s;';
+      linkInp.addEventListener('focus', () => linkInp.style.borderColor='rgba(200,255,0,0.35)');
+      linkInp.addEventListener('blur',  () => { linkInp.style.borderColor='rgba(255,255,255,0.08)'; const nv = linkInp.value.trim(); if (btn.tagName === 'A') { btn.setAttribute('href', nv || '#'); } else if (nv) { btn.setAttribute('onclick', "window.location.href='" + nv.replace(/'/g, "\\'") + "'"); } syncHtml(); });
+      if (btn.tagName !== 'A') linkInp.disabled = true; // Only <a> tags can have href
+      if (btn.tagName !== 'A') { linkInp.placeholder = 'Disponibil doar pentru <a>'; linkInp.style.opacity = '0.4'; }
+      card.appendChild(linkInp);
 
       // Colors row
       const colorRow = document.createElement('div'); colorRow.style.cssText = 'display:flex;gap:10px;';
