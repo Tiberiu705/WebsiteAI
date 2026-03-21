@@ -2020,7 +2020,7 @@ async function submitContactForm(e) {
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 1.5a2.121 2.121 0 013 3L5 14H2v-3L11.5 1.5z" stroke="#080808" stroke-width="1.8" stroke-linejoin="round"/></svg>
           Editează
         </button>
-        <button id="btn-open-tab" onclick="(function(){if(!window.generatedHtml)return;var w=window.open('','_blank');if(w){w.document.open();w.document.write(window.generatedHtml);w.document.close();}})()" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;touch-action:manipulation;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
+        <button id="btn-open-tab" onclick="(function(){if(!window.generatedHtml)return;var h=window.generatedHtml;var d=new DOMParser().parseFromString(h,'text/html');d.querySelectorAll('[contenteditable]').forEach(function(e){e.removeAttribute('contenteditable');});d.querySelectorAll('[data-ek]').forEach(function(e){e.removeAttribute('data-ek');});d.querySelectorAll('[spellcheck]').forEach(function(e){e.removeAttribute('spellcheck');});d.querySelectorAll('[data-we-ready]').forEach(function(e){e.removeAttribute('data-we-ready');});d.querySelectorAll('[data-nav-guard]').forEach(function(e){e.removeAttribute('data-nav-guard');});d.querySelectorAll('#we-s,#we-e,#we-css,#we-js,#we-edit-css').forEach(function(e){e.remove();});var clean='<!DOCTYPE html>\n'+d.documentElement.outerHTML;var w=window.open('','_blank');if(w){w.document.open();w.document.write(clean);w.document.close();}})()" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;touch-action:manipulation;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
           Deschide în tab
         </button>
         <button id="btn-mob-preview" onclick="(function(){var iframe=document.getElementById('preview-iframe');var btn=document.getElementById('btn-mob-preview');var wrap=document.getElementById('preview-iframe-wrap');var on=iframe.classList.toggle('mob-preview');btn.style.background=on?'rgba(200,255,0,0.12)':'rgba(255,255,255,0.06)';btn.style.borderColor=on?'rgba(200,255,0,0.4)':'rgba(255,255,255,0.1)';btn.style.color=on?'#C8FF00':'#fff';if(wrap){wrap.style.alignItems=on?'flex-start':'stretch';wrap.style.justifyContent=on?'center':'stretch';}})()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:all 0.15s;touch-action:manipulation;">
@@ -2267,8 +2267,8 @@ async function submitContactForm(e) {
     ].join('');
     (iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
-    // Make text elements editable — minimal filtering
-    iframeDoc.querySelectorAll('h1,h2,h3,h4,h5,p,button,li,span').forEach(el => {
+    // Make text elements editable — minimal filtering (buttons excluded: edited via sidebar)
+    iframeDoc.querySelectorAll('h1,h2,h3,h4,h5,p,li,span').forEach(el => {
       try {
         // Skip script/style/svg subtrees
         if (el.closest('script,style,noscript,iframe,svg')) return;
@@ -2842,7 +2842,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       '</style>' +
       '<scr' + 'ipt id="we-e">(function(){' +
         'function init(){' +
-          'document.querySelectorAll("h1,h2,h3,h4,h5,p,button,li,span").forEach(function(el){' +
+          'document.querySelectorAll("h1,h2,h3,h4,h5,p,li,span").forEach(function(el){' +
             'try{' +
               'if(el.closest("script,style,noscript,svg,iframe"))return;' +
               'var t=el.textContent.trim();' +
@@ -4299,13 +4299,30 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       // Link URL
       card.appendChild(LBL('Link'));
       const linkInp = document.createElement('input'); linkInp.type = 'text';
-      linkInp.value = btn.getAttribute('href') || '';
+      linkInp.value = btn.getAttribute('href') || btn.getAttribute('onclick')?.match(/href=['"](.*?)['"]/)?.[1] || '';
       linkInp.placeholder = '#contact sau https://...';
       linkInp.style.cssText = 'width:100%;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;margin-bottom:10px;display:block;transition:border-color 0.15s;';
       linkInp.addEventListener('focus', () => linkInp.style.borderColor='rgba(200,255,0,0.35)');
-      linkInp.addEventListener('blur',  () => { linkInp.style.borderColor='rgba(255,255,255,0.08)'; const nv = linkInp.value.trim(); if (btn.tagName === 'A') { btn.setAttribute('href', nv || '#'); } else if (nv) { btn.setAttribute('onclick', "window.location.href='" + nv.replace(/'/g, "\\'") + "'"); } syncHtml(); });
-      if (btn.tagName !== 'A') linkInp.disabled = true; // Only <a> tags can have href
-      if (btn.tagName !== 'A') { linkInp.placeholder = 'Disponibil doar pentru <a>'; linkInp.style.opacity = '0.4'; }
+      linkInp.addEventListener('blur', () => {
+        linkInp.style.borderColor='rgba(255,255,255,0.08)';
+        const nv = linkInp.value.trim();
+        if (btn.tagName === 'A') {
+          btn.setAttribute('href', nv || '#');
+        } else if (btn.tagName === 'BUTTON' && nv) {
+          // Convert <button> to <a> with same styling
+          const a = doc.createElement('a');
+          a.href = nv;
+          a.textContent = btn.textContent;
+          a.setAttribute('style', btn.getAttribute('style') || '');
+          a.style.textDecoration = 'none';
+          a.style.display = 'inline-block';
+          a.style.cursor = 'pointer';
+          for (const cls of btn.classList) a.classList.add(cls);
+          btn.parentNode.replaceChild(a, btn);
+          btns[i] = a;
+        }
+        syncHtml();
+      });
       card.appendChild(linkInp);
 
       // Colors row
