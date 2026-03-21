@@ -492,8 +492,11 @@
       .trust-row { gap: 12px !important; }
 
       .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      .stats-grid > div { border-right: none !important; text-align: center !important; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .stats-grid > div { border-right: none !important; text-align: center !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px !important; overflow: hidden; }
       .stats-grid > div:nth-child(-n+2) { border-bottom: 1px solid rgba(200,255,0,0.08) !important; }
+      .stats-grid > div:nth-child(odd) { border-right: 1px solid rgba(200,255,0,0.08) !important; }
+      .stat-num { font-size: clamp(2rem, 8vw, 2.8rem) !important; }
+      .stats-grid > div > div:last-child { font-size: 0.72rem !important; letter-spacing: 0.04em !important; white-space: nowrap; }
 
       .steps-grid { grid-template-columns: 1fr !important; }
       .step-item { padding: 32px 24px !important; }
