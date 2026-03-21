@@ -556,8 +556,8 @@
     <!-- Links desktop -->
     <div class="nav-links" style="display:flex;align-items:center;gap:32px;">
       <a class="nav-link" href="#cum-functioneaza">Cum funcționează</a>
-      <a class="nav-link" href="#exemple">Exemple</a>
       <a class="nav-link" href="#preturi">Prețuri</a>
+      <a class="nav-link" href="#contact">Contact</a>
       <a class="nav-link" href="/dashboard" id="nav-dashboard-link" style="display:none;">Panou control</a>
     </div>
 
@@ -588,8 +588,8 @@
   <!-- Mobile dropdown -->
   <div id="nav-mobile-menu" style="display:none;background:rgba(8,8,8,0.99);border-top:1px solid rgba(255,255,255,0.08);padding:12px 20px 20px;flex-direction:column;gap:0;">
     <a href="#cum-functioneaza" class="nav-mob-link" onclick="closeMobileMenu()">Cum funcționează</a>
-    <a href="#exemple" class="nav-mob-link" onclick="closeMobileMenu()">Exemple</a>
     <a href="#preturi" class="nav-mob-link" onclick="closeMobileMenu()">Prețuri</a>
+    <a href="#contact" class="nav-mob-link" onclick="closeMobileMenu()">Contact</a>
     <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0;"></div>
     <a href="#" id="nav-mob-generate" class="nav-mob-link" onclick="closeMobileMenu();setTimeout(function(){if(typeof openLoginModal==='function'&&!localStorage.getItem('ws_session')){openLoginModal(function(){if(typeof openOverlay==='function')openOverlay();});}else if(typeof openOverlay==='function'){openOverlay();}else{document.getElementById('generator').scrollIntoView({behavior:'smooth'});}},100);return false;" style="color:#C8FF00;font-weight:600;">Generează Gratuit →</a>
     <a href="/dashboard" id="nav-mob-dashboard" class="nav-mob-link" style="display:none;color:#C8FF00;font-weight:600;" onclick="closeMobileMenu()">Dashboard →</a>
@@ -884,33 +884,6 @@ function quickStart(btn) {
 }
 </script>
 
-<section id="exemple" style="padding:100px 24px 80px;background:#030303;">
-  <div style="max-width:1240px;margin:0 auto;">
-
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:52px;">
-      <div class="badge" style="margin:0 auto 16px;"><span class="badge-dot"></span>Exemple reale</div>
-      <h2 class="heading-lg">Orice afacere,<br/><span class="acid-text">un site memorabil</span></h2>
-      <p class="body-lg" style="margin-top:16px;font-size:0.95rem;max-width:500px;margin-left:auto;margin-right:auto;">Explorează site-uri generate cu WebsiteAI. Alege un stil și generăm ceva similar pentru afacerea ta.</p>
-    </div>
-
-    <!-- Filter pills -->
-    <div id="tpl-filters" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:52px;"></div>
-
-    <!-- Grid -->
-    <div id="tpl-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;"></div>
-
-    <!-- Bottom CTA -->
-    <div style="text-align:center;margin-top:64px;padding-top:64px;border-top:1px solid rgba(255,255,255,0.06);">
-      <p class="body-lg" style="font-size:0.95rem;margin-bottom:24px;">Nu ești sigur de stilul potrivit? Descrie afacerea ta și AI-ul se ocupă de tot.</p>
-      <button class="btn-acid" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'});setTimeout(function(){document.getElementById('main-description').focus();},600);">
-        Generează site-ul tău
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M9 3.5l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-
-  </div>
-</section>
 
 <style>
 .tpl-pill {
@@ -1392,7 +1365,7 @@ function quickStart(btn) {
             Suport prioritar
           </div>
         </div>
-        <a href="#" class="btn-acid" style="width:100%;justify-content:center;">Începe Pro</a>
+        <a href="#generator" class="btn-acid" style="width:100%;justify-content:center;">Începe Pro</a>
       </div>
 
       <!-- Agency -->
@@ -1420,7 +1393,7 @@ function quickStart(btn) {
             SLA & suport 24/7
           </div>
         </div>
-        <a href="#" class="btn-ghost" style="width:100%;justify-content:center;">Contactează-ne</a>
+        <a href="#contact" class="btn-ghost" style="width:100%;justify-content:center;">Contactează-ne</a>
       </div>
 
     </div>
@@ -1607,9 +1580,8 @@ async function submitContactForm(e) {
 
       <!-- Brand col -->
       <div class="footer-brand">
-        <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:20px;">
+        <a href="#generator" style="display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:20px;">
           <img src="websiteai-logo.png" alt="WebsiteAI" style="height:30px;width:auto;object-fit:contain;display:block;mix-blend-mode:screen;filter:contrast(2);" />
-          
         </a>
         <p style="font-family:'Inter',sans-serif;font-size:0.875rem;line-height:1.7;color:#555;max-width:260px;">
           Generăm site-uri profesionale pentru afacerile românești, cu ajutorul inteligenței artificiale.
@@ -1620,10 +1592,9 @@ async function submitContactForm(e) {
       <div>
         <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.825rem;letter-spacing:0.07em;text-transform:uppercase;color:#444;margin-bottom:20px;">Produs</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <a href="#" class="nav-link">Generator AI</a>
-          <a href="#" class="nav-link">Exemple</a>
-          <a href="#" class="nav-link">Prețuri</a>
-          <a href="#" class="nav-link">Cum funcționează</a>
+          <a href="#generator" class="nav-link">Generator AI</a>
+          <a href="#preturi" class="nav-link">Prețuri</a>
+          <a href="#cum-functioneaza" class="nav-link">Cum funcționează</a>
         </div>
       </div>
 
@@ -1631,9 +1602,7 @@ async function submitContactForm(e) {
       <div>
         <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.825rem;letter-spacing:0.07em;text-transform:uppercase;color:#444;margin-bottom:20px;">Companie</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <a href="#" class="nav-link">Despre noi</a>
-          <a href="#" class="nav-link">Blog</a>
-          <a href="#" class="nav-link">Contact</a>
+          <a href="#contact" class="nav-link">Contact</a>
         </div>
       </div>
 
