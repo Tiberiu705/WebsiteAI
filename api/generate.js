@@ -406,7 +406,15 @@ section:first-of-type p {
       const inlineEditorBlock = _weInlineEditorBlockStr();
       // ── End inline editor block ──────────────────────────────────────────
 
-      html = html.replace(/<\/body>/i, inlineEditorBlock + mobileFix + '\n</body>');
+      // Inject inline editor + mobile fix before </body>, with fallback if </body> is missing
+      const injection = inlineEditorBlock + mobileFix;
+      if (/<\/body>/i.test(html)) {
+        html = html.replace(/<\/body>/i, injection + '\n</body>');
+      } else if (/<\/html>/i.test(html)) {
+        html = html.replace(/<\/html>/i, injection + '\n</body></html>');
+      } else {
+        html += '\n' + injection;
+      }
 
       // Inject global contact section before </footer>
       const contactSection = `
