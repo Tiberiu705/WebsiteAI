@@ -1806,7 +1806,7 @@ async function submitContactForm(e) {
         <button id="btn-open-tab" onclick="(function(){if(!window.generatedHtml)return;var w=window.open('','_blank');if(w){w.document.open();w.document.write(window.generatedHtml);w.document.close();}})()" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;touch-action:manipulation;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
           Deschide în tab
         </button>
-        <button id="btn-mob-preview" onclick="(function(){var iframe=document.getElementById('preview-iframe');var btn=document.getElementById('btn-mob-preview');var content=document.querySelector('.preview-content');var on=iframe.classList.toggle('mob-preview');btn.style.background=on?'rgba(200,255,0,0.12)':'rgba(255,255,255,0.06)';btn.style.borderColor=on?'rgba(200,255,0,0.4)':'rgba(255,255,255,0.1)';btn.style.color=on?'#C8FF00':'#fff';if(content){content.style.alignItems=on?'center':'stretch';content.style.overflowY=on?'auto':'hidden';}})()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:all 0.15s;touch-action:manipulation;">
+        <button id="btn-mob-preview" onclick="(function(){var iframe=document.getElementById('preview-iframe');var btn=document.getElementById('btn-mob-preview');var wrap=document.getElementById('preview-iframe-wrap');var on=iframe.classList.toggle('mob-preview');btn.style.background=on?'rgba(200,255,0,0.12)':'rgba(255,255,255,0.06)';btn.style.borderColor=on?'rgba(200,255,0,0.4)':'rgba(255,255,255,0.1)';btn.style.color=on?'#C8FF00':'#fff';if(wrap){wrap.style.alignItems=on?'flex-start':'stretch';wrap.style.justifyContent=on?'center':'stretch';}})()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:all 0.15s;touch-action:manipulation;">
           📱 Mobil
         </button>
         <button id="btn-publish" style="background:linear-gradient(135deg,#C8FF00 0%,#9FCC00 100%);border:none;border-radius:8px;padding:8px 18px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 0 18px rgba(200,255,0,0.3),0 2px 8px rgba(0,0,0,0.4);transition:opacity 0.15s,box-shadow 0.15s;" onmouseenter="this.style.opacity='0.88';this.style.boxShadow='0 0 28px rgba(200,255,0,0.45),0 2px 8px rgba(0,0,0,0.4)'" onmouseleave="this.style.opacity='1';this.style.boxShadow='0 0 18px rgba(200,255,0,0.3),0 2px 8px rgba(0,0,0,0.4)'">
@@ -1830,8 +1830,10 @@ async function submitContactForm(e) {
     </div>
     <!-- Content area: iframe + editor sidebar -->
     <div class="preview-content" style="display:flex;flex:1;overflow:hidden;">
-      <!-- iFrame -->
-      <iframe id="preview-iframe" style="flex:1;border:none;background:#fff;min-width:0;"></iframe>
+      <!-- iFrame wrapper (scrolls independently when mobile preview is active) -->
+      <div id="preview-iframe-wrap" style="flex:1;min-width:0;overflow-y:auto;display:flex;align-items:stretch;">
+        <iframe id="preview-iframe" style="flex:1;border:none;background:#fff;min-width:0;"></iframe>
+      </div>
       <!-- ── EDITOR SIDEBAR ── -->
       <div id="editor-sidebar" style="display:none;width:380px;flex-shrink:0;background:#0D0D0D;border-left:1px solid rgba(200,255,0,0.15);flex-direction:column;overflow:hidden;">
         <!-- Sidebar header + tabs -->
