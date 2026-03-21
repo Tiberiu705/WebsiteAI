@@ -2192,6 +2192,57 @@ async function submitContactForm(e) {
   // Inline editor: tracks user edits per element key across iframe reloads
   window.editedContent = {};
 
+  /* ── Navigation prevention: blocks link clicks, form submits, JS navigation inside iframe ── */
+  function _installNavPrevention(iframeDoc) {
+    if (!iframeDoc || !iframeDoc.body) return;
+    // Guard: only install once
+    if (iframeDoc.body.hasAttribute('data-nav-guard')) return;
+    iframeDoc.body.setAttribute('data-nav-guard', '1');
+
+    // 1) Block all link clicks except anchors (#), tel:, mailto:
+    iframeDoc.addEventListener('click', function(e) {
+      var link = e.target.closest('a[href]');
+      if (link) {
+        var href = link.getAttribute('href') || '';
+        if (href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+      // Also block button elements that have onclick with location/href changes
+      var btn = e.target.closest('button[onclick],button[type="submit"]');
+      if (btn && btn.type === 'submit') {
+        e.preventDefault();
+        return false;
+      }
+    }, true);
+
+    // 2) Block all form submissions
+    iframeDoc.addEventListener('submit', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }, true);
+
+    // 3) Remove any <base> tags injected by generated code
+    iframeDoc.querySelectorAll('base').forEach(function(b) { b.remove(); });
+
+    // 4) Remove target="_top" / target="_parent" from all links
+    iframeDoc.querySelectorAll('[target="_top"],[target="_parent"]').forEach(function(el) {
+      el.removeAttribute('target');
+    });
+
+    // 5) Override window.location setter inside iframe to prevent navigation
+    try {
+      var iframeWin = iframeDoc.defaultView;
+      if (iframeWin) {
+        var origOpen = iframeWin.open;
+        iframeWin.open = function() { return null; };
+      }
+    } catch(ex) {}
+  }
+
   // Returns the self-contained inline editor HTML block to inject before </body>
   /* ── Inline editing: called from parent frame after iframe loads (same-origin) ── */
   function setupInlineEditing(iframeDoc) {
@@ -2334,17 +2385,6 @@ async function submitContactForm(e) {
       });
     });
 
-    // Prevent all link navigation inside iframe (srcdoc has no useful targets)
-    iframeDoc.addEventListener('click', function(e) {
-      var link = e.target.closest('a[href]');
-      if (link) {
-        var href = link.getAttribute('href') || '';
-        // Allow anchor links, tel: and mailto: (handled by their own editors)
-        if (href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, true);
   }
 
   /* ── Force white inline color on Badge-uri 1 and Texte 1 ── */
@@ -2826,6 +2866,18 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
           '});' +
         '}' +
         'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}' +
+        // Link/form navigation prevention (backup — also handled by parent frame)
+        'document.addEventListener("click",function(e){' +
+          'var a=e.target.closest("a[href]");' +
+          'if(a){var h=a.getAttribute("href")||"";' +
+            'if(h.charAt(0)==="#"||h.indexOf("tel:")===0||h.indexOf("mailto:")===0)return;' +
+            'e.preventDefault();e.stopPropagation();return false;}' +
+          'var btn=e.target.closest("button[type=submit]");' +
+          'if(btn){e.preventDefault();return false;}' +
+        '},true);' +
+        'document.addEventListener("submit",function(e){e.preventDefault();e.stopPropagation();return false;},true);' +
+        'document.querySelectorAll("base").forEach(function(b){b.remove();});' +
+        'document.querySelectorAll("[target=_top],[target=_parent]").forEach(function(el){el.removeAttribute("target");});' +
       '})();<\/scr' + 'ipt>';
   }
 
@@ -2833,6 +2885,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
   function showPreview(html, keepEdits) {
     html = html.replace(/©\s*\d{4}/g, '© 2026');
     html = html.replace(/new Date\(\)\.getFullYear\(\)/g, '2026');
+
+    // Sanitize: remove <base> tags (can cause parent navigation via target="_top")
+    html = html.replace(/<base[^>]*>/gi, '');
+    // Remove target="_top" and target="_parent" from all elements
+    html = html.replace(/\btarget\s*=\s*["'](_top|_parent)["']/gi, '');
+
     // Inject editing script directly into HTML (runs inside iframe — most reliable approach)
     if (!html.includes('id="we-s"')) {
       var editBlock = _inlineEditBlock();
@@ -2850,8 +2908,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     previewIframe.srcdoc = html;
     previewIframe.addEventListener('load', () => {
       try {
-        // Fallback: if injected script didn't run, set up editing from parent frame
         var iDoc = previewIframe.contentDocument;
+
+        // ALWAYS install link/form/navigation prevention first (even if inline script ran)
+        _installNavPrevention(iDoc);
+
+        // Fallback: if injected script didn't run, set up editing from parent frame
         if (iDoc && iDoc.body && !iDoc.body.hasAttribute('data-we-ready')) {
           setupInlineEditing(iDoc);
         }
