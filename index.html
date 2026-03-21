@@ -2202,8 +2202,10 @@ async function submitContactForm(e) {
     if (iframeDoc.body.hasAttribute('data-nav-guard')) return;
     iframeDoc.body.setAttribute('data-nav-guard', '1');
 
-    // 1) Block ALL clicks on links/buttons during editing (hover still works via CSS)
+    // 1) Block ALL clicks on links/buttons (except open-link badge and mob-btn)
     iframeDoc.addEventListener('click', function(e) {
+      // Allow open-link badge clicks through
+      if (e.target.closest('.we-open-badge')) return;
       var link = e.target.closest('a[href]');
       if (link) {
         var href = link.getAttribute('href') || '';
@@ -2285,18 +2287,26 @@ async function submitContactForm(e) {
       '[contenteditable]:focus{',
       '  outline:2px solid rgba(99,102,241,.9)!important;',
       '  outline-offset:3px;border-radius:4px;}',
-      // Buttons/CTA: base + invisible hover zone extending outside the button
-      'a[href]:not([contenteditable]),button:not([contenteditable]){',
+      // Buttons/CTA (exclude tel/mailto): base + invisible hover zone
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]),button:not([contenteditable]){',
       '  transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;',
       '  cursor:pointer!important;position:relative!important;}',
-      'a[href]:not([contenteditable])::before,button:not([contenteditable])::before{',
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"])::before,button:not([contenteditable])::before{',
       '  content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;',
       '  border-radius:inherit!important;pointer-events:auto!important;}',
-      // Pop-up hover: lift + scale + glow shadow
-      'a[href]:not([contenteditable]):hover,button:not([contenteditable]):hover{',
+      // Pop-up hover (exclude tel/mailto)
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover,button:not([contenteditable]):hover{',
       '  transform:scale(1.06) translateY(-3px)!important;',
       '  box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;',
       '  border-radius:inherit!important;z-index:10!important;}',
+      // Floating open-link badge on hover
+      '.we-open-badge{position:absolute!important;top:-10px!important;right:-10px!important;width:26px!important;height:26px!important;',
+      '  background:#fb923c!important;border-radius:50%!important;display:none!important;align-items:center!important;justify-content:center!important;',
+      '  cursor:pointer!important;z-index:20!important;box-shadow:0 2px 8px rgba(0,0,0,0.3)!important;transition:transform 0.15s ease!important;pointer-events:auto!important;}',
+      '.we-open-badge:hover{transform:scale(1.15)!important;}',
+      '.we-open-badge svg{width:14px!important;height:14px!important;stroke:#fff!important;fill:none!important;stroke-width:2.2!important;}',
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover .we-open-badge,',
+      'button:not([contenteditable]):hover .we-open-badge{display:flex!important;}',
     ].join('');
     (iframeDoc.body || iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
@@ -2340,6 +2350,27 @@ async function submitContactForm(e) {
         // Restore saved edit
         if (window.editedContent[key]) el.innerHTML = window.editedContent[key].html;
       } catch(e) {}
+    });
+
+    // Inject floating "open link" badge into each CTA button/link
+    iframeDoc.querySelectorAll('a[href]:not([href^="tel:"]):not([href^="mailto:"]),button').forEach(el => {
+      if (el.closest('script,style,noscript,svg,iframe,nav')) return;
+      if (el.getAttribute('contenteditable') === 'true') return;
+      if (el.querySelector('.we-open-badge')) return;
+      const badge = iframeDoc.createElement('span');
+      badge.className = 'we-open-badge';
+      badge.innerHTML = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+      badge.title = 'Deschide link-ul';
+      badge.addEventListener('click', function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.stopImmediatePropagation();
+        var href = el.getAttribute('href') || '';
+        if (href && href !== '#') {
+          window.top.open(href, '_blank');
+        }
+      });
+      el.appendChild(badge);
     });
 
     // Make tel: and mailto: links editable via click modal
@@ -2872,9 +2903,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     return '<style id="we-s">' +
       '[contenteditable]:hover:not(:focus){outline:2px dashed rgba(99,102,241,.7)!important;outline-offset:3px;border-radius:4px;cursor:text!important;}' +
       '[contenteditable]:focus{outline:2px solid #6366f1!important;outline-offset:3px;border-radius:4px;}' +
-      'a[href]:not([contenteditable]),button:not([contenteditable]){transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;cursor:pointer!important;position:relative!important;}' +
-      'a[href]:not([contenteditable])::before,button:not([contenteditable])::before{content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;border-radius:inherit!important;pointer-events:auto!important;}' +
-      'a[href]:not([contenteditable]):hover,button:not([contenteditable]):hover{transform:scale(1.06) translateY(-3px)!important;box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;border-radius:inherit!important;z-index:10!important;}' +
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]),button:not([contenteditable]){transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;cursor:pointer!important;position:relative!important;}' +
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"])::before,button:not([contenteditable])::before{content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;border-radius:inherit!important;pointer-events:auto!important;}' +
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover,button:not([contenteditable]):hover{transform:scale(1.06) translateY(-3px)!important;box-shadow:0 8px 25px rgba(251,146,60,.25),0 0 0 2px rgba(251,146,60,.5)!important;border-radius:inherit!important;z-index:10!important;}' +
+      '.we-open-badge{position:absolute!important;top:-10px!important;right:-10px!important;width:26px!important;height:26px!important;background:#fb923c!important;border-radius:50%!important;display:none!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:20!important;box-shadow:0 2px 8px rgba(0,0,0,0.3)!important;transition:transform 0.15s ease!important;pointer-events:auto!important;}' +
+      '.we-open-badge:hover{transform:scale(1.15)!important;}' +
+      '.we-open-badge svg{width:14px!important;height:14px!important;stroke:#fff!important;fill:none!important;stroke-width:2.2!important;}' +
+      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover .we-open-badge,button:not([contenteditable]):hover .we-open-badge{display:flex!important;}' +
       '</style>' +
       '<scr' + 'ipt id="we-e">(function(){' +
         'function init(){' +
@@ -2911,10 +2946,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
           'if(mb&&mm){mb.addEventListener("click",function(e){e.stopPropagation();var o=mm.classList.toggle("mob-open");' +
           'mb.innerHTML=o?"<svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 20 20\\" fill=\\"none\\"><path d=\\"M4 4l12 12M16 4L4 16\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/></svg>"' +
           ':"<svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 20 20\\" fill=\\"none\\"><line x1=\\"3\\" y1=\\"5\\" x2=\\"17\\" y2=\\"5\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"10\\" x2=\\"17\\" y2=\\"10\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"15\\" x2=\\"17\\" y2=\\"15\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/></svg>"});}' +
+          // Inject floating open-link badges on buttons
+          'document.querySelectorAll("a[href]:not([href^=\\"tel:\\"]):not([href^=\\"mailto:\\"]),button").forEach(function(el){' +
+            'if(el.closest("script,style,noscript,svg,iframe,nav"))return;' +
+            'if(el.getAttribute("contenteditable")==="true")return;' +
+            'var b=document.createElement("span");b.className="we-open-badge";' +
+            'b.innerHTML=\'<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>\';' +
+            'b.title="Deschide link-ul";' +
+            'b.addEventListener("click",function(ev){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();' +
+              'var hr=el.getAttribute("href")||"";if(hr&&hr!=="#"){try{window.top.open(hr,"_blank");}catch(x){window.open(hr,"_blank");}}});' +
+            'el.appendChild(b);});' +
         '}' +
         'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}' +
-        // Block ALL clicks on links/buttons during editing (hover still works via CSS)
+        // Block ALL clicks on links/buttons (except badge and mob-btn)
         'document.addEventListener("click",function(e){' +
+          'if(e.target.closest(".we-open-badge"))return;' +
           'var a=e.target.closest("a[href]");' +
           'if(a){var h=a.getAttribute("href")||"";' +
             'if(h.indexOf("tel:")===0||h.indexOf("mailto:")===0)return;' +
