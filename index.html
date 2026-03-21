@@ -2214,9 +2214,9 @@ async function submitContactForm(e) {
         e.stopImmediatePropagation();
         return false;
       }
-      // Block ALL button clicks (not just submit) to prevent onclick handlers
+      // Block ALL button clicks (not just submit) except mobile menu toggle
       var btn = e.target.closest('button');
-      if (btn) {
+      if (btn && btn.id !== 'mob-btn') {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -2239,10 +2239,25 @@ async function submitContactForm(e) {
       el.removeAttribute('target');
     });
 
-    // 4b) Strip onclick attributes from all buttons to prevent inline JS execution
-    iframeDoc.querySelectorAll('button[onclick],a[onclick]').forEach(function(el) {
-      el.removeAttribute('onclick');
+    // 4b) Strip ALL event attributes from interactive elements to prevent JS execution
+    var evtAttrs = ['onclick','onmousedown','onmouseup','ontouchstart','ontouchend','onpointerdown','onfocus'];
+    iframeDoc.querySelectorAll('button,a,[onclick],[onmousedown]').forEach(function(el) {
+      evtAttrs.forEach(function(attr) { el.removeAttribute(attr); });
     });
+
+    // 4c) Re-add mobile menu toggle (since we stripped all onclick/scripts)
+    var mobBtn = iframeDoc.getElementById('mob-btn');
+    var mobMenu = iframeDoc.getElementById('mob-menu');
+    if (mobBtn && mobMenu) {
+      mobBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = mobMenu.classList.toggle('mob-open');
+        mobBtn.innerHTML = isOpen
+          ? '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="3" y1="5" x2="17" y2="5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="17" y2="10" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="15" x2="17" y2="15" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+      });
+    }
+
 
     // 5) Override window.location setter inside iframe to prevent navigation
     try {
@@ -2278,7 +2293,7 @@ async function submitContactForm(e) {
       '  outline-offset:3px!important;border-radius:4px!important;cursor:pointer!important;',
       '  box-shadow:0 0 0 2px rgba(200,255,0,.35)!important;}',
     ].join('');
-    (iframeDoc.head || iframeDoc.documentElement).appendChild(s);
+    (iframeDoc.body || iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
     // Make text elements editable — minimal filtering (buttons excluded: edited via sidebar)
     iframeDoc.querySelectorAll('h1,h2,h3,h4,h5,p,li,span').forEach(el => {
@@ -2852,6 +2867,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     return '<style id="we-s">' +
       '[contenteditable]:hover:not(:focus){outline:2px dashed rgba(99,102,241,.7)!important;outline-offset:3px;border-radius:4px;cursor:text!important;}' +
       '[contenteditable]:focus{outline:2px solid #6366f1!important;outline-offset:3px;border-radius:4px;}' +
+      'a[href]:not([contenteditable]):hover,button:not([contenteditable]):hover{outline:2px dashed rgba(200,255,0,.6)!important;outline-offset:3px!important;border-radius:4px!important;cursor:pointer!important;box-shadow:0 0 0 2px rgba(200,255,0,.35)!important;}' +
       '</style>' +
       '<scr' + 'ipt id="we-e">(function(){' +
         'function init(){' +
@@ -2880,16 +2896,24 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
               '});' +
             '}catch(e){}' +
           '});' +
+          // Strip ALL event attributes from interactive elements
+          'var ea=["onclick","onmousedown","onmouseup","ontouchstart","ontouchend","onpointerdown","onfocus"];' +
+          'document.querySelectorAll("button,a,[onclick],[onmousedown]").forEach(function(el){ea.forEach(function(a){el.removeAttribute(a);});});' +
+          // Re-add mobile menu toggle
+          'var mb=document.getElementById("mob-btn"),mm=document.getElementById("mob-menu");' +
+          'if(mb&&mm){mb.addEventListener("click",function(e){e.stopPropagation();var o=mm.classList.toggle("mob-open");' +
+          'mb.innerHTML=o?"<svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 20 20\\" fill=\\"none\\"><path d=\\"M4 4l12 12M16 4L4 16\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/></svg>"' +
+          ':"<svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 20 20\\" fill=\\"none\\"><line x1=\\"3\\" y1=\\"5\\" x2=\\"17\\" y2=\\"5\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"10\\" x2=\\"17\\" y2=\\"10\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"15\\" x2=\\"17\\" y2=\\"15\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/></svg>"});}' +
         '}' +
         'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}' +
-        // Link/form navigation prevention (backup — also handled by parent frame)
+        // Block ALL link and button clicks (tel/mailto only allowed)
         'document.addEventListener("click",function(e){' +
           'var a=e.target.closest("a[href]");' +
           'if(a){var h=a.getAttribute("href")||"";' +
-            'if(h.charAt(0)==="#"||h.indexOf("tel:")===0||h.indexOf("mailto:")===0)return;' +
-            'e.preventDefault();e.stopPropagation();return false;}' +
-          'var btn=e.target.closest("button[type=submit]");' +
-          'if(btn){e.preventDefault();return false;}' +
+            'if(h.indexOf("tel:")===0||h.indexOf("mailto:")===0)return;' +
+            'e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();return false;}' +
+          'var btn=e.target.closest("button");' +
+          'if(btn&&btn.id!=="mob-btn"){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();return false;}' +
         '},true);' +
         'document.addEventListener("submit",function(e){e.preventDefault();e.stopPropagation();return false;},true);' +
         'document.querySelectorAll("base").forEach(function(b){b.remove();});' +
@@ -2906,6 +2930,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     html = html.replace(/<base[^>]*>/gi, '');
     // Remove target="_top" and target="_parent" from all elements
     html = html.replace(/\btarget\s*=\s*["'](_top|_parent)["']/gi, '');
+    // Strip ALL generated scripts (keep only Tailwind CDN, Tailwind config, Google Fonts, our editing scripts)
+    // This prevents generated JS from doing window.top.location or other parent navigation
+    html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, function(match) {
+      if (match.indexOf('tailwindcss') > -1) return match;
+      if (match.indexOf('tailwind.config') > -1) return match;
+      if (match.indexOf('googleapis') > -1) return match;
+      if (match.indexOf('id="we-') > -1) return match;
+      return '';
+    });
 
     // Inject editing script directly into HTML (runs inside iframe — most reliable approach)
     if (!html.includes('id="we-s"')) {
