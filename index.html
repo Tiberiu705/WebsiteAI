@@ -4343,8 +4343,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
       card.appendChild(LBL('Link'));
       const linkRow = document.createElement('div'); linkRow.style.cssText = 'display:flex;gap:6px;margin-bottom:10px;';
       const linkInp = document.createElement('input'); linkInp.type = 'text';
-      linkInp.value = btn.getAttribute('href') || btn.getAttribute('onclick')?.match(/href=['"](.*?)['"]/)?.[1] || '';
-      linkInp.placeholder = '#contact sau https://...';
+      // Default link: site's public URL if SKU available, otherwise current href
+      const _rawHref = btn.getAttribute('href') || btn.getAttribute('onclick')?.match(/href=['"](.*?)['"]/)?.[1] || '';
+      const _siteUrl = window.editingSku ? (window.location.origin + '/site/' + window.editingSku) : '';
+      // Replace anchor-only links (#, #contact, etc.) with the site's public URL
+      linkInp.value = (_rawHref && !_rawHref.match(/^#/)) ? _rawHref : _siteUrl;
+      // Also set the href on the actual element
+      if (_siteUrl && _rawHref.match(/^#/) && btn.tagName === 'A') {
+        btn.setAttribute('href', _siteUrl);
+      }
+      linkInp.placeholder = _siteUrl || '#contact sau https://...';
       linkInp.style.cssText = 'flex:1;box-sizing:border-box;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.82rem;outline:none;transition:border-color 0.15s;';
       linkInp.addEventListener('focus', () => linkInp.style.borderColor='rgba(200,255,0,0.35)');
       linkInp.addEventListener('blur', () => {
@@ -5462,6 +5470,7 @@ async function _saveUserSite(session, html, brief) {
   // Set brief so save button works
   window.lastBrief = { brandName: brand, activity: act };
   window.editingSiteId = editId;
+  window.editingSku = sku;
 
   try {
     var res = await fetch('/api/preview?id=' + encodeURIComponent(editId));
