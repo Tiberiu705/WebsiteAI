@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Politica de Confidențialitate — WebsiteAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #080808; color: #ccc; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.8; }
+    a { color: #C8FF00; text-decoration: none; transition: opacity 0.15s; }
+    a:hover { opacity: 0.8; }
+    .top-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(8,8,8,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .container { max-width: 780px; margin: 0 auto; padding: 120px 24px 80px; }
+    h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.6rem); color: #fff; margin-bottom: 12px; letter-spacing: -0.02em; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 48px; }
+    h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.25rem; color: #fff; margin: 40px 0 14px; }
+    p, li { color: #999; font-size: 0.925rem; line-height: 1.85; margin-bottom: 14px; }
+    ul { padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 6px; }
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C8FF00; background: rgba(200,255,0,0.08); border: 1px solid rgba(200,255,0,0.2); border-radius: 20px; padding: 4px 14px; margin-bottom: 18px; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/" style="display:flex;align-items:center;gap:10px;">
+    <img src="/websiteai-logo.png" alt="WebsiteAI" style="height:22px;width:auto;" />
+  </a>
+  <a href="/" style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#888;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">&larr; Înapoi</a>
+</div>
+
+<div class="container">
+  <div class="badge">Legal</div>
+  <h1>Politica de Confidențialitate</h1>
+  <p class="subtitle">Ultima actualizare: 21 martie 2026</p>
+
+  <h2>1. Introducere</h2>
+  <p>WebsiteAI (websiteai.ro) respectă confidențialitatea utilizatorilor săi. Această politică descrie ce date colectăm, cum le folosim și drepturile dumneavoastră conform Regulamentului General privind Protecția Datelor (GDPR).</p>
+
+  <h2>2. Date pe care le colectăm</h2>
+  <p>Colectăm următoarele categorii de date:</p>
+  <ul>
+    <li><strong style="color:#ddd;">Date de cont:</strong> nume, adresă de email (prin autentificare Google)</li>
+    <li><strong style="color:#ddd;">Date de utilizare:</strong> site-uri generate, editări efectuate, preferințe de design</li>
+    <li><strong style="color:#ddd;">Date din formularul de contact:</strong> nume, email, telefon, mesaj</li>
+    <li><strong style="color:#ddd;">Date tehnice:</strong> adresa IP, tipul browserului, pagini accesate</li>
+    <li><strong style="color:#ddd;">Date de plată:</strong> procesate exclusiv prin Stripe — nu stocăm datele cardurilor</li>
+  </ul>
+
+  <h2>3. Scopul prelucrării datelor</h2>
+  <p>Folosim datele colectate pentru:</p>
+  <ul>
+    <li>Furnizarea și îmbunătățirea serviciului de generare site-uri</li>
+    <li>Gestionarea contului și a abonamentelor</li>
+    <li>Comunicarea cu utilizatorii (răspunsuri la întrebări, notificări)</li>
+    <li>Prevenirea abuzurilor și asigurarea securității platformei</li>
+    <li>Respectarea obligațiilor legale</li>
+  </ul>
+
+  <h2>4. Temeiul legal al prelucrării</h2>
+  <p>Prelucrăm datele pe baza:</p>
+  <ul>
+    <li>Consimțământului dumneavoastră (la crearea contului)</li>
+    <li>Executării contractului (furnizarea serviciului)</li>
+    <li>Interesului nostru legitim (securitate, prevenirea fraudei)</li>
+    <li>Obligațiilor legale (legislația fiscală și contabilă)</li>
+  </ul>
+
+  <h2>5. Partajarea datelor</h2>
+  <p>Nu vindem datele dumneavoastră. Le partajăm doar cu:</p>
+  <ul>
+    <li><strong style="color:#ddd;">Google:</strong> pentru autentificare (Google OAuth)</li>
+    <li><strong style="color:#ddd;">Stripe:</strong> pentru procesarea plăților</li>
+    <li><strong style="color:#ddd;">Vercel:</strong> pentru găzduirea platformei</li>
+    <li><strong style="color:#ddd;">Upstash:</strong> pentru stocarea datelor (Redis)</li>
+    <li><strong style="color:#ddd;">Resend:</strong> pentru trimiterea emailurilor de notificare</li>
+  </ul>
+
+  <h2>6. Stocarea datelor</h2>
+  <p>Datele sunt stocate pe servere securizate furnizate de Vercel și Upstash. Păstrăm datele atât timp cât contul este activ sau cât este necesar pentru scopurile descrise mai sus.</p>
+
+  <h2>7. Cookie-uri</h2>
+  <p>Utilizăm cookie-uri esențiale pentru funcționarea platformei:</p>
+  <ul>
+    <li><strong style="color:#ddd;">Sesiune:</strong> pentru menținerea autentificării</li>
+    <li><strong style="color:#ddd;">Preferințe:</strong> pentru salvarea setărilor locale</li>
+  </ul>
+  <p>Nu folosim cookie-uri de tracking sau publicitate de la terți.</p>
+
+  <h2>8. Drepturile dumneavoastră (GDPR)</h2>
+  <p>Conform GDPR, aveți dreptul la:</p>
+  <ul>
+    <li><strong style="color:#ddd;">Acces:</strong> să solicitați o copie a datelor dumneavoastră</li>
+    <li><strong style="color:#ddd;">Rectificare:</strong> să corectați datele inexacte</li>
+    <li><strong style="color:#ddd;">Ștergere:</strong> să solicitați ștergerea datelor („dreptul de a fi uitat")</li>
+    <li><strong style="color:#ddd;">Restricționare:</strong> să limitați prelucrarea datelor</li>
+    <li><strong style="color:#ddd;">Portabilitate:</strong> să primiți datele într-un format structurat</li>
+    <li><strong style="color:#ddd;">Opoziție:</strong> să vă opuneți prelucrării datelor</li>
+  </ul>
+  <p>Pentru exercitarea acestor drepturi, contactați-ne la adresa de mai jos.</p>
+
+  <h2>9. Securitatea datelor</h2>
+  <p>Implementăm măsuri tehnice și organizatorice adecvate pentru protejarea datelor, inclusiv: criptare în tranzit (HTTPS), acces restricționat, autentificare securizată și monitorizare continuă.</p>
+
+  <h2>10. Modificări ale politicii</h2>
+  <p>Ne rezervăm dreptul de a actualiza această politică. Modificările vor fi publicate pe această pagină cu data actualizării. Vă recomandăm să verificați periodic această pagină.</p>
+
+  <h2>11. Contact</h2>
+  <p>Pentru orice întrebări privind protecția datelor sau exercitarea drepturilor GDPR:</p>
+  <ul>
+    <li>Email: <a href="mailto:IT@websiteai.ro">IT@websiteai.ro</a></li>
+    <li>Telefon: <a href="tel:0750275768">0750 275 768</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

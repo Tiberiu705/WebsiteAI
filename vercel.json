@@ -1,7 +1,9 @@
 {
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/site/:sku", "destination": "/site.html" }
+    { "source": "/site/:sku", "destination": "/site.html" },
+    { "source": "/termeni", "destination": "/termeni.html" },
+    { "source": "/confidentialitate", "destination": "/confidentialitate.html" }
   ],
   "functions": {
     "api/generate.js": { "maxDuration": 60 },
@@ -9,14 +11,12 @@
     "api/recent.js": { "maxDuration": 10 },
     "api/preview.js": { "maxDuration": 10 },
     "api/create-checkout.js": { "maxDuration": 15 },
-    "api/verify-payment.js": { "maxDuration": 10 },
     "api/webhook.js": { "maxDuration": 15 },
-    "api/serve-domain.js": { "maxDuration": 10 },
-    "api/add-domain.js": { "maxDuration": 15 },
     "api/auth/config.js": { "maxDuration": 5 },
     "api/auth/google.js": { "maxDuration": 10 },
-    "api/user/sites.js": { "maxDuration": 10 },
+    "api/user/sites.js": { "maxDuration": 15 },
     "api/img.js": { "maxDuration": 15 },
-    "api/site.js": { "maxDuration": 10 }
+    "api/site.js": { "maxDuration": 10 },
+    "api/contact.js": { "maxDuration": 10 }
   }
 }
