@@ -151,7 +151,7 @@ module.exports = async function handler(req, res) {
       method: 'POST',
       headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from:     'WebsiteAI <onboarding@resend.dev>',
+        from:     'WebsiteAI Contact <contact@websiteai.ro>',
         to:       recipients,
         reply_to: String(email),
         subject:  `Contact nou${safeBrand ? ` — ${safeBrand}` : ''}: ${safeName}`,
