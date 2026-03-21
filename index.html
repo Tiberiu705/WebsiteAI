@@ -2371,6 +2371,200 @@ async function submitContactForm(e) {
       });
     });
 
+    // ── Drag & Drop with snap guide lines ──
+    setupDragAndDrop(iframeDoc);
+  }
+
+  function setupDragAndDrop(iframeDoc) {
+    // Inject drag CSS + guide lines
+    var dragStyle = iframeDoc.createElement('style');
+    dragStyle.id = 'we-drag-css';
+    dragStyle.textContent = [
+      '.we-dragging { cursor:grabbing!important; opacity:0.85!important; z-index:9999!important; position:relative!important; box-shadow:0 8px 32px rgba(99,102,241,0.25)!important; outline:2px solid rgba(99,102,241,0.8)!important; outline-offset:2px; transition:none!important; }',
+      '[contenteditable]:not(:focus):not(.we-dragging) { cursor:grab!important; }',
+      '.we-guide-h, .we-guide-v { position:fixed; z-index:99998; pointer-events:none; display:none; }',
+      '.we-guide-v { top:0; bottom:0; width:1px; background:rgba(99,102,241,0.7); box-shadow:0 0 6px rgba(99,102,241,0.4); }',
+      '.we-guide-h { left:0; right:0; height:1px; background:rgba(99,102,241,0.7); box-shadow:0 0 6px rgba(99,102,241,0.4); }',
+      '.we-guide-label { position:fixed; z-index:99999; pointer-events:none; background:rgba(99,102,241,0.9); color:#fff; font-family:Inter,sans-serif; font-size:10px; font-weight:600; padding:2px 6px; border-radius:3px; display:none; white-space:nowrap; }',
+    ].join('\n');
+    (iframeDoc.head || iframeDoc.body).appendChild(dragStyle);
+
+    // Create guide line elements
+    var guideV = iframeDoc.createElement('div');
+    guideV.className = 'we-guide-v';
+    iframeDoc.body.appendChild(guideV);
+
+    var guideH = iframeDoc.createElement('div');
+    guideH.className = 'we-guide-h';
+    iframeDoc.body.appendChild(guideH);
+
+    var labelV = iframeDoc.createElement('div');
+    labelV.className = 'we-guide-label';
+    iframeDoc.body.appendChild(labelV);
+
+    var labelH = iframeDoc.createElement('div');
+    labelH.className = 'we-guide-label';
+    iframeDoc.body.appendChild(labelH);
+
+    var SNAP_THRESHOLD = 6;
+    var DRAG_THRESHOLD = 5;
+    var dragState = null;
+
+    iframeDoc.addEventListener('mousedown', function(e) {
+      var el = e.target.closest('[contenteditable="true"]');
+      if (!el || el.matches(':focus')) return;
+
+      var rect = el.getBoundingClientRect();
+      dragState = {
+        el: el,
+        startX: e.clientX,
+        startY: e.clientY,
+        origLeft: parseFloat(el.style.left) || 0,
+        origTop: parseFloat(el.style.top) || 0,
+        dragging: false,
+        rect: rect,
+      };
+    }, true);
+
+    iframeDoc.addEventListener('mousemove', function(e) {
+      if (!dragState) return;
+      var dx = e.clientX - dragState.startX;
+      var dy = e.clientY - dragState.startY;
+
+      if (!dragState.dragging) {
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        // Start dragging
+        dragState.dragging = true;
+        dragState.el.setAttribute('contenteditable', 'false');
+        dragState.el.classList.add('we-dragging');
+        if (!dragState.el.style.position || dragState.el.style.position === 'static') {
+          dragState.el.style.position = 'relative';
+        }
+        e.preventDefault();
+      }
+
+      if (dragState.dragging) {
+        e.preventDefault();
+        var newLeft = dragState.origLeft + dx;
+        var newTop = dragState.origTop + dy;
+
+        // Calculate element center in viewport
+        var elW = dragState.rect.width;
+        var elH = dragState.rect.height;
+        var elCenterX = dragState.rect.left + dx + elW / 2;
+        var elCenterY = dragState.rect.top + dy + elH / 2;
+
+        // Parent/container center
+        var parent = dragState.el.parentElement;
+        var parentRect = parent ? parent.getBoundingClientRect() : { left: 0, top: 0, width: iframeDoc.documentElement.clientWidth, height: iframeDoc.documentElement.clientHeight };
+        var parentCenterX = parentRect.left + parentRect.width / 2;
+        var parentCenterY = parentRect.top + parentRect.height / 2;
+
+        // Viewport center
+        var vpCenterX = iframeDoc.documentElement.clientWidth / 2;
+
+        // Snap vertical (center alignment)
+        var snappedV = false;
+        if (Math.abs(elCenterX - parentCenterX) < SNAP_THRESHOLD) {
+          newLeft = dragState.origLeft + (parentCenterX - (dragState.rect.left + elW / 2));
+          snappedV = true;
+          guideV.style.left = parentCenterX + 'px';
+          guideV.style.display = 'block';
+          labelV.textContent = 'Centru';
+          labelV.style.left = (parentCenterX + 6) + 'px';
+          labelV.style.top = (elCenterY - 10) + 'px';
+          labelV.style.display = 'block';
+        } else if (Math.abs(elCenterX - vpCenterX) < SNAP_THRESHOLD) {
+          newLeft = dragState.origLeft + (vpCenterX - (dragState.rect.left + elW / 2));
+          snappedV = true;
+          guideV.style.left = vpCenterX + 'px';
+          guideV.style.display = 'block';
+          labelV.textContent = 'Centru pagină';
+          labelV.style.left = (vpCenterX + 6) + 'px';
+          labelV.style.top = (elCenterY - 10) + 'px';
+          labelV.style.display = 'block';
+        } else {
+          guideV.style.display = 'none';
+          labelV.style.display = 'none';
+        }
+
+        // Snap horizontal (center of parent)
+        var snappedH = false;
+        if (Math.abs(elCenterY - parentCenterY) < SNAP_THRESHOLD) {
+          newTop = dragState.origTop + (parentCenterY - (dragState.rect.top + elH / 2));
+          snappedH = true;
+          guideH.style.top = parentCenterY + 'px';
+          guideH.style.display = 'block';
+          labelH.textContent = 'Centru';
+          labelH.style.top = (parentCenterY + 6) + 'px';
+          labelH.style.left = (elCenterX - 20) + 'px';
+          labelH.style.display = 'block';
+        }
+
+        // Snap to sibling elements edges
+        if (!snappedH || !snappedV) {
+          var siblings = parent ? parent.children : [];
+          for (var si = 0; si < siblings.length; si++) {
+            var sib = siblings[si];
+            if (sib === dragState.el || sib === guideV || sib === guideH || sib === labelV || sib === labelH) continue;
+            var sr = sib.getBoundingClientRect();
+            // Horizontal alignment with sibling center
+            if (!snappedH && Math.abs(elCenterY - (sr.top + sr.height / 2)) < SNAP_THRESHOLD) {
+              var sibCY = sr.top + sr.height / 2;
+              newTop = dragState.origTop + (sibCY - (dragState.rect.top + elH / 2));
+              guideH.style.top = sibCY + 'px';
+              guideH.style.display = 'block';
+              labelH.textContent = 'Aliniat';
+              labelH.style.top = (sibCY + 6) + 'px';
+              labelH.style.left = (elCenterX - 20) + 'px';
+              labelH.style.display = 'block';
+              snappedH = true;
+            }
+            // Vertical alignment with sibling center
+            if (!snappedV && Math.abs(elCenterX - (sr.left + sr.width / 2)) < SNAP_THRESHOLD) {
+              var sibCX = sr.left + sr.width / 2;
+              newLeft = dragState.origLeft + (sibCX - (dragState.rect.left + elW / 2));
+              guideV.style.left = sibCX + 'px';
+              guideV.style.display = 'block';
+              labelV.textContent = 'Aliniat';
+              labelV.style.left = (sibCX + 6) + 'px';
+              labelV.style.top = (elCenterY - 10) + 'px';
+              labelV.style.display = 'block';
+              snappedV = true;
+            }
+          }
+        }
+
+        if (!snappedH) { guideH.style.display = 'none'; labelH.style.display = 'none'; }
+
+        dragState.el.style.left = Math.round(newLeft) + 'px';
+        dragState.el.style.top = Math.round(newTop) + 'px';
+      }
+    }, true);
+
+    function endDrag() {
+      if (!dragState) return;
+      if (dragState.dragging) {
+        dragState.el.classList.remove('we-dragging');
+        dragState.el.setAttribute('contenteditable', 'true');
+        guideV.style.display = 'none';
+        guideH.style.display = 'none';
+        labelV.style.display = 'none';
+        labelH.style.display = 'none';
+        // Save position to editedContent
+        var key = dragState.el.getAttribute('data-ek');
+        if (key) {
+          if (!window.editedContent[key]) window.editedContent[key] = {};
+          window.editedContent[key].left = dragState.el.style.left;
+          window.editedContent[key].top = dragState.el.style.top;
+        }
+        if (typeof window.syncHtml === 'function') window.syncHtml();
+      }
+      dragState = null;
+    }
+
+    iframeDoc.addEventListener('mouseup', endDrag, true);
+    iframeDoc.addEventListener('mouseleave', endDrag, true);
   }
 
   /* ── Force white inline color on Badge-uri 1 and Texte 1 ── */
