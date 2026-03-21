@@ -2315,10 +2315,104 @@ async function submitContactForm(e) {
       // Tel/email links: keep natural size
       'a[href^="tel:"][contenteditable],a[href^="mailto:"][contenteditable]{',
       '  display:inline-block!important;cursor:text!important;}',
+      // Button-like elements: hover outline
+      'button[data-ek]:hover,a[data-ek][contenteditable="false"]:hover{',
+      '  outline:2px dashed rgba(99,102,241,.6)!important;outline-offset:3px;border-radius:4px;cursor:pointer!important;}',
     ].join('');
     (iframeDoc.body || iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
     // Make ALL text elements, buttons, and links editable (including tel/mailto)
+    // Helper: check if element is a "button-like" element (button, CTA link — not tel/mailto/anchor)
+    function isButtonLike(el) {
+      if (el.tagName === 'BUTTON') return true;
+      if (el.tagName === 'A') {
+        var href = el.getAttribute('href') || '';
+        if (href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:')) return false;
+        // Links with padding/background are button-like CTAs
+        var style = el.getAttribute('style') || '';
+        var cls = el.getAttribute('class') || '';
+        if (/padding|btn|button|cta/i.test(style + ' ' + cls)) return true;
+        // Links inside nav are not buttons
+        if (el.closest('nav,footer,.nav,header')) return false;
+        return true;
+      }
+      return false;
+    }
+
+    // ── Button edit popup ──
+    var btnPopup = iframeDoc.createElement('div');
+    btnPopup.id = 'we-btn-popup';
+    btnPopup.innerHTML = '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#999;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Text buton</div>' +
+      '<input id="we-btn-input" type="text" style="width:100%;box-sizing:border-box;background:#1a1a1a;border:1.5px solid rgba(99,102,241,0.4);border-radius:8px;padding:10px 14px;font-family:Inter,sans-serif;font-size:14px;color:#fff;outline:none;" />' +
+      '<div style="display:flex;gap:6px;margin-top:8px;">' +
+        '<button id="we-btn-save" style="flex:1;padding:8px;border:none;border-radius:6px;background:#6366f1;color:#fff;font-family:Inter,sans-serif;font-weight:600;font-size:12px;cursor:pointer;">Salvează</button>' +
+        '<button id="we-btn-cancel" style="flex:1;padding:8px;border:1px solid rgba(255,255,255,0.15);border-radius:6px;background:transparent;color:#888;font-family:Inter,sans-serif;font-weight:600;font-size:12px;cursor:pointer;">Anulează</button>' +
+      '</div>';
+    btnPopup.style.cssText = 'display:none;position:absolute;z-index:99999;background:#111;border:1.5px solid rgba(99,102,241,0.5);border-radius:12px;padding:14px 16px;min-width:240px;max-width:320px;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(99,102,241,0.15);';
+    iframeDoc.body.appendChild(btnPopup);
+
+    var _popupTarget = null;
+    var _popupOrig = '';
+
+    function showBtnPopup(el) {
+      _popupTarget = el;
+      _popupOrig = el.textContent.trim();
+      var inp = iframeDoc.getElementById('we-btn-input');
+      inp.value = _popupOrig;
+
+      // Position popup above the button
+      var rect = el.getBoundingClientRect();
+      var scrollY = iframeDoc.defaultView.scrollY || iframeDoc.documentElement.scrollTop || 0;
+      var scrollX = iframeDoc.defaultView.scrollX || iframeDoc.documentElement.scrollLeft || 0;
+      btnPopup.style.display = 'block';
+      var popH = btnPopup.offsetHeight;
+      var topPos = rect.top + scrollY - popH - 10;
+      if (topPos < scrollY + 10) topPos = rect.bottom + scrollY + 10; // below if no space above
+      btnPopup.style.top = topPos + 'px';
+      btnPopup.style.left = Math.max(10, rect.left + scrollX + rect.width / 2 - btnPopup.offsetWidth / 2) + 'px';
+
+      setTimeout(function() { inp.focus(); inp.select(); }, 50);
+    }
+
+    function closeBtnPopup() {
+      btnPopup.style.display = 'none';
+      _popupTarget = null;
+    }
+
+    function saveBtnPopup() {
+      if (!_popupTarget) return;
+      var inp = iframeDoc.getElementById('we-btn-input');
+      var nv = inp.value.trim();
+      if (nv && nv !== _popupOrig) {
+        // Keep inner HTML structure (icons etc), only replace text nodes
+        var walker = iframeDoc.createTreeWalker(_popupTarget, NodeFilter.SHOW_TEXT, null, false);
+        var textNode = walker.nextNode();
+        if (textNode) { textNode.textContent = nv; }
+        else { _popupTarget.textContent = nv; }
+        var key = _popupTarget.getAttribute('data-ek');
+        if (key) {
+          if (!window.editedContent[key]) window.editedContent[key] = {};
+          window.editedContent[key].html = _popupTarget.innerHTML;
+        }
+        if (typeof window.syncHtml === 'function') window.syncHtml();
+      }
+      closeBtnPopup();
+    }
+
+    iframeDoc.getElementById('we-btn-save').addEventListener('click', saveBtnPopup);
+    iframeDoc.getElementById('we-btn-cancel').addEventListener('click', closeBtnPopup);
+    iframeDoc.getElementById('we-btn-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveBtnPopup(); }
+      if (e.key === 'Escape') { e.preventDefault(); closeBtnPopup(); }
+    });
+
+    // Close popup when clicking outside
+    iframeDoc.addEventListener('mousedown', function(e) {
+      if (btnPopup.style.display === 'block' && !btnPopup.contains(e.target) && e.target !== _popupTarget) {
+        closeBtnPopup();
+      }
+    });
+
     iframeDoc.querySelectorAll('h1,h2,h3,h4,h5,p,li,span,button,a[href]').forEach(el => {
       try {
         // Skip script/style/svg subtrees
@@ -2333,29 +2427,43 @@ async function submitContactForm(e) {
         // Skip if already set up
         if (el.getAttribute('contenteditable') === 'true') return;
 
-        el.setAttribute('contenteditable', 'true');
-        el.setAttribute('spellcheck', 'false');
-
         const key = 'ek_' + el.tagName + '_' + Array.from(el.parentElement?.children || []).indexOf(el);
         el.setAttribute('data-ek', key);
 
-        let orig = el.innerHTML;
-        el.addEventListener('focus', () => { orig = el.innerHTML; });
-        el.addEventListener('keydown', e => {
-          if (e.key === 'Escape') { e.preventDefault(); el.innerHTML = orig; el.blur(); }
-          if (e.key === 'Enter' && !e.shiftKey && (el.tagName === 'BUTTON' || /^H\d$/.test(el.tagName))) { e.preventDefault(); el.blur(); }
-        });
-        el.addEventListener('blur', () => {
-          const nv = el.innerHTML.trim();
-          if (!nv) { el.innerHTML = orig; return; }
-          if (nv !== orig) window.editedContent[key] = { html: nv };
-        });
-        // Restore saved edit
-        if (window.editedContent[key]) el.innerHTML = window.editedContent[key].html;
+        if (isButtonLike(el)) {
+          // Button-like elements: hover outline + click opens popup
+          el.setAttribute('contenteditable', 'false');
+          el.style.cursor = 'pointer';
+          el.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showBtnPopup(el);
+          }, true);
+          // Restore saved edit
+          if (window.editedContent[key]) el.innerHTML = window.editedContent[key].html;
+        } else {
+          // Text elements: inline contenteditable
+          el.setAttribute('contenteditable', 'true');
+          el.setAttribute('spellcheck', 'false');
+
+          let orig = el.innerHTML;
+          el.addEventListener('focus', () => { orig = el.innerHTML; });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { e.preventDefault(); el.innerHTML = orig; el.blur(); }
+            if (e.key === 'Enter' && !e.shiftKey && /^H\d$/.test(el.tagName)) { e.preventDefault(); el.blur(); }
+          });
+          el.addEventListener('blur', () => {
+            const nv = el.innerHTML.trim();
+            if (!nv) { el.innerHTML = orig; return; }
+            if (nv !== orig) window.editedContent[key] = { html: nv };
+          });
+          // Restore saved edit
+          if (window.editedContent[key]) el.innerHTML = window.editedContent[key].html;
+        }
       } catch(e) {}
     });
 
-    // Tel/mailto links: also contenteditable, update href on blur
+    // Tel/mailto links: contenteditable, update href on blur
     iframeDoc.querySelectorAll('a[href^="tel:"],a[href^="mailto:"]').forEach(link => {
       if (link.getAttribute('contenteditable') === 'true') return;
       link.setAttribute('contenteditable', 'true');
