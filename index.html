@@ -867,20 +867,56 @@
 </style>
 <script>
 function quickStart(btn) {
-  var brief = {
-    brandName:   btn.dataset.brand,
-    activity:    btn.dataset.activity,
-    audience:    '',
-    mainAction:  'Contactează-ne',
-    colorsFonts: '',
-    designStyle: 'modern',
-  };
-  if (typeof openOverlay === 'function' && typeof generate === 'function') {
-    openOverlay();
-    setTimeout(function(){ generate(brief); }, 100);
-  } else {
-    window.location.href = '/?generate=1';
+  var activity = btn.dataset.activity;
+  var defaultBrand = btn.dataset.brand;
+
+  // Show brand name prompt
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#111;border:1px solid rgba(200,255,0,0.2);border-radius:20px;padding:36px 32px;width:min(440px,90vw);box-shadow:0 24px 80px rgba(0,0,0,0.7);';
+  box.innerHTML =
+    '<div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:6px;">Cum se numește afacerea ta?</div>' +
+    '<p style="font-family:Inter,sans-serif;font-size:0.85rem;color:#666;margin:0 0 20px;line-height:1.6;">Introdu numele brandului și generăm instant un site pentru <span style="color:#C8FF00;">' + activity + '</span>.</p>' +
+    '<input id="qs-brand-input" type="text" placeholder="ex: ' + defaultBrand + '" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px 16px;font-family:Inter,sans-serif;font-size:1rem;color:#fff;outline:none;transition:border-color 0.2s;" />' +
+    '<div style="display:flex;gap:10px;margin-top:20px;">' +
+      '<button id="qs-go-btn" style="flex:1;background:#C8FF00;border:none;border-radius:10px;padding:14px;font-family:Syne,sans-serif;font-weight:800;font-size:0.9rem;color:#080808;cursor:pointer;">Generează →</button>' +
+      '<button id="qs-cancel-btn" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 20px;font-family:Syne,sans-serif;font-weight:700;font-size:0.85rem;color:#888;cursor:pointer;">Anulează</button>' +
+    '</div>';
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+
+  var inp = document.getElementById('qs-brand-input');
+  setTimeout(function(){ inp.focus(); }, 60);
+  inp.addEventListener('focus', function(){ inp.style.borderColor = 'rgba(200,255,0,0.4)'; });
+  inp.addEventListener('blur', function(){ inp.style.borderColor = 'rgba(255,255,255,0.12)'; });
+
+  function doGenerate() {
+    var name = inp.value.trim() || defaultBrand;
+    ov.remove();
+    var brief = {
+      brandName:   name,
+      activity:    activity,
+      audience:    '',
+      mainAction:  'Contactează-ne',
+      colorsFonts: '',
+      designStyle: 'modern',
+    };
+    if (typeof openOverlay === 'function' && typeof generate === 'function') {
+      openOverlay();
+      setTimeout(function(){ generate(brief); }, 100);
+    } else {
+      window.location.href = '/?generate=1';
+    }
   }
+
+  document.getElementById('qs-go-btn').onclick = doGenerate;
+  document.getElementById('qs-cancel-btn').onclick = function(){ ov.remove(); };
+  ov.addEventListener('click', function(e){ if (e.target === ov) ov.remove(); });
+  inp.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') doGenerate();
+    if (e.key === 'Escape') ov.remove();
+  });
 }
 </script>
 
