@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anulează Abonament — WebsiteAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #080808; color: #ccc; font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.8; }
+    a { color: #C8FF00; text-decoration: none; transition: opacity 0.15s; }
+    a:hover { opacity: 0.8; }
+    .top-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(8,8,8,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .container { max-width: 780px; margin: 0 auto; padding: 120px 24px 80px; }
+    h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.6rem); color: #fff; margin-bottom: 12px; letter-spacing: -0.02em; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 48px; }
+    h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.25rem; color: #fff; margin: 40px 0 14px; }
+    p, li { color: #999; font-size: 0.925rem; line-height: 1.85; margin-bottom: 14px; }
+    ol { padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 8px; }
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C8FF00; background: rgba(200,255,0,0.08); border: 1px solid rgba(200,255,0,0.2); border-radius: 20px; padding: 4px 14px; margin-bottom: 18px; }
+    .form-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 36px; margin-top: 48px; }
+    .form-card h2 { margin-top: 0; }
+    label { display: block; font-size: 0.75rem; font-weight: 600; color: #888; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+    input, textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 13px 16px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #fff; outline: none; transition: border 0.2s; }
+    input:focus, textarea:focus { border-color: rgba(200,255,0,0.4); }
+    textarea { resize: vertical; min-height: 110px; }
+    .form-grid { display: flex; flex-direction: column; gap: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+    .btn-submit { margin-top: 8px; padding: 15px 32px; width: 100%; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer; background: #ff4d4d; color: #fff; transition: opacity 0.15s; }
+    .btn-submit:hover { opacity: 0.88; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    #cancel-msg { display: none; font-size: 0.875rem; text-align: center; padding: 12px; border-radius: 10px; margin-top: 12px; }
+    .info-box { background: rgba(200,255,0,0.05); border: 1px solid rgba(200,255,0,0.15); border-radius: 12px; padding: 20px 24px; margin: 24px 0; }
+    .info-box p { color: #aaa; margin-bottom: 0; }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: rgba(200,255,0,0.12); color: #C8FF00; font-weight: 700; font-size: 0.75rem; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/" style="display:flex;align-items:center;gap:10px;">
+    <img src="/websiteai-logo.png" alt="WebsiteAI" style="height:22px;width:auto;" />
+  </a>
+  <a href="/" style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#888;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">&larr; Înapoi</a>
+</div>
+
+<div class="container">
+  <div class="badge">Cont</div>
+  <h1>Anulează Abonamentul</h1>
+  <p class="subtitle">Ne pare rău că vrei să pleci. Completează formularul de mai jos și ne vom ocupa de anulare.</p>
+
+  <h2>Cum funcționează anularea?</h2>
+  <p>Procesul de anulare este simplu și transparent:</p>
+
+  <ol>
+    <li><span class="step-num">1</span> <strong style="color:#ddd;">Completează formularul</strong> de mai jos cu datele tale — numele și prenumele folosite la plată, emailul contului și motivul anulării.</li>
+    <li><span class="step-num">2</span> <strong style="color:#ddd;">Echipa noastră verifică</strong> cererea și procesează anularea în cel mai scurt timp (de obicei în 24 de ore lucrătoare).</li>
+    <li><span class="step-num">3</span> <strong style="color:#ddd;">Primești confirmare</strong> pe email că abonamentul a fost anulat cu succes.</li>
+  </ol>
+
+  <div class="info-box">
+    <p><strong style="color:#C8FF00;">Important:</strong> După anulare, site-ul tău va rămâne activ până la expirarea perioadei plătite. Nu se fac rambursări pentru perioada rămasă, conform termenilor și condițiilor.</p>
+  </div>
+
+  <p>Dacă ai întrebări sau vrei să discuți înainte de a anula, ne poți contacta la <a href="mailto:IT@websiteai.ro">IT@websiteai.ro</a> sau la <a href="tel:0750275768">0750 275 768</a>.</p>
+
+  <!-- ── Formular anulare ── -->
+  <div class="form-card">
+    <h2>Cerere de anulare</h2>
+    <p style="color:#666;font-size:0.85rem;margin-bottom:24px;">Toate câmpurile marcate cu * sunt obligatorii.</p>
+
+    <form id="cancel-form" class="form-grid">
+      <!-- honeypot -->
+      <input name="hp" id="an-hp" type="text" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" />
+
+      <div class="form-row">
+        <div>
+          <label>Nume *</label>
+          <input id="an-nume" type="text" required placeholder="ex: Popescu" />
+        </div>
+        <div>
+          <label>Prenume *</label>
+          <input id="an-prenume" type="text" required placeholder="ex: Ion" />
+        </div>
+      </div>
+
+      <div>
+        <label>Email (folosit la plată) *</label>
+        <input id="an-email" type="email" required placeholder="ex: ion@email.ro" />
+      </div>
+
+      <div>
+        <label>Motivul anulării *</label>
+        <textarea id="an-motiv" required placeholder="Spune-ne de ce dorești să anulezi abonamentul..." rows="4"></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit" id="an-btn">Trimite cererea de anulare</button>
+      <p id="cancel-msg"></p>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById('cancel-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  var btn = document.getElementById('an-btn');
+  var msg = document.getElementById('cancel-msg');
+  btn.disabled = true;
+  btn.textContent = 'Se trimite...';
+  msg.style.display = 'none';
+
+  var body = {
+    name:    document.getElementById('an-nume').value.trim() + ' ' + document.getElementById('an-prenume').value.trim(),
+    email:   document.getElementById('an-email').value.trim(),
+    message: '[CERERE ANULARE ABONAMENT]\n\nNume: ' + document.getElementById('an-nume').value.trim() +
+             '\nPrenume: ' + document.getElementById('an-prenume').value.trim() +
+             '\nEmail plată: ' + document.getElementById('an-email').value.trim() +
+             '\n\nMotiv anulare:\n' + document.getElementById('an-motiv').value.trim(),
+    brand:   'WebsiteAI — Anulare Abonament',
+    hp:      document.getElementById('an-hp').value,
+  };
+
+  try {
+    var res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    var data = await res.json();
+    if (res.ok && data.ok) {
+      msg.style.display = 'block';
+      msg.style.background = 'rgba(200,255,0,0.08)';
+      msg.style.border = '1px solid rgba(200,255,0,0.25)';
+      msg.style.color = '#C8FF00';
+      msg.textContent = '✓ Cererea a fost trimisă! Vei primi confirmare pe email în maxim 24 de ore.';
+      document.getElementById('cancel-form').reset();
+      btn.textContent = '✓ Trimis!';
+      setTimeout(function() { btn.disabled = false; btn.textContent = 'Trimite cererea de anulare'; }, 5000);
+    } else {
+      throw new Error(data.error || 'Eroare');
+    }
+  } catch(err) {
+    msg.style.display = 'block';
+    msg.style.background = 'rgba(255,80,80,0.08)';
+    msg.style.border = '1px solid rgba(255,80,80,0.25)';
+    msg.style.color = '#ff6b6b';
+    msg.textContent = 'Eroare la trimitere. Încearcă din nou sau contactează-ne direct.';
+    btn.disabled = false;
+    btn.textContent = 'Trimite cererea de anulare';
+  }
+});
+</script>
+
+</body>
+</html>

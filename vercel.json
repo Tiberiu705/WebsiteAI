@@ -3,7 +3,8 @@
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/site/:sku", "destination": "/site.html" },
     { "source": "/termeni", "destination": "/termeni.html" },
-    { "source": "/confidentialitate", "destination": "/confidentialitate.html" }
+    { "source": "/confidentialitate", "destination": "/confidentialitate.html" },
+    { "source": "/anuleaza", "destination": "/anuleaza.html" }
   ],
   "functions": {
     "api/generate.js": { "maxDuration": 60 },
