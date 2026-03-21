@@ -2279,24 +2279,11 @@ async function submitContactForm(e) {
       '[contenteditable]:focus{',
       '  outline:2px solid rgba(99,102,241,.9)!important;',
       '  outline-offset:3px;border-radius:4px;}',
-      // Buttons/CTA (exclude tel/mailto): base + invisible hover zone
-      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]),button:not([contenteditable]){',
-      '  transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;',
-      '  cursor:pointer!important;position:relative!important;}',
-      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"])::before,button:not([contenteditable])::before{',
-      '  content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;',
-      '  border-radius:inherit!important;pointer-events:auto!important;}',
-      // Pop-up hover (exclude tel/mailto): outline extends beyond button
-      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover,button:not([contenteditable]):hover{',
-      '  transform:scale(1.06) translateY(-3px)!important;',
-      '  outline:2px dashed rgba(251,146,60,.6)!important;outline-offset:8px!important;',
-      '  box-shadow:0 8px 25px rgba(251,146,60,.25)!important;',
-      '  border-radius:inherit!important;z-index:10!important;}',
     ].join('');
     (iframeDoc.body || iframeDoc.head || iframeDoc.documentElement).appendChild(s);
 
-    // Make text elements editable — minimal filtering (buttons excluded: edited via sidebar)
-    iframeDoc.querySelectorAll('h1,h2,h3,h4,h5,p,li,span').forEach(el => {
+    // Make text elements + buttons editable
+    iframeDoc.querySelectorAll('h1,h2,h3,h4,h5,p,li,span,button,a[href]:not([href^="tel:"]):not([href^="mailto:"])').forEach(el => {
       try {
         // Skip script/style/svg subtrees
         if (el.closest('script,style,noscript,iframe,svg')) return;
@@ -2867,15 +2854,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     return '<style id="we-s">' +
       '[contenteditable]:hover:not(:focus){outline:2px dashed rgba(99,102,241,.7)!important;outline-offset:3px;border-radius:4px;cursor:text!important;}' +
       '[contenteditable]:focus{outline:2px solid #6366f1!important;outline-offset:3px;border-radius:4px;}' +
-      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]),button:not([contenteditable]){transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s ease!important;cursor:pointer!important;position:relative!important;}' +
-      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"])::before,button:not([contenteditable])::before{content:""!important;position:absolute!important;inset:-14px!important;z-index:-1!important;border-radius:inherit!important;pointer-events:auto!important;}' +
-      'a[href]:not([contenteditable]):not([href^="tel:"]):not([href^="mailto:"]):hover,button:not([contenteditable]):hover{transform:scale(1.06) translateY(-3px)!important;outline:2px dashed rgba(251,146,60,.6)!important;outline-offset:8px!important;box-shadow:0 8px 25px rgba(251,146,60,.25)!important;border-radius:inherit!important;z-index:10!important;}' +
       '</style>' +
       '<scr' + 'ipt id="we-e">(function(){' +
         'function init(){' +
-          'document.querySelectorAll("h1,h2,h3,h4,h5,p,li,span").forEach(function(el){' +
+          'document.querySelectorAll("h1,h2,h3,h4,h5,p,li,span,button,a[href]").forEach(function(el){' +
             'try{' +
               'if(el.closest("script,style,noscript,svg,iframe"))return;' +
+              'if(el.tagName==="A"){var hr=el.getAttribute("href")||"";if(hr.indexOf("tel:")===0||hr.indexOf("mailto:")===0)return;}' +
               'var t=el.textContent.trim();' +
               'if(t.length<2||t.length>400)return;' +
               'var bad=Array.from(el.children).some(function(c){return/^(DIV|SECTION|UL|OL|TABLE|NAV|HEADER|FOOTER|MAIN|ARTICLE)$/.test(c.tagName);});' +
