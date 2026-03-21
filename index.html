@@ -2326,7 +2326,7 @@ async function submitContactForm(e) {
 
     // Make tel: and mailto: links editable via click modal
     var contactCSS = iframeDoc.createElement('style');
-    contactCSS.textContent = 'a[href^="tel:"],a[href^="mailto:"]{cursor:pointer!important;}a[href^="tel:"]:hover,a[href^="mailto:"]:hover{outline:2px dashed rgba(251,146,60,.6)!important;outline-offset:3px;border-radius:4px;}';
+    contactCSS.textContent = 'a[href^="tel:"],a[href^="mailto:"]{cursor:pointer!important;}a[href^="tel:"]:hover,a[href^="mailto:"]:hover{outline:2px dashed rgba(99,102,241,.6)!important;outline-offset:3px;border-radius:4px;}';
     (iframeDoc.head || iframeDoc.documentElement).appendChild(contactCSS);
 
     iframeDoc.querySelectorAll('a[href^="tel:"],a[href^="mailto:"]').forEach(link => {
