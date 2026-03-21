@@ -519,14 +519,27 @@
 
       .preview-toolbar-btns { overflow-x: auto !important; gap: 6px !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; padding-bottom: 4px; }
       .preview-toolbar-btns > * { flex-shrink: 0 !important; font-size: 0.72rem !important; padding: 7px 10px !important; }
-      #btn-regenerate { display: none !important; }
+      /* #btn-regenerate visible on mobile */
       #gallery-toast { display: none !important; }
 
       .preview-content { flex-direction: column !important; }
-      #editor-sidebar { width: 100% !important; height: 40vh !important; border-left: none !important; border-top: 1px solid rgba(200,255,0,0.15) !important; }
+      #editor-sidebar { width: 100% !important; height: 45vh !important; border-left: none !important; border-top: 1px solid rgba(200,255,0,0.15) !important; }
+      #editor-sidebar .editor-tab-panel { min-height: 0 !important; }
+      #editor-sidebar > div:first-child > div:last-child { overflow-x: auto !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
       #preview-iframe { min-height: 200px !important; }
       #preview-panel { height: 100dvh !important; }
     }
+    #preview-iframe.mob-preview {
+      width: 390px !important;
+      max-width: 390px !important;
+      flex: none !important;
+      height: 812px !important;
+      margin: 16px auto !important;
+      border-radius: 36px !important;
+      border: 8px solid #2a2a2a !important;
+      box-shadow: 0 0 0 2px #1a1a1a, 0 24px 80px rgba(0,0,0,0.6) !important;
+    }
+
   </style>
 </head>
 
@@ -545,6 +558,7 @@
       <a class="nav-link" href="#cum-functioneaza">Cum funcționează</a>
       <a class="nav-link" href="#exemple">Exemple</a>
       <a class="nav-link" href="#preturi">Prețuri</a>
+      <a class="nav-link" href="/dashboard" id="nav-dashboard-link" style="display:none;">Panou control</a>
     </div>
 
     <!-- Dreapta: CTA + avatar + hamburger -->
@@ -626,6 +640,7 @@
     var user = JSON.parse(localStorage.getItem('ws_user') || 'null');
     if (session && user) {
       document.getElementById('nav-cta-loggedout').style.display = 'none';
+      document.getElementById('nav-dashboard-link').style.display = 'inline';
       var userArea = document.getElementById('nav-user-area');
       userArea.setAttribute('style', 'display:flex!important;align-items:center;gap:8px;text-decoration:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:10px;padding:6px 12px;');
       var uname = (user.name || user.email || '').split(' ')[0];
@@ -781,6 +796,94 @@
 </div>
 
 <!-- ══════════════════════ EXEMPLE / TEMPLATES ══════════════════════ -->
+<section id="templates" style="padding:80px 24px;background:#050505;border-top:1px solid rgba(255,255,255,0.05);">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:44px;">
+      <div class="badge" style="margin:0 auto 16px;"><span class="badge-dot"></span>Quick Start</div>
+      <h2 class="heading-lg" style="font-size:clamp(1.6rem,4vw,2.4rem);">Alege un template<br/><span class="acid-text">și pornești instant</span></h2>
+      <p class="body-lg" style="margin-top:12px;font-size:0.9rem;max-width:460px;margin-left:auto;margin-right:auto;">Click pe orice card — AI-ul generează site-ul complet pentru acel domeniu în câteva secunde.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+      <button class="qs-card" onclick="quickStart(this)" data-brand="Salon Luxe" data-activity="salon de înfrumusețare și coafură" data-emoji="💆">
+        <span class="qs-emoji">💆</span>
+        <span class="qs-label">Salon beauty</span>
+        <span class="qs-sub">Coafură · Manichiură · Spa</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="Bella Pizza" data-activity="restaurant pizzerie cu livrare la domiciliu" data-emoji="🍕">
+        <span class="qs-emoji">🍕</span>
+        <span class="qs-label">Restaurant</span>
+        <span class="qs-sub">Pizzerie · Fast food · Bistro</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="FitZone" data-activity="sală de fitness și antrenamente personale" data-emoji="🏋">
+        <span class="qs-emoji">🏋</span>
+        <span class="qs-label">Sală fitness</span>
+        <span class="qs-sub">Gym · Personal trainer · Yoga</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="AutoExpert" data-activity="service auto și vulcanizare" data-emoji="🔧">
+        <span class="qs-emoji">🔧</span>
+        <span class="qs-label">Service auto</span>
+        <span class="qs-sub">Reparații · ITP · Vulcanizare</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="Cabinet Dr. Popescu" data-activity="cabinet stomatologic și ortodonție" data-emoji="🦷">
+        <span class="qs-emoji">🦷</span>
+        <span class="qs-label">Cabinet dentar</span>
+        <span class="qs-sub">Stomatologie · Ortodonție</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="ImobiliareRo" data-activity="agenție imobiliară vânzări și închirieri" data-emoji="🏠">
+        <span class="qs-emoji">🏠</span>
+        <span class="qs-label">Imobiliare</span>
+        <span class="qs-sub">Vânzări · Închirieri · Evaluări</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="LexAvocați" data-activity="cabinet de avocatură și consultanță juridică" data-emoji="⚖️">
+        <span class="qs-emoji">⚖️</span>
+        <span class="qs-label">Cabinet avocatură</span>
+        <span class="qs-sub">Drept civil · Penal · Comercial</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="EduKids" data-activity="grădiniță privată și after-school" data-emoji="🎒">
+        <span class="qs-emoji">🎒</span>
+        <span class="qs-label">Grădiniță / After school</span>
+        <span class="qs-sub">Educație · Îngrijire · Activități</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="ContaPlus" data-activity="firmă de contabilitate și consultanță fiscală" data-emoji="📊">
+        <span class="qs-emoji">📊</span>
+        <span class="qs-label">Contabilitate</span>
+        <span class="qs-sub">Bilanțuri · Salarii · Fiscalitate</span>
+      </button>
+      <button class="qs-card" onclick="quickStart(this)" data-brand="VetClinic" data-activity="clinică veterinară pentru animale de companie" data-emoji="🐾">
+        <span class="qs-emoji">🐾</span>
+        <span class="qs-label">Clinică veterinară</span>
+        <span class="qs-sub">Câini · Pisici · Consultații</span>
+      </button>
+    </div>
+  </div>
+</section>
+<style>
+.qs-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px 20px 20px;cursor:pointer;transition:border-color 0.2s,background 0.2s,transform 0.18s;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;width:100%;}
+.qs-card:hover{border-color:rgba(200,255,0,0.35);background:rgba(200,255,0,0.04);transform:translateY(-3px);}
+.qs-emoji{font-size:1.8rem;line-height:1;margin-bottom:4px;}
+.qs-label{font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;color:#fff;}
+.qs-sub{font-family:'Inter',sans-serif;font-size:0.72rem;color:#555;line-height:1.4;}
+@media(max-width:640px){#templates .qs-card{padding:18px 16px;} }
+</style>
+<script>
+function quickStart(btn) {
+  var brief = {
+    brandName:   btn.dataset.brand,
+    activity:    btn.dataset.activity,
+    audience:    '',
+    mainAction:  'Contactează-ne',
+    colorsFonts: '',
+    designStyle: 'modern',
+  };
+  if (typeof openOverlay === 'function' && typeof generate === 'function') {
+    openOverlay();
+    setTimeout(function(){ generate(brief); }, 100);
+  } else {
+    window.location.href = '/?generate=1';
+  }
+}
+</script>
+
 <section id="exemple" style="padding:100px 24px 80px;background:#030303;">
   <div style="max-width:1240px;margin:0 auto;">
 
@@ -1077,43 +1180,10 @@
 </section>
 
 <!-- ══════════════════════ ULTIMELE GENERĂRI ══════════════════════ -->
-<section id="recent-generations" class="fade-up" style="padding:100px 24px;background:#020202;">
-  <div style="max-width:1100px;margin:0 auto;">
-
-    <!-- Header -->
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:56px;flex-wrap:wrap;gap:20px;">
-      <div>
-        <div class="badge" style="margin-bottom:16px;">
-          <span class="badge-dot"></span>Live
-        </div>
-        <h2 class="heading-lg">Ultimele <span class="acid-text">generări</span></h2>
-        <p class="body-lg" style="margin-top:12px;font-size:0.95rem;max-width:480px;">Site-uri create recent cu WebsiteAI de comunitatea noastră.</p>
-      </div>
-      <span id="recent-total-badge" style="display:none;font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:6px 16px;"></span>
-    </div>
-
-    <!-- Cards grid -->
-    <div id="recent-grid" class="recent-grid">
-      <!-- skeletons shown on load -->
-    </div>
-
-    <!-- Empty state -->
-    <div id="recent-empty" style="display:none;text-align:center;padding:64px 24px;">
-      <div style="font-size:2.5rem;margin-bottom:16px;opacity:0.3;">✦</div>
-      <p style="font-family:'Inter',sans-serif;font-size:0.95rem;color:#444;">Nicio generare publică momentan. Fii primul!</p>
-      <a href="#generator" style="display:inline-block;margin-top:20px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.875rem;color:#C8FF00;text-decoration:none;" onmouseenter="this.style.opacity='0.7'" onmouseleave="this.style.opacity='1'">Generează un site →</a>
-    </div>
-
-    <!-- Load more -->
-    <div id="recent-loadmore-wrap" style="display:none;text-align:center;margin-top:48px;">
-      <button id="btn-load-more" class="btn-ghost" onclick="loadMoreRecent()">
-        Încarcă mai multe
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M3 8l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-
-  </div>
-</section>
+<div id="recent-grid" style="display:none;"></div>
+<div id="recent-total-badge" style="display:none;"></div>
+<div id="recent-empty" style="display:none;"></div>
+<div id="recent-loadmore-wrap" style="display:none;"></div>
 
 <!-- ══════════════════════ CUM FUNCȚIONEAZĂ ══════════════════════ -->
 <section class="section-alt fade-up" id="cum-functioneaza" style="padding:100px 24px;">
@@ -1446,6 +1516,90 @@
   </div>
 </section>
 
+<!-- ══════════════════════ CONTACT ══════════════════════ -->
+<section id="contact" style="padding:96px 24px;background:rgba(255,255,255,0.01);border-top:1px solid rgba(255,255,255,0.06);">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:48px;">
+      <div style="display:inline-block;font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#C8FF00;background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:20px;padding:5px 14px;margin-bottom:18px;">Contact</div>
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,4vw,2.4rem);color:#fff;margin:0 0 14px;line-height:1.15;">Hai să vorbim</h2>
+      <p style="font-family:'Inter',sans-serif;font-size:0.95rem;color:#666;line-height:1.7;margin:0;">Completează formularul și te contactăm în cel mai scurt timp.</p>
+    </div>
+
+    <form id="contact-form" onsubmit="submitContactForm(event)" style="display:flex;flex-direction:column;gap:16px;">
+      <!-- honeypot -->
+      <input name="hp" id="cf-hp" type="text" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" />
+      <div>
+        <label style="display:block;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;color:#888;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Nume complet</label>
+        <input id="cf-name" type="text" required placeholder="ex: Ion Popescu" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-family:'Inter',sans-serif;font-size:0.9rem;color:#fff;outline:none;transition:border 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+      </div>
+      <div>
+        <label style="display:block;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;color:#888;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Email</label>
+        <input id="cf-email" type="email" required placeholder="ex: ion@email.ro" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-family:'Inter',sans-serif;font-size:0.9rem;color:#fff;outline:none;transition:border 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+      </div>
+      <div>
+        <label style="display:block;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;color:#888;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Telefon <span style="color:#444;text-transform:none;letter-spacing:0;">(opțional)</span></label>
+        <input id="cf-phone" type="tel" placeholder="ex: 0722 123 456" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-family:'Inter',sans-serif;font-size:0.9rem;color:#fff;outline:none;transition:border 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+      </div>
+      <div>
+        <label style="display:block;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;color:#888;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Mesaj</label>
+        <textarea id="cf-message" required placeholder="Descrie pe scurt afacerea ta sau întrebarea..." rows="4" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-family:'Inter',sans-serif;font-size:0.9rem;color:#fff;outline:none;transition:border 0.2s;resize:vertical;min-height:110px;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+      </div>
+      <button type="submit" id="cf-btn" class="btn-acid" style="margin-top:8px;padding:15px;font-size:0.9rem;width:100%;justify-content:center;">
+        Trimite mesajul
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="cf-msg" style="display:none;text-align:center;font-family:'Inter',sans-serif;font-size:0.88rem;padding:14px;border-radius:10px;"></div>
+    </form>
+  </div>
+</section>
+
+<script>
+async function submitContactForm(e) {
+  e.preventDefault();
+  var btn = document.getElementById('cf-btn');
+  var msg = document.getElementById('cf-msg');
+  btn.disabled = true;
+  btn.textContent = 'Se trimite...';
+  msg.style.display = 'none';
+
+  var body = {
+    name:    document.getElementById('cf-name').value.trim(),
+    email:   document.getElementById('cf-email').value.trim(),
+    phone:   document.getElementById('cf-phone').value.trim() || undefined,
+    message: document.getElementById('cf-message').value.trim(),
+    hp:      document.getElementById('cf-hp').value,
+  };
+
+  try {
+    var res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    var data = await res.json();
+    if (res.ok && data.ok) {
+      msg.style.display = 'block';
+      msg.style.background = 'rgba(200,255,0,0.08)';
+      msg.style.border = '1px solid rgba(200,255,0,0.25)';
+      msg.style.color = '#C8FF00';
+      msg.textContent = '✓ Mesaj trimis! Te contactăm în curând.';
+      document.getElementById('contact-form').reset();
+    } else {
+      throw new Error(data.error || 'Eroare');
+    }
+  } catch(err) {
+    msg.style.display = 'block';
+    msg.style.background = 'rgba(255,80,80,0.08)';
+    msg.style.border = '1px solid rgba(255,80,80,0.25)';
+    msg.style.color = '#ff6b6b';
+    msg.textContent = 'Eroare la trimitere. Încearcă din nou.';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Trimite mesajul <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+</script>
+
 <!-- ══════════════════════ FOOTER ══════════════════════ -->
 <footer style="border-top:1px solid rgba(255,255,255,0.06);padding:64px 24px 40px;">
   <div style="max-width:1100px;margin:0 auto;">
@@ -1502,9 +1656,9 @@
         © 2026 WebsiteAI. Construit cu ❤️ în România.
       </p>
       <div style="display:flex;align-items:center;gap:20px;">
-        <a href="#" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">Instagram</a>
-        <a href="#" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">TikTok</a>
-        <a href="#" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">LinkedIn</a>
+        <a href="#" aria-label="WebsiteAI pe Instagram" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">Instagram</a>
+        <a href="#" aria-label="WebsiteAI pe TikTok" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">TikTok</a>
+        <a href="#" aria-label="WebsiteAI pe LinkedIn" style="color:#444;font-size:0.825rem;font-family:'Inter',sans-serif;text-decoration:none;transition:color 0.15s ease;" onmouseenter="this.style.color='#C8FF00'" onmouseleave="this.style.color='#444'">LinkedIn</a>
       </div>
     </div>
 
@@ -1543,41 +1697,42 @@
           <div class="step-dot" data-step="3"></div>
           <div class="step-dot" data-step="4"></div>
           <div class="step-dot" data-step="5"></div>
+          <div class="step-dot" data-step="6"></div>
         </div>
 
         <!-- Q1 -->
         <div class="brief-field" data-index="0">
-          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">1 / 6 &nbsp; Numele brandului / companiei</label>
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">1 / 7 &nbsp; Numele brandului / companiei</label>
           <input id="bf-brandName" type="text" placeholder="ex: Salon Luxe Cluj" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
         </div>
 
         <!-- Q2 -->
         <div class="brief-field" data-index="1">
-          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">2 / 6 &nbsp; Cu ce vă ocupați?</label>
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">2 / 7 &nbsp; Cu ce vă ocupați?</label>
           <input id="bf-activity" type="text" placeholder="ex: Salon de coafură premium pentru femei" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
         </div>
 
         <!-- Q3 -->
         <div class="brief-field" data-index="2">
-          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">3 / 6 &nbsp; Publicul țintă</label>
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">3 / 7 &nbsp; Publicul țintă</label>
           <input id="bf-audience" type="text" placeholder="ex: Femei 25-45 ani, din Cluj-Napoca" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
         </div>
 
         <!-- Q4 -->
         <div class="brief-field" data-index="3">
-          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">4 / 6 &nbsp; Acțiunea principală a vizitatorilor</label>
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">4 / 7 &nbsp; Acțiunea principală a vizitatorilor</label>
           <input id="bf-mainAction" type="text" placeholder="ex: Să programeze o vizită / să sune" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
         </div>
 
         <!-- Q5 -->
         <div class="brief-field" data-index="4">
-          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">5 / 6 &nbsp; Culori / fonturi preferate <span style="color:#444;font-weight:400;">(opțional)</span></label>
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">5 / 7 &nbsp; Culori / fonturi preferate <span style="color:#444;font-weight:400;">(opțional)</span></label>
           <input id="bf-colorsFonts" type="text" placeholder="ex: culori calde, roz pudrat, font modern" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
         </div>
 
         <!-- Q6 -->
         <div class="brief-field" data-index="5">
-          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">6 / 6 &nbsp; Stil design</label>
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">6 / 7 &nbsp; Stil design</label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;" id="design-style-btns">
             <button type="button" class="style-btn selected" data-val="modern">Modern</button>
             <button type="button" class="style-btn" data-val="minimalist">Minimalist</button>
@@ -1587,11 +1742,11 @@
           </div>
         </div>
 
-        <!-- Galerie publică opt-in -->
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 16px;background:rgba(200,255,0,0.04);border:1px solid rgba(200,255,0,0.12);border-radius:10px;">
-          <input type="checkbox" id="bf-public" checked style="width:16px;height:16px;accent-color:#C8FF00;cursor:pointer;flex-shrink:0;" />
-          <span style="font-family:'Inter',sans-serif;font-size:0.85rem;color:#888;line-height:1.4;">Afișează site-ul în galeria publică <span style="color:#555;">(doar numele brandului și tipul activității)</span></span>
-        </label>
+        <!-- Q7 -->
+        <div class="brief-field" data-index="6">
+          <label style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:8px;">7 / 7 &nbsp; Program / Orar <span style="color:#444;font-weight:400;">(opțional)</span></label>
+          <input id="bf-schedule" type="text" placeholder="ex: Lun–Vin: 09–18, Sâm: 09–14, Dum: Închis" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.borderColor='rgba(200,255,0,0.4)';this.style.boxShadow='0 0 0 3px rgba(200,255,0,0.07)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'" />
+        </div>
 
         <!-- Error -->
         <div id="brief-error" style="display:none;background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.25);border-radius:10px;padding:12px 16px;font-family:'Inter',sans-serif;font-size:0.875rem;color:#ff8080;line-height:1.5;"></div>
@@ -1648,17 +1803,17 @@
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 1.5a2.121 2.121 0 013 3L5 14H2v-3L11.5 1.5z" stroke="#080808" stroke-width="1.8" stroke-linejoin="round"/></svg>
           Editează
         </button>
-        <button id="btn-open-tab" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
+        <button id="btn-open-tab" onclick="(function(){if(!window.generatedHtml)return;var w=window.open('','_blank');if(w){w.document.open();w.document.write(window.generatedHtml);w.document.close();}})()" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;touch-action:manipulation;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
           Deschide în tab
         </button>
-        <button id="btn-download" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
-          Descarcă HTML
+        <button id="btn-mob-preview" onclick="(function(){var iframe=document.getElementById('preview-iframe');var btn=document.getElementById('btn-mob-preview');var content=document.querySelector('.preview-content');var on=iframe.classList.toggle('mob-preview');btn.style.background=on?'rgba(200,255,0,0.12)':'rgba(255,255,255,0.06)';btn.style.borderColor=on?'rgba(200,255,0,0.4)':'rgba(255,255,255,0.1)';btn.style.color=on?'#C8FF00':'#fff';if(content){content.style.alignItems=on?'center':'stretch';content.style.overflowY=on?'auto':'hidden';}})()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:all 0.15s;touch-action:manipulation;">
+          📱 Mobil
         </button>
         <button id="btn-publish" style="background:linear-gradient(135deg,#C8FF00 0%,#9FCC00 100%);border:none;border-radius:8px;padding:8px 18px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 0 18px rgba(200,255,0,0.3),0 2px 8px rgba(0,0,0,0.4);transition:opacity 0.15s,box-shadow 0.15s;" onmouseenter="this.style.opacity='0.88';this.style.boxShadow='0 0 28px rgba(200,255,0,0.45),0 2px 8px rgba(0,0,0,0.4)'" onmouseleave="this.style.opacity='1';this.style.boxShadow='0 0 18px rgba(200,255,0,0.3),0 2px 8px rgba(0,0,0,0.4)'">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 7l3 3 3-3" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#080808" stroke-width="1.8" stroke-linecap="round"/></svg>
           Publică Site-ul
         </button>
-        <button id="btn-regenerate" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.style.background='rgba(255,255,255,0.06)'">
+        <button id="btn-regenerate" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">
           Regenerează
         </button>
         <span id="gallery-toast" style="display:none;font-family:'Inter',sans-serif;font-size:0.75rem;color:#C8FF00;background:rgba(200,255,0,0.08);border:1px solid rgba(200,255,0,0.2);border-radius:8px;padding:6px 12px;white-space:nowrap;">✓ Adăugat în galerie</span>
@@ -1693,15 +1848,17 @@
             <button class="editor-tab" data-tab="contact" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Contact</button>
             <button class="editor-tab" data-tab="meniu" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Meniu</button>
             <button class="editor-tab" data-tab="butoane" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Butoane</button>
+            <button class="editor-tab" data-tab="logo" style="flex:1;padding:7px 0;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;">Logo</button>
           </div>
         </div>
         <!-- Tab content panels -->
-        <div id="editor-panel-texte" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:block;"></div>
-        <div id="editor-panel-imagini" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
-        <div id="editor-panel-culori" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
-        <div id="editor-panel-contact" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
-        <div id="editor-panel-meniu" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
-        <div id="editor-panel-butoane" class="editor-tab-panel" style="flex:1;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-texte" class="editor-tab-panel" style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:block;"></div>
+        <div id="editor-panel-imagini" class="editor-tab-panel" style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-culori" class="editor-tab-panel" style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-contact" class="editor-tab-panel" style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-meniu" class="editor-tab-panel" style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-butoane" class="editor-tab-panel" style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:none;"></div>
+        <div id="editor-panel-logo" class="editor-tab-panel" style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:none;"></div>
       </div>
     </div>
   </div>
@@ -1812,6 +1969,127 @@
   let lastBrief = null;
   let generatedHtml = null;
 
+  // Inline editor: tracks user edits per element key across iframe reloads
+  window.editedContent = {};
+
+  // Returns the self-contained inline editor HTML block to inject before </body>
+  /* ── Inline editing: called from parent frame after iframe loads (same-origin) ── */
+  function setupInlineEditing(iframeDoc) {
+    if (!iframeDoc || !iframeDoc.body) return;
+    // Guard: run only once per document load
+    if (iframeDoc.body.hasAttribute('data-we-ready')) return;
+    iframeDoc.body.setAttribute('data-we-ready', '1');
+
+    // CSS: matches ANY contenteditable element (no data-ek requirement)
+    const s = iframeDoc.createElement('style');
+    s.id = 'we-edit-css';
+    s.textContent = [
+      '[contenteditable]:hover:not(:focus){',
+      '  outline:2px dashed rgba(99,102,241,.6)!important;',
+      '  outline-offset:3px;border-radius:4px;cursor:text!important;}',
+      '[contenteditable]:focus{',
+      '  outline:2px solid rgba(99,102,241,.9)!important;',
+      '  outline-offset:3px;border-radius:4px;}',
+    ].join('');
+    (iframeDoc.head || iframeDoc.documentElement).appendChild(s);
+
+    // Make text elements editable — minimal filtering
+    iframeDoc.querySelectorAll('h1,h2,h3,h4,h5,p,button,li,span').forEach(el => {
+      try {
+        // Skip script/style/svg subtrees
+        if (el.closest('script,style,noscript,iframe,svg')) return;
+        // Skip tel/mailto links
+        if (el.tagName === 'A') {
+          const h = el.getAttribute('href') || '';
+          if (h.startsWith('tel:') || h.startsWith('mailto:')) return;
+        }
+        // Skip very short or very long text
+        const txt = el.textContent.trim();
+        if (txt.length < 2 || txt.length > 400) return;
+        // Skip containers (have block children)
+        if (Array.from(el.children).some(c => /^(DIV|SECTION|UL|OL|TABLE|ARTICLE|ASIDE|NAV|HEADER|FOOTER|MAIN)$/.test(c.tagName))) return;
+        // Skip if already inside an editable (avoid nested)
+        if (el.closest('[contenteditable="true"]')) return;
+        // Skip if already set up
+        if (el.getAttribute('contenteditable') === 'true') return;
+
+        el.setAttribute('contenteditable', 'true');
+        el.setAttribute('spellcheck', 'false');
+
+        const key = 'ek_' + el.tagName + '_' + Array.from(el.parentElement?.children || []).indexOf(el);
+        el.setAttribute('data-ek', key);
+
+        let orig = el.innerHTML;
+        el.addEventListener('focus', () => { orig = el.innerHTML; });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Escape') { e.preventDefault(); el.innerHTML = orig; el.blur(); }
+          if (e.key === 'Enter' && !e.shiftKey && (el.tagName === 'BUTTON' || /^H\d$/.test(el.tagName))) { e.preventDefault(); el.blur(); }
+        });
+        el.addEventListener('blur', () => {
+          const nv = el.innerHTML.trim();
+          if (!nv) { el.innerHTML = orig; return; }
+          if (nv !== orig) window.editedContent[key] = { html: nv };
+        });
+        // Restore saved edit
+        if (window.editedContent[key]) el.innerHTML = window.editedContent[key].html;
+      } catch(e) {}
+    });
+  }
+
+  /* ── Force white inline color on Badge-uri 1 and Texte 1 ── */
+  function _forceWhiteOnFirstElements(html) {
+    try {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+
+      // Extrage culoarea brand din variabilele CSS ale documentului
+      let brandColor = '#1a1a1a';
+      for (const s of doc.querySelectorAll('style')) {
+        const m = s.textContent.match(/--brand\s*:\s*(#[0-9a-fA-F]{3,8})/);
+        if (m) { brandColor = m[1]; break; }
+      }
+
+      // Detectează fundal deschis din stiluri inline și clase Tailwind (fără getComputedStyle)
+      const LIGHT_BG_STYLE = /background(?:-color)?\s*:\s*(?:#(?:f[0-9a-f]{2}){1,2}|(?:rgb\(\s*(?:2[0-4]\d|25[0-5])\s*,\s*(?:2[0-4]\d|25[0-5])\s*,\s*(?:2[0-4]\d|25[0-5]))|white\b|#fff\b|#ffffff\b)/i;
+      const LIGHT_BG_CLASS = /\bbg-white\b|\bbg-gray-(?:50|100|200)\b|\bbg-slate-(?:50|100)\b|\bbg-neutral-(?:50|100)\b|\bbg-zinc-(?:50|100)\b/;
+
+      function hasLightBg(el) {
+        const style = el.getAttribute('style') || '';
+        const cls   = el.getAttribute('class') || '';
+        return LIGHT_BG_STYLE.test(style) || LIGHT_BG_CLASS.test(cls);
+      }
+
+      // Texte 1 — primul <p> cu minim 30 caractere, în afara nav/header/footer/script/style
+      const firstP = Array.from(doc.querySelectorAll('p')).find(el => {
+        const t = el.textContent.trim();
+        return t.length >= 30 && !el.closest('nav,header,footer,script,style');
+      });
+      if (firstP) firstP.style.color = '#ffffff';
+
+      // Badge-uri 1 — primul span/div frunzã (fãrã copii, 2-55 chars)
+      const firstBadge = Array.from(doc.querySelectorAll('span, div')).find(el => {
+        const t = el.textContent.trim();
+        return t.length >= 2 && t.length <= 55
+          && !el.children.length
+          && !el.closest('h1,h2,h3,p,a,button,nav,header,footer,script,style,svg');
+      });
+      if (firstBadge) firstBadge.style.color = '#ffffff';
+
+      // Nav links/buttons — text alb; dacă au fundal deschis, schimbă bg-ul la brand
+      doc.querySelectorAll('nav a, nav button, header a, header button').forEach(el => {
+        if (hasLightBg(el)) {
+          el.style.backgroundColor = brandColor;
+          el.style.color = '#ffffff';
+        } else {
+          el.style.color = '#ffffff';
+        }
+      });
+
+      return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    } catch(e) {
+      return html;
+    }
+  }
+
   /* ── Panel switcher ── */
   function showPanel(name) {
     briefPanel.style.display   = name === 'brief'   ? 'flex'   : 'none';
@@ -1885,6 +2163,7 @@
     document.getElementById(id)?.addEventListener('focus', () => animateStepDots(i));
   });
   document.getElementById('design-style-btns').addEventListener('click', () => animateStepDots(5));
+  document.getElementById('bf-schedule')?.addEventListener('focus', () => animateStepDots(6));
 
   /* ── Loading dots animation ── */
   const loadingDotsEl = document.getElementById('loading-dots');
@@ -1945,6 +2224,7 @@
       mainAction:  document.getElementById('bf-mainAction').value.trim(),
       colorsFonts: document.getElementById('bf-colorsFonts').value.trim(),
       designStyle: selectedStyle,
+      schedule:    document.getElementById('bf-schedule')?.value?.trim() || '',
       extraNote:   document.getElementById('main-description')?.value?.trim() || '',
     };
   }
@@ -1982,7 +2262,7 @@
   }
   detectAvailableModels();
 
-  const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. Generează un fișier HTML complet, de înaltă calitate, pentru o afacere românească.\n\n═══ OUTPUT ═══\n- Răspunde EXCLUSIV cu HTML complet valid (de la <!DOCTYPE html> până la </html>)\n- ZERO text în afara HTML-ului, ZERO markdown (fără \`\`\`html), ZERO explicații\n- Toate stilurile: în <style> în <head> SAU clase Tailwind pe elemente\n- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>\n- Google Fonts: 2 fonturi (1 display/serif pentru titluri, 1 sans-serif pentru body)\n\n═══ STRUCTURA PAGINII (obligatorie, în această ordine) ═══\n\n1. NAVBAR sticky (position: fixed, top:0, z-index:50, backdrop-blur)\n   - Container max-w-7xl mx-auto px-6, height 64px, flex items-center justify-between\n   - Stânga: logo (text mare, font-weight 700, culoarea brand)\n   - Dreapta: linkuri nav (gap-8, text-sm, font-medium) + 1 buton CTA distinct\n   - Hamburger menu pe mobile (block md:hidden)\n   - Background: semi-transparent cu backdrop-blur la scroll via JS scroll listener\n\n2. HERO (min-height: 100vh, position: relative, overflow: hidden)\n   - Background image: <img> cu position absolute inset-0, w-full h-full object-cover, style="filter:brightness(0.45) blur(2px) scale(1.08)"\n   - Overlay gradient: <div> position absolute inset-0, background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.65) 100%)\n   - Content: position relative z-10, flex flex-col items-center justify-center, text-center, px-6, pt-24\n   - H1: font-size clamp(2.8rem, 6vw, 5rem), font-weight 800, color #ffffff, letter-spacing -0.03em, text-shadow: 0 2px 20px rgba(0,0,0,0.5), max-w-4xl mx-auto, line-height 1.1\n   - Subtitle: font-size 1.1rem, color rgba(255,255,255,0.88), max-w-2xl mx-auto, mt-6, line-height 1.7\n   - Butoane CTA: flex gap-4 mt-10, buton primar (bg brand, text alb, px-8 py-4, rounded-lg, font-weight 600) + buton secundar (border 2px solid white, text alb, px-8 py-4, rounded-lg)\n   - Badge/tag deasupra H1 (opțional): text mic uppercase, letter-spacing 0.15em, culoarea brand, mb-4\n\n3. STATS BAR (secțiune separată după hero)\n   - Background: culoarea brand (închisă) sau gri închis\n   - Grid 4 coloane (md:grid-cols-4, grid-cols-2), py-16, gap-0 cu dividers\n   - Fiecare stat: număr mare (font-size 2.5rem, font-weight 800, color alb), label mic (text-sm, opacity 0.75, color alb)\n   - Text centered, padding px-8 py-6\n\n4. SERVICII (secțiune cu background alb sau gri foarte deschis #f8f8f8)\n   - Section header: text-center, mb-16 — supertitlu mic (uppercase, culoarea brand, letter-spacing 0.12em) + H2 mare (color #111, font-weight 800) + subtitlu (color #555, max-w-2xl mx-auto)\n   - Grid: grid-cols-1 md:grid-cols-2 lg:grid-cols-3, gap-8, max-w-7xl mx-auto px-6\n   - Fiecare card serviciu (STRUCTURA EXACTĂ):\n     <div style="border-radius:16px; overflow:hidden; background:#fff; box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); display:flex; flex-direction:column;">\n       <div style="position:relative; overflow:hidden; height:220px;">\n         <img src="https://placehold.co/WIDTHxHEIGHT" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.8);" />\n         <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%);"></div>\n       </div>\n       <div style="padding:24px 28px 28px; flex:1; display:flex; flex-direction:column;">\n         <h3 style="font-size:1.2rem;font-weight:700;color:#111;margin-bottom:10px;">Titlu serviciu</h3>\n         <p style="font-size:13px;color:#555;line-height:1.7;flex:1;">Descriere serviciu reală.</p>\n         <a href="#contact" style="display:inline-block;margin-top:20px;padding:10px 24px;background:[culoarea brand];color:#fff;border-radius:8px;font-weight:600;font-size:14px;text-align:center;">Programează Acum</a>\n       </div>\n     </div>\n   - Dimensiuni imagini în ordine: 400x220, 380x220, 420x220, 360x220, 410x220, 390x220\n\n5. DESPRE (secțiune cu background alb sau ușor colorat)\n   - Layout 2 coloane (lg:grid-cols-2), gap-16, items-center, max-w-7xl mx-auto px-6 py-24\n   - Coloana imagine: rounded-2xl overflow-hidden, shadow layered, position relative\n     - Imagine principală (600x500), filter brightness(0.85)\n     - Badge floating (position absolute, bottom-6 left-6): card mic cu shadow, stats (ex: „15+ ani experiență")\n   - Coloana text: supertitlu + H2 (font-size 2.5rem, font-weight 800, color #111) + paragraf + listă avantaje (checkmark SVG colorat + text) + buton CTA\n   - Lista avantaje: 3-4 items, fiecare cu icon SVG checkmark în culoarea brand\n\n6. TESTIMONIALE (background gri deschis #f4f4f4 sau culoare brand foarte deschisă)\n   - Section header centrat (supertitlu + H2 + subtitlu)\n   - Grid 3 coloane (lg:grid-cols-3, md:grid-cols-2, grid-cols-1), gap-6\n   - Fiecare card testimonial:\n     - Background alb, border-radius 16px, padding 28px, box-shadow subtil\n     - Stele (5 stele SVG, culoarea brand sau galben #f59e0b)\n     - STRUCTURA EXACTĂ card testimonial:\n     <div style=\"background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);display:flex;flex-direction:column;\">\n       <div style=\"display:flex;gap:3px;margin-bottom:14px;\">[5 stele SVG 16px]</div>\n       <p style=\"font-style:italic;color:#333;font-size:14px;line-height:1.75;flex:1;margin:0 0 20px;\">\"Text real.\"</p>\n       <div style=\"border-top:1px solid #f0f0f0;padding-top:16px;display:flex;align-items:center;gap:12px;\">\n         <img src=\"https://placehold.co/40x40\" style=\"width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;\" />\n         <div><div style=\"font-weight:700;color:#111;font-size:14px;\">Nume</div><div style=\"color:#888;font-size:12px;\">Rol</div></div>\n       </div>\n     </div>\n     - INTERZIS în testimoniale: imagini mari, avatar > 40px, position:absolute\n\n7. FAQ sau CTA BANNER (alege cel mai potrivit pentru afacere)\n   - FAQ: accordion simplu, max-w-3xl mx-auto, 5-6 întrebări relevante pentru afacere\n   - SAU CTA Banner: background culoarea brand, text alb centrat, H2 mare + subtitlu + buton (background alb, text brand)\n\n8. FOOTER (background #1a1a1a, color #e5e5e5)\n   - Grid 4 coloane (lg:grid-cols-4, md:grid-cols-2), gap-12, max-w-7xl mx-auto px-6 py-16\n   - Col 1: Logo + tagline (2-3 rânduri) + iconițe social (SVG Facebook, Instagram, LinkedIn, 24px, gap-3, hover: culoarea brand)\n   - Col 2: Linkuri rapide (Acasă, Servicii, Despre, Testimoniale, Contact) — fiecare <a> pe rând separat, text-sm, hover: culoarea brand\n   - Col 3: Contact (adresă cu SVG pin, telefon cu SVG phone, email cu SVG mail) — iconițe SVG inline 16px, gap-3 per item\n   - Col 4: Program / Certificări / De ce noi — 3-4 linii de text relevant\n   - Border-top 1px solid #333 + sub-footer: copyright centrat, py-6, text-xs, color #666\n\n═══ DESIGN ═══\n- Culori: paletă unică derivată din domeniu — NU blue-600, indigo-500, purple-600 Tailwind default\n- Definește culoarea brand ca variabilă CSS: :root { --brand: #HEX; --brand-dark: #HEX; --brand-light: #HEX; }\n- Tipografie: font display (tracking -0.03em) pentru H1/H2, font sans (line-height 1.7) pentru body\n- CONTRAST SECȚIUNI: fundal deschis (#f0+) → text #111. Fundal închis (#888-) → text #fff. NICIODATĂ text alb pe fundal alb/deschis\n- CONTRAST BUTOANE (OBLIGATORIU): buton alb/galben/bej/gri deschis → text #111 sau #000. Buton negru/închis/colorat → text #fff. VERIFICĂ fiecare buton: CTA Banner pe fundal colorat cu buton alb → text pe buton = culoarea brand sau #111, NU alb\n- Shadows: layered cu culori tintate — ex: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)\n- Animații: DOAR transform și opacity — NICIODATĂ transition-all\n- Hover pe carduri: transform translateY(-4px), shadow mai mare\n- Secțiunile alternează background: alb → gri deschis → alb → gri deschis\n\n═══ CONȚINUT ═══\n- Texte reale în română — ZERO Lorem Ipsum\n- Titluri H1/H2: impactante, orientate pe beneficiu (nu pe caracteristici)\n- Toate datele de contact (telefon, adresă, email): inventate veridic dacă nu sunt furnizate\n- Imagini: EXCLUSIV https://placehold.co/WIDTHxHEIGHT (fără parametri extra)\n\n═══ RESPONSIVE ═══\n- Mobile-first, funcțional la 375px și 1440px\n- Navbar: hamburger menu pe mobile cu toggle JS simplu\n- Toate grid-urile: grid-cols-1 pe mobile, 2-3 pe desktop\n- Hero H1: clamp() pentru font-size fluid\n\n═══ INTERZIS ═══\n- transition-all\n- Culorile default Tailwind ca brand (blue, indigo, purple)\n- Lorem ipsum\n- Butoane CTA fără stilizare (text simplu sau <a> fără padding/background)\n- Imagini fără filter brightness(0.8) sau mai mic\n- Secțiuni fără container (max-w + mx-auto + px)\n- Carduri de servicii fără imagine\n`;
+  const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. Generează un fișier HTML complet, de înaltă calitate, pentru o afacere românească.\n\n═══ OUTPUT ═══\n- Răspunde EXCLUSIV cu HTML complet valid (de la <!DOCTYPE html> până la </html>)\n- OBLIGATORIU: <html lang="ro"> — atribut obligatoriu pentru accesibilitate\n- ZERO text în afara HTML-ului, ZERO markdown (fără \`\`\`html), ZERO explicații\n- Toate stilurile: în <style> în <head> SAU clase Tailwind pe elemente\n- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>\n- Google Fonts: 2 fonturi (1 display/serif pentru titluri, 1 sans-serif pentru body)\n\n═══ STRUCTURA PAGINII (obligatorie, în această ordine) ═══\n\n1. NAVBAR sticky (position: fixed, top:0, z-index:50, backdrop-blur)\n   - Container max-w-7xl mx-auto px-6, height 64px, flex items-center justify-between\n   - Stânga: logo (text mare, font-weight 700, culoarea brand)\n   - Dreapta: linkuri nav (gap-8, text-sm, font-medium, color: #ffffff) + 1 buton CTA cu text color: #ffffff\n   - TOATE linkurile din navbar și butonul CTA: color: #ffffff OBLIGATORIU\n   - Hamburger menu pe mobile (block md:hidden), iconița SVG stroke: #ffffff\n   - Background: semi-transparent cu backdrop-blur la scroll via JS scroll listener\n\n2. HERO (min-height: 100vh, position: relative, overflow: hidden)\n   - Background image: <img> cu position absolute inset-0, w-full h-full object-cover, style="filter:brightness(0.45) blur(2px) scale(1.08)"\n   - Overlay gradient: <div> position absolute inset-0, background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.65) 100%)\n   - Content: position relative z-10, flex flex-col items-center justify-center, text-center, px-6, pt-24\n   - H1: font-size clamp(2.8rem, 6vw, 5rem), font-weight 800, color #ffffff, letter-spacing -0.03em, text-shadow: 0 2px 20px rgba(0,0,0,0.5), max-w-4xl mx-auto, line-height 1.1\n   - Subtitle: font-size 1.1rem, color rgba(255,255,255,0.88), max-w-2xl mx-auto, mt-6, line-height 1.7\n   - Butoane CTA: flex gap-4 mt-10, buton primar (bg brand, text alb, px-8 py-4, rounded-lg, font-weight 600) + buton secundar (border 2px solid white, text alb, px-8 py-4, rounded-lg)\n   - Badge/tag deasupra H1 (obligatoriu): text mic uppercase, letter-spacing 0.15em, color: #ffffff, background: rgba(255,255,255,0.12), border: 1px solid rgba(255,255,255,0.25), padding: 4px 14px, border-radius: 20px, mb-4\n\n3. STATS BAR (secțiune separată după hero)\n   - Background: culoarea brand (închisă) sau gri închis\n   - Grid 4 coloane (md:grid-cols-4, grid-cols-2), py-16, gap-0 cu dividers\n   - Fiecare stat: număr mare (font-size 2.5rem, font-weight 800, color alb), label mic (text-sm, opacity 0.75, color alb)\n   - Text centered, padding px-8 py-6\n\n4. SERVICII (secțiune cu background alb sau gri foarte deschis #f8f8f8)\n   - Section header: text-center, mb-16 — supertitlu mic (uppercase, culoarea brand, letter-spacing 0.12em) + H2 mare (color #111, font-weight 800) + subtitlu (color #555, max-w-2xl mx-auto)\n   - Grid: grid-cols-1 md:grid-cols-2 lg:grid-cols-3, gap-8, max-w-7xl mx-auto px-6\n   - Fiecare card serviciu (STRUCTURA EXACTĂ):\n     <div style="border-radius:16px; overflow:hidden; background:#fff; box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); display:flex; flex-direction:column;">\n       <div style="position:relative; overflow:hidden; height:220px;">\n         <img src="https://placehold.co/WIDTHxHEIGHT" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.8);" />\n         <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%);"></div>\n       </div>\n       <div style="padding:24px 28px 28px; flex:1; display:flex; flex-direction:column;">\n         <h3 style="font-size:1.2rem;font-weight:700;color:#111;margin-bottom:10px;">Titlu serviciu</h3>\n         <p style="font-size:13px;color:#555;line-height:1.7;flex:1;">Descriere serviciu reală.</p>\n         <a href="#contact" style="display:inline-block;margin-top:20px;padding:10px 24px;background:[culoarea brand];color:#fff;border-radius:8px;font-weight:600;font-size:14px;text-align:center;">Programează Acum</a>\n       </div>\n     </div>\n   - Dimensiuni imagini în ordine: 400x220, 380x220, 420x220, 360x220, 410x220, 390x220\n\n5. DESPRE (secțiune cu background alb sau ușor colorat)\n   - Layout 2 coloane (lg:grid-cols-2), gap-16, items-center, max-w-7xl mx-auto px-6 py-24\n   - Coloana imagine: rounded-2xl overflow-hidden, shadow layered, position relative\n     - Imagine principală (600x500), filter brightness(0.85)\n     - Badge floating (position absolute, bottom-6 left-6): card mic cu shadow, stats (ex: „15+ ani experiență")\n   - Coloana text: supertitlu + H2 (font-size 2.5rem, font-weight 800, color #111) + paragraf + listă avantaje (checkmark SVG colorat + text) + buton CTA\n   - Lista avantaje: 3-4 items, fiecare cu icon SVG checkmark în culoarea brand\n\n6. TESTIMONIALE (background gri deschis #f4f4f4 sau culoare brand foarte deschisă)\n   - Section header centrat (supertitlu + H2 + subtitlu)\n   - Grid 3 coloane (lg:grid-cols-3, md:grid-cols-2, grid-cols-1), gap-6\n   - Fiecare card testimonial:\n     - Background alb, border-radius 16px, padding 28px, box-shadow subtil\n     - Stele (5 stele SVG, culoarea brand sau galben #f59e0b)\n     - STRUCTURA EXACTĂ card testimonial:\n     <div style=\"background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);display:flex;flex-direction:column;\">\n       <div style=\"display:flex;gap:3px;margin-bottom:14px;\">[5 stele SVG 16px]</div>\n       <p style=\"font-style:italic;color:#333;font-size:14px;line-height:1.75;flex:1;margin:0 0 20px;\">\"Text real.\"</p>\n       <div style=\"border-top:1px solid #f0f0f0;padding-top:16px;display:flex;align-items:center;gap:12px;\">\n         <img src=\"https://placehold.co/40x40\" style=\"width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;\" />\n         <div><div style=\"font-weight:700;color:#111;font-size:14px;\">Nume</div><div style=\"color:#888;font-size:12px;\">Rol</div></div>\n       </div>\n     </div>\n     - INTERZIS în testimoniale: imagini mari, avatar > 40px, position:absolute\n\n7. FAQ sau CTA BANNER (alege cel mai potrivit pentru afacere)\n   - FAQ: accordion simplu, max-w-3xl mx-auto, 5-6 întrebări relevante pentru afacere\n   - SAU CTA Banner: background culoarea brand, text alb centrat, H2 mare + subtitlu + buton (background alb, text brand)\n\n8. FOOTER (background #1a1a1a, color #e5e5e5)\n   - Grid 4 coloane (lg:grid-cols-4, md:grid-cols-2), gap-12, max-w-7xl mx-auto px-6 py-16\n   - Col 1: Logo (font-weight:800, color: culoarea brand, font-size:1.3rem) + tagline 2 rânduri (color:#777, font-size:14px, line-height:1.6, margin-top:12px) + iconițe social SVG (Facebook, Instagram, LinkedIn — 22px, color:#555, gap:12px, margin-top:20px, hover:color=culoarea brand, tranziție 0.15s; FIECARE LINK cu aria-label ex: aria-label="[NumeBrand] pe Facebook")\n   - Col 2: titlu coloană "Navigare" (font-weight:700, color:#fff, font-size:14px, margin-bottom:16px) + linkuri (Acasă, Servicii, Despre Noi, Testimoniale, Contact — fiecare <a> display:block, padding:5px 0, color:#777, font-size:14px, text-decoration:none, hover:color=culoarea brand, tranziție 0.15s)\n   - Col 3: DATE DE CONTACT — titlu "Contact" (font-weight:700, color:#fff, font-size:14px, margin-bottom:16px) + OBLIGATORIU toate 4 elemente cu SVG inline 16px și text color:#777:\n     * Telefon: <a href="tel:+40XXXXXXXXX" style="display:flex;align-items:center;gap:10px;color:#777;text-decoration:none;font-size:14px;margin-bottom:14px;transition:color 0.15s;" onmouseenter="this.style.color=getComputedStyle(document.documentElement).getPropertyValue(\'--brand\')" onmouseleave="this.style.color=\'#777\'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>0722 XXX XXX</a>\n     * Email: <a href="mailto:contact@brand.ro" style="display:flex;align-items:center;gap:10px;color:#777;text-decoration:none;font-size:14px;margin-bottom:14px;transition:color 0.15s;" onmouseenter="this.style.color=getComputedStyle(document.documentElement).getPropertyValue(\'--brand\')" onmouseleave="this.style.color=\'#777\'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>contact@brand.ro</a>\n     * Adresă: <p style="display:flex;align-items:flex-start;gap:10px;color:#777;font-size:14px;margin-bottom:14px;"><svg width="16" height="16" style="flex-shrink:0;margin-top:2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Str. Exemplu nr. 10, Oraș, Județ</p>\n     * Program: <p style="display:flex;align-items:center;gap:10px;color:#777;font-size:14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>[programul exact din câmpul "Program / Orar" — dacă clientul l-a specificat, folosește datele exacte; altfel inventează veridic pentru domeniu, cu zilele închise menționate explicit]</p>\n   - Col 4: titlu "De ce noi?" (font-weight:700, color:#fff, font-size:14px, margin-bottom:16px) + 3-4 bullet-uri cu checkmark SVG (color:culoarea brand, 14px) + text color:#777, font-size:14px, margin-bottom:10px\n   - Border-top: 1px solid rgba(255,255,255,0.07), padding-top:24px\n   - SUB-FOOTER OBLIGATORIU: text centrat, color:#555, font-size:12px — "© 2026 [Nume Brand]. Toate drepturile rezervate." — ANUL ESTE MEREU 2026, NU dinamic, NU new Date().getFullYear()\n\n═══ DESIGN ═══\n- Culori: paletă unică derivată din domeniu — NU blue-600, indigo-500, purple-600 Tailwind default\n- Definește culoarea brand ca variabilă CSS: :root { --brand: #HEX; --brand-dark: #HEX; --brand-light: #HEX; }\n- Tipografie: font display (tracking -0.03em) pentru H1/H2, font sans (line-height 1.7) pentru body\n- CONTRAST SECȚIUNI: fundal deschis (#f0+) → text #111. Fundal închis (#888-) → text #fff. NICIODATĂ text alb pe fundal alb/deschis\n- CONTRAST BUTOANE (OBLIGATORIU): buton alb/galben/bej/gri deschis → text #111 sau #000. Buton negru/închis/colorat → text #fff. VERIFICĂ fiecare buton: CTA Banner pe fundal colorat cu buton alb → text pe buton = culoarea brand sau #111, NU alb\n- Shadows: layered cu culori tintate — ex: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)\n- Animații: DOAR transform și opacity — NICIODATĂ transition-all\n- Hover pe carduri: transform translateY(-4px), shadow mai mare\n- Secțiunile alternează background: alb → gri deschis → alb → gri deschis\n\n═══ CONȚINUT ═══\n- Texte reale în română — ZERO Lorem Ipsum\n- Titluri H1/H2: impactante, orientate pe beneficiu (nu pe caracteristici)\n- Toate datele de contact (telefon, adresă, email): inventate veridic dacă nu sunt furnizate\n- Imagini: EXCLUSIV https://placehold.co/WIDTHxHEIGHT (fără parametri extra)\n\n═══ RESPONSIVE ═══\n- Mobile-first, funcțional la 375px și 1440px\n- Navbar: hamburger menu pe mobile cu toggle JS simplu\n- Toate grid-urile: grid-cols-1 pe mobile, 2-3 pe desktop\n- Hero H1: clamp() pentru font-size fluid\n\n═══ INTERZIS ═══\n- transition-all\n- Culorile default Tailwind ca brand (blue, indigo, purple)\n- Lorem ipsum\n- Butoane CTA fără stilizare (text simplu sau <a> fără padding/background)\n- Imagini fără filter brightness(0.8) sau mai mic\n- Secțiuni fără container (max-w + mx-auto + px)\n- Carduri de servicii fără imagine\n`;
 
 
   /* ── Image generation — direct browser call, no serverless timeout ── */
@@ -1997,6 +2277,8 @@
       'gemini-3-pro-image-preview',
     ];
 
+    const genConfig = { responseModalities: ['IMAGE', 'TEXT'] };
+
     let lastErr = '';
     for (const model of models) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
@@ -2005,7 +2287,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+          generationConfig: genConfig,
         }),
       });
 
@@ -2066,7 +2348,7 @@
     // Generate in parallel
     const dataUrls = await Promise.all(
       prompts.slice(0, count).map((p, i) =>
-        nanobanana2Generate(p).then(r => {
+        nanobanana2Generate(i === 0 ? `${p}, square 1:1 format, full frame composition, centered subject` : p).then(r => {
           console.log(`[img] ${i+1}/${count}:`, r ? 'OK' : 'FAILED');
           return r;
         })
@@ -2088,7 +2370,7 @@
   }
 
   function buildUserPrompt(brief) {
-    return `Generează un site web complet pentru următoarea afacere:\n\n- Nume brand / companie: ${brief.brandName || 'nu a specificat'}\n- Activitate: ${brief.activity || 'nu a specificat clar, dedu tu un context rezonabil'}\n- Public țintă: ${brief.audience || 'nu a specificat'}\n- Acțiunea principală dorită a vizitatorilor: ${brief.mainAction || 'nu a specificat'}\n- Preferințe culori / fonturi: ${brief.colorsFonts || 'nu a specificat'}\n- Stil design dorit: ${brief.designStyle || 'modern'}\n${brief.extraNote ? `\nDetalii suplimentare de la client:\n${brief.extraNote}` : ''}\n\nGenerează ACUM fișierul HTML complet, începând cu <!DOCTYPE html>`;
+    return `Generează un site web complet pentru următoarea afacere:\n\n- Nume brand / companie: ${brief.brandName || 'nu a specificat'}\n- Activitate: ${brief.activity || 'nu a specificat clar, dedu tu un context rezonabil'}\n- Public țintă: ${brief.audience || 'nu a specificat'}\n- Acțiunea principală dorită a vizitatorilor: ${brief.mainAction || 'nu a specificat'}\n- Preferințe culori / fonturi: ${brief.colorsFonts || 'nu a specificat'}\n- Stil design dorit: ${brief.designStyle || 'modern'}\n- Program / Orar: ${brief.schedule || 'nu a specificat, inventează veridic în funcție de domeniu (include zilele închise, ex: Sâm–Dum: Închis)'}\n${brief.extraNote ? `\nDetalii suplimentare de la client:\n${brief.extraNote}` : ''}\n\nGenerează ACUM fișierul HTML complet, începând cu <!DOCTYPE html>`;
   }
 
   /* ── Generate ── */
@@ -2142,6 +2424,20 @@
         throw new Error('Site-ul generat este gol. Încearcă din nou.');
       }
 
+      /* ── Force #ffffff as inline style on Badge-uri 1 and Texte 1 ── */
+      html = _forceWhiteOnFirstElements(html);
+
+      /* ── Force copyright year to 2026 ── */
+      html = html.replace(/©\s*\d{4}/g, '© 2026');
+      html = html.replace(/new Date\(\)\.getFullYear\(\)/g, '2026');
+
+      /* ── Inject accessibility + mobile baseline CSS ── */
+      const a11yFix = `<style id="websiteai-a11y-fix">
+a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outline-offset:3px;border-radius:3px;}
+@media(max-width:768px){footer .grid{grid-template-columns:1fr!important;gap:32px!important;}}
+</style>`;
+      html = html.replace(/<\/head>/i, a11yFix + '</head>');
+
       /* Replace placeholders with Imagen AI-generated images */
       loadingStatus.textContent = 'Se generează imaginile cu AI…';
       html = await injectAIImages(html, brief);
@@ -2150,12 +2446,6 @@
       window.generatedHtml = html;
       _siteGenerated = true;
       finishProgress(true);
-
-      // Save to public gallery if user opted in
-      const isPublic = document.getElementById('bf-public')?.checked !== false;
-      if (isPublic && brief.brandName && brief.activity) {
-        saveToRecent(brief, html);
-      }
 
       // Show save button if logged in
       const wsSession = _wsSession();
@@ -2167,7 +2457,7 @@
           _saveUserSite(wsSession, html, brief)
             .then(() => {
               const saveBtn2 = document.getElementById('btn-save-account');
-              if (saveBtn2) { saveBtn2.textContent = '✓ Salvat'; saveBtn2.style.color = '#C8FF00'; saveBtn2.disabled = true; }
+              if (saveBtn2) { saveBtn2.textContent = '✓ Salvat'; saveBtn2.style.color = '#C8FF00'; saveBtn2.disabled = true; setTimeout(function(){ saveBtn2.textContent = '💾 Salvează modificările'; saveBtn2.disabled = false; }, 3000); }
               const mySites = document.getElementById('btn-my-sites');
               if (mySites) mySites.style.display = 'inline-flex';
               if (typeof _showSaveToast === 'function') _showSaveToast('✓ Site salvat în cont!', '#C8FF00');
@@ -2190,11 +2480,31 @@
     }
   }
 
-  /* ── Show preview ── */
-  function showPreview(html) {
+
+/* ── Show preview ── */
+  function showPreview(html, keepEdits) {
+    html = html.replace(/©\s*\d{4}/g, '© 2026');
+    html = html.replace(/new Date\(\)\.getFullYear\(\)/g, '2026');
+    window.generatedHtml = html;
+    if (!keepEdits) window.editedContent = {};
     showPanel('preview');
     previewIframe.srcdoc = html;
-    previewIframe.addEventListener('load', () => { populateEditor(); }, { once: true });
+    previewIframe.addEventListener('load', () => {
+      try {
+        setupInlineEditing(previewIframe.contentDocument);
+        populateEditor();
+      } catch(e) { console.error('[we] load handler error:', e); }
+    }, { once: true });
+    // Fallback: retry after delay in case load fired before listener was attached
+    setTimeout(() => {
+      try {
+        const d = previewIframe.contentDocument;
+        if (d && d.body && !d.body.hasAttribute('data-we-ready')) {
+          setupInlineEditing(d);
+          populateEditor();
+        }
+      } catch(e) {}
+    }, 1000);
   }
   window.showPreview = showPreview;
 
@@ -2220,24 +2530,12 @@
   });
 
   /* ── Toolbar actions ── */
-  document.getElementById('btn-open-tab').addEventListener('click', () => {
-    if (!generatedHtml) return;
-    const blob = new Blob([generatedHtml], { type: 'text/html' });
-    window.open(URL.createObjectURL(blob), '_blank');
-  });
 
-  document.getElementById('btn-download').addEventListener('click', () => {
-    if (!generatedHtml) return;
-    const a = document.createElement('a');
-    a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(generatedHtml);
-    const brandName = lastBrief?.brandName?.replace(/\s+/g, '-').toLowerCase() || 'site';
-    a.download = `${brandName}-websiteai.html`;
-    a.click();
-  });
-
+  window.generate = generate;
   document.getElementById('btn-regenerate').addEventListener('click', () => {
-    if (!lastBrief) return;
-    generate(lastBrief);
+    const brief = lastBrief || window.lastBrief;
+    if (!brief) return;
+    generate(brief);
   });
 
   /* ══════════════════════════════════════════════════════
@@ -2702,8 +3000,196 @@
     });
   }
 
+  /* ── POPULATE LOGO ── */
+  function populateLogo(doc) {
+    const panel = document.getElementById('editor-panel-logo');
+    panel.innerHTML = '';
+
+    // Find logo element: img in nav/header, or logo class
+    function findLogoEl() {
+      const selectors = [
+        'nav img', 'header img',
+        'img[class*="logo" i]', 'img[id*="logo" i]', 'img[alt*="logo" i]',
+        '.logo img', '#logo img',
+      ];
+      for (const sel of selectors) {
+        const el = doc.querySelector(sel);
+        if (el) return { type: 'img', el };
+      }
+      // Text-based logo
+      const textSelectors = [
+        '.logo', '#logo', '[class*="logo"]', '[id*="logo"]',
+        'nav a:first-child', 'header a:first-child',
+      ];
+      for (const sel of textSelectors) {
+        const el = doc.querySelector(sel);
+        if (el && el.textContent.trim()) return { type: 'text', el };
+      }
+      return null;
+    }
+
+    const found = findLogoEl();
+
+    panel.appendChild(editorSectionHead('Logo site'));
+
+    // Current logo preview
+    const previewWrap = document.createElement('div');
+    previewWrap.style.cssText = 'margin-bottom:16px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;text-align:center;';
+
+    if (found && found.type === 'img') {
+      const prev = document.createElement('img');
+      prev.src = found.el.src;
+      prev.id = 'logo-preview-img';
+      prev.style.cssText = 'max-height:60px;max-width:100%;object-fit:contain;border-radius:6px;';
+      previewWrap.appendChild(prev);
+    } else if (found && found.type === 'text') {
+      const txt = document.createElement('div');
+      txt.textContent = found.el.textContent.trim().slice(0, 50);
+      txt.id = 'logo-preview-img';
+      txt.style.cssText = 'font-family:"Syne",sans-serif;font-weight:800;font-size:1.1rem;color:#fff;';
+      previewWrap.appendChild(txt);
+    } else {
+      previewWrap.innerHTML = '<p style="font-family:Inter,sans-serif;font-size:0.82rem;color:#555;">Logo nedetectat — va fi adăugat ca imagine nouă în nav.</p>';
+    }
+    panel.appendChild(previewWrap);
+
+    // Upload button
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M8 1v9M4 4l4-4 4 4M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Încarcă logo';
+    uploadBtn.style.cssText = 'width:100%;padding:0 10px;height:40px;background:rgba(200,255,0,0.07);border:1px solid rgba(200,255,0,0.25);border-radius:8px;color:#C8FF00;font-family:"Inter",sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;';
+    uploadBtn.addEventListener('mouseenter', () => uploadBtn.style.background = 'rgba(200,255,0,0.14)');
+    uploadBtn.addEventListener('mouseleave', () => uploadBtn.style.background = 'rgba(200,255,0,0.07)');
+    uploadBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      uploadBtn.textContent = '···';
+      uploadBtn.disabled = true;
+      try {
+        // Compress
+        const compressed = await new Promise((resolve, reject) => {
+          const blobUrl = URL.createObjectURL(file);
+          const tmpImg = new Image();
+          tmpImg.onload = () => {
+            let w = tmpImg.width, h = tmpImg.height;
+            const MAX = 800;
+            if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(tmpImg, 0, 0, w, h);
+            URL.revokeObjectURL(blobUrl);
+            canvas.toBlob(blob => {
+              const rd = new FileReader();
+              rd.onload = () => resolve({ data: rd.result.split(',')[1], mime: 'image/png' });
+              rd.onerror = reject;
+              rd.readAsDataURL(blob);
+            }, 'image/png');
+          };
+          tmpImg.onerror = reject;
+          tmpImg.src = blobUrl;
+        });
+
+        // Upload
+        const res = await fetch('/api/img', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(compressed),
+        });
+        if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Upload eșuat'); }
+        const { key } = await res.json();
+        const url = '/api/img?k=' + key;
+
+        if (found && found.type === 'img') {
+          // Replace existing img src
+          found.el.src = url;
+          const prev = document.getElementById('logo-preview-img');
+          if (prev && prev.tagName === 'IMG') prev.src = url;
+        } else if (found && found.type === 'text') {
+          // Replace text logo with img
+          const newImg = doc.createElement('img');
+          newImg.src = url;
+          newImg.alt = 'Logo';
+          newImg.style.cssText = 'height:40px;width:auto;object-fit:contain;display:block;';
+          found.el.innerHTML = '';
+          found.el.appendChild(newImg);
+          // Update preview
+          const prev = document.getElementById('logo-preview-img');
+          if (prev) { const img = document.createElement('img'); img.src = url; img.style.cssText = 'max-height:60px;max-width:100%;object-fit:contain;'; prev.replaceWith(img); img.id = 'logo-preview-img'; }
+        } else {
+          // No logo found — inject img at start of first nav
+          const nav = doc.querySelector('nav') || doc.querySelector('header');
+          if (nav) {
+            const newImg = doc.createElement('img');
+            newImg.src = url;
+            newImg.alt = 'Logo';
+            newImg.style.cssText = 'height:40px;width:auto;object-fit:contain;display:block;';
+            nav.insertBefore(newImg, nav.firstChild);
+          }
+        }
+
+        syncHtml();
+        uploadBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M3 8l4 4 6-7" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Logo salvat!';
+        uploadBtn.disabled = false;
+      } catch(e) {
+        uploadBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M8 1v9M4 4l4-4 4 4M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="#C8FF00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Încarcă logo';
+        uploadBtn.disabled = false;
+        alert('Eroare upload logo: ' + e.message);
+      }
+    });
+
+    // AI Generate button
+    const aiBtn = document.createElement('button');
+    aiBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="margin-right:6px;vertical-align:-1px"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" stroke="#C8FF00" stroke-width="1.4" stroke-linejoin="round"/></svg>Generează logo cu AI';
+    aiBtn.style.cssText = 'width:100%;padding:0 10px;height:40px;background:rgba(200,255,0,0.04);border:1px solid rgba(200,255,0,0.2);border-radius:8px;color:#C8FF00;font-family:"Inter",sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;';
+    aiBtn.addEventListener('mouseenter', () => aiBtn.style.background = 'rgba(200,255,0,0.10)');
+    aiBtn.addEventListener('mouseleave', () => aiBtn.style.background = 'rgba(200,255,0,0.04)');
+    aiBtn.addEventListener('click', () => {
+      function applyLogo(dataUrl) {
+        const prevEl = document.getElementById('logo-preview-img');
+        if (found && found.type === 'img') {
+          found.el.src = dataUrl;
+          if (prevEl && prevEl.tagName === 'IMG') prevEl.src = dataUrl;
+        } else if (found && found.type === 'text') {
+          const newImg = doc.createElement('img');
+          newImg.src = dataUrl;
+          newImg.alt = 'Logo';
+          newImg.style.cssText = 'height:40px;width:auto;object-fit:contain;display:block;';
+          found.el.innerHTML = '';
+          found.el.appendChild(newImg);
+          if (prevEl) { const img = document.createElement('img'); img.src = dataUrl; img.style.cssText = 'max-height:60px;max-width:100%;object-fit:contain;'; prevEl.replaceWith(img); img.id = 'logo-preview-img'; }
+        } else {
+          const nav = doc.querySelector('nav') || doc.querySelector('header');
+          if (nav) {
+            const newImg = doc.createElement('img');
+            newImg.src = dataUrl;
+            newImg.alt = 'Logo';
+            newImg.style.cssText = 'height:40px;width:auto;object-fit:contain;display:block;';
+            nav.insertBefore(newImg, nav.firstChild);
+          }
+        }
+      }
+      const proxyImg = found && found.type === 'img' ? found.el : document.createElement('img');
+      openAiImageModal(proxyImg, null, applyLogo);
+    });
+
+    const hint = document.createElement('p');
+    hint.textContent = 'Recomandat: PNG cu fundal transparent, minim 200px înălțime.';
+    hint.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.75rem;color:#555;margin:8px 0 0;text-align:center;';
+
+    panel.appendChild(uploadBtn);
+    panel.appendChild(fileInput);
+    panel.appendChild(aiBtn);
+    panel.appendChild(hint);
+  }
+
   /* ── AI Image Generation Modal ── */
-  function openAiImageModal(imgEl, previewEl) {
+  function openAiImageModal(imgEl, previewEl, onSuccess) {
     // Remove existing modal if any
     const existing = document.getElementById('ai-img-modal');
     if (existing) existing.remove();
@@ -2766,8 +3252,12 @@
           : `Se încearcă din nou (${attempt}/${MAX_ATTEMPTS})...`;
         try {
           const dataUrl = await nanobanana2Generate(prompt);
-          imgEl.src = dataUrl;
-          if (previewEl) previewEl.src = dataUrl;
+          if (onSuccess) {
+            onSuccess(dataUrl);
+          } else {
+            imgEl.src = dataUrl;
+            if (previewEl) previewEl.src = dataUrl;
+          }
           syncHtml();
           status.textContent = '✓ Imagine generată cu succes!';
           status.style.color = '#C8FF00';
@@ -2890,63 +3380,280 @@
     const panel = document.getElementById('editor-panel-contact');
     panel.innerHTML = '';
 
-    const bodyHtml = doc.body ? doc.body.innerHTML : '';
-
-    // Detect phone
-    const phoneRx  = /(\+?4?0?\s*7[0-9]{2}[\s.\-]?[0-9]{3}[\s.\-]?[0-9]{3})|(\+?[0-9]{3}[\s.\-]?[0-9]{3}[\s.\-]?[0-9]{4,5})/;
-    const emailRx  = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
+    // ── Detect phone semantically first (a[href^="tel:"]), fallback to innerText regex ──
+    const phoneRx   = /(\+?4?0?\s*7[0-9]{2}[\s.\-]?[0-9]{3}[\s.\-]?[0-9]{3})/;
+    const emailRx   = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
     const addressRx = /(?:Str\.|Strada|Bulevardul|Calea|Aleea)\s+[A-ZĂÂÎȘȚ][^\n<"]{5,50}/i;
 
-    const phoneMatch   = bodyHtml.match(phoneRx);
-    const emailMatch   = bodyHtml.match(emailRx);
-    const addressMatch = bodyHtml.match(addressRx);
+    // Prefer semantic elements for phone & email detection
+    const telLinks    = Array.from(doc.querySelectorAll('a[href^="tel:"]'));
+    const mailLinks   = Array.from(doc.querySelectorAll('a[href^="mailto:"]'));
+
+    // For phone: read from tel: link text, fallback to innerText match
+    let phoneVal = '';
+    if (telLinks.length) {
+      phoneVal = telLinks[0].textContent.trim() ||
+                 telLinks[0].getAttribute('href').replace('tel:', '').trim();
+    } else {
+      const m = (doc.body.innerText || '').match(phoneRx);
+      phoneVal = m ? m[0].trim() : '';
+    }
+
+    // For email: read from mailto: link, fallback to innerText
+    let emailVal = '';
+    if (mailLinks.length) {
+      emailVal = mailLinks[0].getAttribute('href').replace('mailto:', '').trim() ||
+                 mailLinks[0].textContent.trim();
+    } else {
+      const m = (doc.body.innerText || '').match(emailRx);
+      emailVal = m ? m[0].trim() : '';
+    }
+
+    // Address: use innerText only (avoids matching CSS/script content)
+    const bodyText  = doc.body.innerText || '';
+    const bodyHtml  = doc.body ? doc.body.innerHTML : ''; // needed for social regex below
+    const addrMatch = bodyText.match(addressRx);
+    const addrVal   = addrMatch ? addrMatch[0].trim() : '';
+
+    // ── Schedule detection ──
+    // Matches: "Luni - Sâmbătă: 12:00-23:00", "Lun–Vin: 09:00–18:00", "Duminică: Închis" etc.
+    const scheduleTimeRx  = /\d{1,2}[:.]\d{2}/;
+    const scheduleDayRx   = /\b(?:Lun[i]?|Mar[i]?|Mier?c?u?r?i?|Joi|Vin[e]?r?i?|S[aâ]mb?[aă]t?[aă]?|Dum[i]?n?[i]?c?[aă]?)\b/i;
+    const scheduleClosedRx = /[ÎI]nchi[sd]/i;
+
+    function looksLikeSchedule(txt) {
+      if (!txt || txt.length > 300) return false;
+      return scheduleDayRx.test(txt) && (scheduleTimeRx.test(txt) || scheduleClosedRx.test(txt));
+    }
+
+    function extractScheduleText(el) {
+      // Prefer direct text nodes (skips SVG text)
+      let raw = '';
+      el.childNodes.forEach(n => {
+        if (n.nodeType === Node.TEXT_NODE) raw += n.textContent;
+      });
+      return raw.trim() || el.textContent.trim();
+    }
+
+    let scheduleEl  = null;
+    let scheduleVal = '';
+
+    // 1. Try footer first (most reliable location)
+    const footerEl = doc.querySelector('footer, [id*="footer"], [class*="footer"]');
+    // 2. Fallback: whole body
+    const searchRoots = [footerEl, doc.body].filter(Boolean);
+
+    outer: for (const root of searchRoots) {
+      // Try smallest matching elements first (leaf-ish: p, li, span, then div)
+      for (const sel of ['p', 'li', 'span', 'div']) {
+        const candidates = Array.from(root.querySelectorAll(sel));
+        for (const el of candidates) {
+          if (el.closest('nav,header,script,style,a,button')) continue;
+          const txt = el.textContent.trim();
+          if (looksLikeSchedule(txt)) {
+            scheduleEl  = el;
+            scheduleVal = extractScheduleText(el);
+            break outer;
+          }
+        }
+      }
+    }
 
     panel.appendChild(editorSectionHead('Date de contact'));
 
     const contactFields = [
-      { label: 'Telefon',  value: phoneMatch   ? phoneMatch[0].trim()   : '', itype: 'tel',   rx: phoneRx },
-      { label: 'Email',    value: emailMatch   ? emailMatch[0].trim()   : '', itype: 'email', rx: emailRx },
-      { label: 'Adresă',  value: addressMatch ? addressMatch[0].trim() : '', itype: 'text',  rx: addressRx },
+      { label: 'Telefon', value: phoneVal, itype: 'tel'   },
+      { label: 'Email',   value: emailVal, itype: 'email' },
+      { label: 'Adresă',  value: addrVal,  itype: 'text'  },
     ];
 
-    contactFields.forEach(({ label, value, itype, rx }) => {
-      panel.appendChild(editorField({
-        label,
-        value,
-        type: itype,
-        onInput: (newVal) => {
-          if (!doc.body) return;
-          if (value && rx) {
-            // Replace all occurrences in text nodes
-            replaceTextInDoc(doc, value, newVal);
-          }
-          value = newVal; // update local for next change
-          syncHtml();
+    contactFields.forEach(({ label, value: initVal, itype }) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-bottom:18px;';
+
+      const lbl = document.createElement('div');
+      lbl.textContent = label;
+      lbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#555;margin-bottom:6px;';
+      wrap.appendChild(lbl);
+
+      const input = document.createElement('input');
+      input.type = itype;
+      input.value = initVal;
+      input.placeholder = initVal ? '' : `Adaugă ${label.toLowerCase()}…`;
+      input.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.15s;';
+      input.addEventListener('focus', () => input.style.borderColor = 'rgba(200,255,0,0.35)');
+      input.addEventListener('blur',  () => input.style.borderColor = 'rgba(255,255,255,0.08)');
+
+      let docVal = initVal;
+
+      function isValidNewVal(val) {
+        if (!val) return false;
+        if (itype === 'tel'   && (val.replace(/\D/g,'').length < 6)) return false;
+        if (itype === 'email' && !val.includes('@')) return false;
+        if (itype === 'text'  && val.length < 8) return false;
+        return true;
+      }
+
+      input.addEventListener('blur', () => {
+        if (!doc.body) return;
+        const newVal = input.value.trim();
+        if (newVal === docVal) return;
+
+        if (!isValidNewVal(newVal)) {
+          input.value = docVal;
+          return;
         }
-      }));
+
+        if (itype === 'tel') {
+          // ── Targeted phone replace — ONLY tel: links, no replaceTextInDoc ──
+          const digitsNew = newVal.replace(/\D/g, '');
+          const digitsOld = docVal ? docVal.replace(/\D/g,'') : '';
+          doc.querySelectorAll('a[href^="tel:"]').forEach(el => {
+            el.setAttribute('href', 'tel:+' + digitsNew);
+            // Update visible text if it contains the old digits (last 6 chars = reliable suffix)
+            const elDigits = el.textContent.replace(/\D/g,'');
+            if (!docVal || (digitsOld.length >= 6 && elDigits.includes(digitsOld.slice(-6)))) {
+              el.textContent = newVal;
+            }
+          });
+
+        } else if (itype === 'email') {
+          // ── Targeted email replace ──
+          // 1. Update all mailto: links
+          doc.querySelectorAll('a[href^="mailto:"]').forEach(el => {
+            if (docVal && (el.getAttribute('href') || '').includes(docVal)) {
+              el.setAttribute('href', 'mailto:' + newVal);
+            }
+            if (docVal && el.textContent.trim() === docVal) {
+              el.textContent = newVal;
+            }
+          });
+          // 2. Replace remaining text nodes that contain old email verbatim
+          if (docVal) replaceTextInDoc(doc, docVal, newVal);
+
+        } else {
+          // Address — text-node replace (safe: long string, unlikely to appear elsewhere)
+          if (docVal && docVal.length >= 8) replaceTextInDoc(doc, docVal, newVal);
+        }
+
+        docVal = newVal;
+        syncHtml();
+      });
+
+      wrap.appendChild(input);
+      panel.appendChild(wrap);
     });
+
+    // ── Câmp Program ──
+    if (scheduleEl || scheduleVal) {
+      (() => {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'margin-bottom:18px;';
+
+        const lbl = document.createElement('div');
+        lbl.textContent = 'Program';
+        lbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#555;margin-bottom:6px;';
+        wrap.appendChild(lbl);
+
+        const hint = document.createElement('div');
+        hint.textContent = 'ex: Lun–Vin: 09–18, Sâm: 09–14, Dum: Închis';
+        hint.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.7rem;color:#444;margin-bottom:6px;';
+        wrap.appendChild(hint);
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = scheduleVal;
+        input.placeholder = 'ex: Lun–Vin: 09–18, Sâm: 09–14, Dum: Închis';
+        input.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.15s;';
+        input.addEventListener('focus', () => input.style.borderColor = 'rgba(200,255,0,0.35)');
+        input.addEventListener('blur',  () => input.style.borderColor = 'rgba(255,255,255,0.08)');
+
+        let docScheduleVal = scheduleVal;
+
+        input.addEventListener('blur', () => {
+          if (!doc.body) return;
+          const newVal = input.value.trim();
+          if (!newVal || newVal === docScheduleVal) return;
+
+          if (scheduleEl && scheduleEl.isConnected) {
+            // Targeted: replace only text nodes inside the detected element (preserves SVG)
+            let replaced = false;
+            scheduleEl.childNodes.forEach(n => {
+              if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
+                n.textContent = newVal;
+                replaced = true;
+              }
+            });
+            // Fallback: if no standalone text node, try replaceTextInDoc with old value
+            if (!replaced && docScheduleVal && docScheduleVal.length > 3) {
+              replaceTextInDoc(doc, docScheduleVal, newVal);
+            }
+          } else if (docScheduleVal && docScheduleVal.length > 3) {
+            // Element not found or disconnected — text-node replace
+            replaceTextInDoc(doc, docScheduleVal, newVal);
+          }
+
+          docScheduleVal = newVal;
+          syncHtml();
+        });
+
+        wrap.appendChild(input);
+        panel.appendChild(wrap);
+      })();
+    }
 
     panel.appendChild(editorSectionHead('Rețele sociale'));
 
-    const socialRx = {
-      'Facebook URL':  /https?:\/\/(?:www\.)?facebook\.com\/[^\s"'<>]{3,60}/i,
-      'Instagram URL': /https?:\/\/(?:www\.)?instagram\.com\/[^\s"'<>]{3,60}/i,
-      'TikTok URL':    /https?:\/\/(?:www\.)?tiktok\.com\/@[^\s"'<>]{3,60}/i,
-    };
+    const socialPlatforms = [
+      { label: 'Facebook URL',  domain: 'facebook.com',  rx: /https?:\/\/(?:www\.)?facebook\.com\/[^\s"'<>]{1,80}/i  },
+      { label: 'Instagram URL', domain: 'instagram.com', rx: /https?:\/\/(?:www\.)?instagram\.com\/[^\s"'<>]{1,80}/i },
+      { label: 'TikTok URL',    domain: 'tiktok.com',    rx: /https?:\/\/(?:www\.)?tiktok\.com\/[^\s"'<>]{1,80}/i   },
+      { label: 'LinkedIn URL',  domain: 'linkedin.com',  rx: /https?:\/\/(?:www\.)?linkedin\.com\/[^\s"'<>]{1,80}/i  },
+    ];
 
-    Object.entries(socialRx).forEach(([label, rx]) => {
-      const match = bodyHtml.match(rx);
-      let currentVal = match ? match[0] : '';
-      panel.appendChild(editorField({
-        label,
-        value: currentVal,
-        type: 'url',
-        onInput: (newVal) => {
-          if (currentVal) replaceAttrInDoc(doc, currentVal, newVal);
-          currentVal = newVal;
-          syncHtml();
-        }
-      }));
+    socialPlatforms.forEach(({ label, domain, rx }) => {
+      // Detect current URL: prefer actual <a href> element, fallback to text regex
+      const linkEl = Array.from(doc.querySelectorAll('a[href]')).find(a => {
+        const h = (a.getAttribute('href') || '').toLowerCase();
+        return h.includes(domain);
+      });
+      let currentVal = linkEl ? linkEl.getAttribute('href') : (bodyHtml.match(rx)?.[0] || '');
+
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-bottom:18px;';
+      const lbl = document.createElement('div');
+      lbl.textContent = label;
+      lbl.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:#555;margin-bottom:6px;';
+      wrap.appendChild(lbl);
+
+      const input = document.createElement('input');
+      input.type = 'url';
+      input.value = currentVal;
+      input.placeholder = `https://${domain}/pagina-ta`;
+      input.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.15s;';
+      input.addEventListener('focus', () => input.style.borderColor = 'rgba(200,255,0,0.35)');
+      input.addEventListener('blur',  () => input.style.borderColor = 'rgba(255,255,255,0.08)');
+
+      input.addEventListener('blur', () => {
+        const newVal = input.value.trim();
+        if (!newVal || newVal === currentVal) return;
+
+        // Update all <a> links pointing to this platform
+        doc.querySelectorAll('a[href]').forEach(a => {
+          const h = (a.getAttribute('href') || '').toLowerCase();
+          if (h.includes(domain) || (currentVal && a.getAttribute('href') === currentVal)) {
+            a.setAttribute('href', newVal);
+          }
+        });
+        // Also text-based href replacement for edge cases
+        if (currentVal) replaceAttrInDoc(doc, currentVal, newVal);
+
+        currentVal = newVal;
+        syncHtml();
+      });
+
+      wrap.appendChild(input);
+      panel.appendChild(wrap);
     });
   }
 
@@ -3118,6 +3825,47 @@
     fsel.addEventListener('change', () => { if (!fsel.value) return; const lnk = doc.createElement('link'); lnk.rel='stylesheet'; lnk.href=`https://fonts.googleapis.com/css2?family=${encodeURIComponent(fsel.value)}:wght@400;600;700&display=swap`; doc.head.appendChild(lnk); links.forEach(l => efApply(l,'font-family',`"${fsel.value}",sans-serif`)); });
     fs.appendChild(fsel); panel.appendChild(fs);
 
+    // Bold linkuri
+    const bolds = document.createElement('div'); bolds.style.cssText = 'margin-top:16px;';
+    bolds.appendChild(SEC('Bold linkuri meniu'));
+    const boldRow = document.createElement('div'); boldRow.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    const boldBtn = document.createElement('button');
+    let isBold = false;
+    try { isBold = links[0] ? parseInt(doc.defaultView.getComputedStyle(links[0]).fontWeight) >= 700 : false; } catch(e) {}
+    boldBtn._on = isBold;
+    boldBtn.textContent = isBold ? 'Bold activ' : 'Bold inactiv';
+    boldBtn.style.cssText = `padding:7px 18px;border-radius:8px;font-family:"Inter",sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;border:1px solid;transition:all 0.15s;background:${isBold?'rgba(200,255,0,0.12)':'rgba(255,255,255,0.06)'};color:${isBold?'#C8FF00':'#888'};border-color:${isBold?'rgba(200,255,0,0.4)':'rgba(255,255,255,0.1)'};`;
+    boldBtn.addEventListener('click', () => {
+      boldBtn._on = !boldBtn._on;
+      boldBtn.textContent = boldBtn._on ? 'Bold activ' : 'Bold inactiv';
+      boldBtn.style.background = boldBtn._on ? 'rgba(200,255,0,0.12)' : 'rgba(255,255,255,0.06)';
+      boldBtn.style.color = boldBtn._on ? '#C8FF00' : '#888';
+      boldBtn.style.borderColor = boldBtn._on ? 'rgba(200,255,0,0.4)' : 'rgba(255,255,255,0.1)';
+      links.forEach(l => efApply(l, 'font-weight', boldBtn._on ? '700' : '400'));
+    });
+    boldRow.appendChild(boldBtn); bolds.appendChild(boldRow); panel.appendChild(bolds);
+
+    // Culoare iconiță hamburger — injectăm CSS cu !important ca să suprascrie JS-ul care re-randează SVG-ul
+    const hs = document.createElement('div'); hs.style.cssText = 'margin-top:16px;';
+    hs.appendChild(SEC('Culoare iconiță hamburger (mobil)'));
+    const hr2 = document.createElement('div'); hr2.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    const hp = document.createElement('input'); hp.type = 'color'; hp.value = '#ffffff';
+    hp.style.cssText = 'width:36px;height:30px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;cursor:pointer;padding:2px;background:none;';
+    const hh = document.createElement('span'); hh.textContent = '#FFFFFF'; hh.style.cssText = 'font-family:monospace;font-size:0.72rem;color:#555;';
+    // Injectăm sau actualizăm un <style> dedicat în iframe
+    function applyHamburgerColor(color) {
+      let styleEl = doc.getElementById('websiteai-hamburger-color');
+      if (!styleEl) {
+        styleEl = doc.createElement('style');
+        styleEl.id = 'websiteai-hamburger-color';
+        doc.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `#mob-btn svg line, #mob-btn svg path { stroke: ${color} !important; }`;
+      syncHtml();
+    }
+    hp.addEventListener('input', () => { hh.textContent = hp.value.toUpperCase(); applyHamburgerColor(hp.value); });
+    hr2.appendChild(hp); hr2.appendChild(hh); hs.appendChild(hr2); panel.appendChild(hs);
+
     // Navbar background
     const bs = document.createElement('div'); bs.style.cssText = 'margin-top:16px;';
     bs.appendChild(SEC('Fundal navbar'));
@@ -3142,6 +3890,7 @@
     populateContact(doc);
     populateMeniu(doc);
     populateButoane(doc);
+    populateLogo(doc);
     // Reset to first tab
     editorTabs.forEach((t, i) => { t.classList.toggle('active-tab', i === 0); });
     editorPanels.forEach((p, i) => { p.style.display = i === 0 ? 'block' : 'none'; });
@@ -3170,12 +3919,20 @@
   }
   #editor-panel-texte::-webkit-scrollbar-track,
   #editor-panel-culori::-webkit-scrollbar-track,
-  #editor-panel-contact::-webkit-scrollbar-track {
+  #editor-panel-contact::-webkit-scrollbar-track,
+  #editor-panel-meniu::-webkit-scrollbar-track,
+  #editor-panel-butoane::-webkit-scrollbar-track,
+  #editor-panel-imagini::-webkit-scrollbar-track,
+  #editor-panel-logo::-webkit-scrollbar-track {
     background: transparent;
   }
   #editor-panel-texte::-webkit-scrollbar-thumb,
   #editor-panel-culori::-webkit-scrollbar-thumb,
-  #editor-panel-contact::-webkit-scrollbar-thumb {
+  #editor-panel-contact::-webkit-scrollbar-thumb,
+  #editor-panel-meniu::-webkit-scrollbar-thumb,
+  #editor-panel-butoane::-webkit-scrollbar-thumb,
+  #editor-panel-imagini::-webkit-scrollbar-thumb,
+  #editor-panel-logo::-webkit-scrollbar-thumb {
     background: rgba(200,255,0,0.2);
     border-radius: 2px;
   }
@@ -3750,10 +4507,7 @@ async function loadRecent(page, append) {
       while (frag.firstChild) grid.appendChild(frag.firstChild);
     }
 
-    if (data.total > 0) {
-      totalBadge.textContent = data.total + ' site-uri generate';
-      totalBadge.style.display = 'inline-block';
-    }
+    // recent badge hidden (section removed)
 
     lmWrap.style.display = _recentHasMore ? 'block' : 'none';
   } catch(e) {
@@ -3903,20 +4657,11 @@ async function manuallySaveToAccount() {
   btn.disabled = true;
 
   try {
-    // If editing an existing site, delete the old entry first
-    if (window.editingSiteId) {
-      await fetch('/api/user/sites', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
-        body: JSON.stringify({ id: window.editingSiteId }),
-      }).catch(() => {});
-    }
-
     var processedHtml = await _uploadBase64Images(window.generatedHtml);
     var res = await fetch('/api/user/sites', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
-      body: JSON.stringify({ html: processedHtml, brandName: window.lastBrief.brandName, activity: window.lastBrief.activity }),
+      body: JSON.stringify({ html: processedHtml, brandName: window.lastBrief.brandName, activity: window.lastBrief.activity, editId: window.editingSiteId || null }),
     });
     if (res.status === 401) {
       localStorage.removeItem('ws_session');
@@ -4033,7 +4778,7 @@ async function _saveUserSite(session, html, brief) {
   const res = await fetch('/api/user/sites', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
-    body: JSON.stringify({ html: processedHtml, brandName: brief.brandName, activity: brief.activity }),
+    body: JSON.stringify({ html: processedHtml, brandName: brief.brandName, activity: brief.activity, editId: window.editingSiteId || null }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -4108,7 +4853,7 @@ async function _saveUserSite(session, html, brief) {
 
     <div style="background:#0e0e0e;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:22px 24px;margin-bottom:24px;text-align:left;">
       <div style="text-align:center;margin-bottom:18px;">
-        <span style="font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;color:#C8FF00;letter-spacing:-0.03em;">1 RON</span>
+        <span style="font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;color:#C8FF00;letter-spacing:-0.03em;">100 RON</span>
         <div style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;margin-top:4px;">pe lună · anulezi oricând</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
@@ -4182,7 +4927,7 @@ async function startPayment() {
   history.replaceState({}, '', window.location.pathname);
 
   try {
-    var r = await fetch('/api/verify-payment?session_id=' + encodeURIComponent(sessionId));
+    var r = await fetch('/api/create-checkout?session_id=' + encodeURIComponent(sessionId));
     var data = await r.json();
     if (!data.paid) return;
 

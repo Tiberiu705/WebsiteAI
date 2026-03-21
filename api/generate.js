@@ -1,6 +1,127 @@
 const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
 
-const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. Generează un fișier HTML complet, de înaltă calitate, pentru o afacere românească.\n\n═══ OUTPUT ═══\n- Răspunde EXCLUSIV cu HTML complet valid (de la <!DOCTYPE html> până la </html>)\n- ZERO text în afara HTML-ului, ZERO markdown (fără \`\`\`html), ZERO explicații\n- Toate stilurile: în <style> în <head> SAU clase Tailwind pe elemente\n- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\\/script>\n- Google Fonts: 2 fonturi (1 display/serif pentru titluri, 1 sans-serif pentru body)\n\n═══ STRUCTURA PAGINII (obligatorie, în această ordine) ═══\n\n1. NAVBAR sticky (position: fixed, top:0, z-index:50, backdrop-blur)\n   - Container max-w-7xl mx-auto px-6, height 64px, flex items-center justify-between\n   - Stânga: logo (text mare, font-weight 700, culoarea brand)\n   - Dreapta: linkuri nav (gap-8, text-sm, font-medium, color:#ffffff) + 1 buton CTA distinct\n   - Hamburger menu pe mobile (block md:hidden)\n\n2. HERO (style="min-height:100vh;position:relative;overflow:hidden;" — overflow:hidden OBLIGATORIU pe container)\n   - Background image (REGULĂ STRICTĂ — nu devia): <img src="URL" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(0.4);" /> — FĂRĂ wrapper extra, FĂRĂ blur, FĂRĂ transform, FĂRĂ scale. Doar aceste stiluri exact.\n   - Overlay OBLIGATORIU: <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,rgba(0,0,0,0.45) 0%,rgba(0,0,0,0.65) 50%,rgba(0,0,0,0.82) 100%);z-index:1;"></div>\n   - Content (DEASUPRA overlay-ului): style="position:relative;z-index:2;" flex flex-col items-center justify-center text-center px-6 pt-24\n   - Supertitlu (ex: ARHITECTURA DE EXCELENTA): style="font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.95);text-shadow:0 2px 12px rgba(0,0,0,1);margin-bottom:20px;"\n   - H1: style="font-size:clamp(2.8rem,6vw,5rem);font-weight:800;color:#ffffff;text-shadow:0 2px 24px rgba(0,0,0,1),0 4px 48px rgba(0,0,0,0.8);max-width:56rem;margin:0 auto;line-height:1.08;"\n   - Subtitle: style="font-size:1.05rem;color:rgba(255,255,255,0.95);max-width:38rem;margin:24px auto 0;line-height:1.7;text-shadow:0 1px 16px rgba(0,0,0,1);"\n   - Butoane CTA: flex gap-4 mt-10 — primar (bg brand, text alb, px-8 py-4, rounded-lg) + secundar (border 2px solid white, text alb)\n\n3. STATS BAR — background culoarea brand sau gri închis, grid 4 coloane, număr mare alb + label alb\n\n4. SERVICII (background alb sau #f8f8f8)\n   - Section header centrat: supertitlu uppercase + H2 color #111 + subtitlu color #555\n   - Grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3, gap-8, max-w-7xl mx-auto px-6\n   - FIECARE CARD (structura exactă, nu devia):\n     <div style="border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);display:flex;flex-direction:column;">\n       <div style="position:relative;overflow:hidden;height:220px;">\n         <img src="https://placehold.co/WIDTHxHEIGHT" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.8);" />\n         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 60%);"></div>\n       </div>\n       <div style="padding:24px 28px 28px;flex:1;display:flex;flex-direction:column;">\n         <h3 style="font-size:1.2rem;font-weight:700;color:#111;margin-bottom:10px;">Titlu</h3>\n         <p style="font-size:13px;color:#555;line-height:1.7;flex:1;">Descriere.</p>\n         <a href="#contact" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--brand);color:#fff;border-radius:8px;font-weight:600;font-size:14px;text-align:center;">Acțiune</a>\n       </div>\n     </div>\n   - Dimensiuni imagini: 400x220, 380x220, 420x220, 360x220, 410x220, 390x220\n\n5. DESPRE — 2 coloane (imagine stânga + text dreapta), max-w-7xl mx-auto, imagine cu filter brightness(0.85), text cu H2 + paragraf + liste + CTA\n\n6. TESTIMONIALE — background #f4f4f4, grid 3 coloane, fiecare card structură EXACTĂ:
+// ── Shared inline editor block (injected into every generated site) ───────────
+// Pattern: elements are ALWAYS contenteditable from load (like the reference HTML),
+// with localStorage persistence + Escape to cancel + parent postMessage sync.
+function _weInlineEditorBlockStr() {
+  // CSS: subtle hover + active outlines; no heavy toolbar
+  var css = [
+    '<style id="we-css">',
+    '[data-ek][contenteditable]:hover:not(:focus){outline:1px dashed rgba(99,102,241,.5)!important;outline-offset:2px;border-radius:3px;cursor:text!important;}',
+    '[data-ek][contenteditable]:focus{outline:2px solid rgba(99,102,241,.8)!important;outline-offset:3px;border-radius:3px;}',
+    '[data-schedule]:hover{outline:1px dashed rgba(251,146,60,.5)!important;outline-offset:2px;border-radius:3px;cursor:pointer!important;}',
+    '</style>',
+  ].join('');
+
+  // JS: always-on contenteditable, Escape to cancel, blur to save, localStorage + postMessage
+  var js = [
+    '<scr'+'ipt id="we-js">(function(){"use strict";',
+    'var STORE="we2_edits";',
+    'var edits={};try{edits=JSON.parse(localStorage.getItem(STORE)||"{}");}catch(e){}',
+    'function saveStore(){try{localStorage.setItem(STORE,JSON.stringify(edits));}catch(e){}}',
+    'function getKey(el){var p=[],c=el;',
+    'while(c&&c!==document.body){var par=c.parentElement;',
+    'var idx=par?Array.from(par.children).indexOf(c):0;',
+    'p.unshift(c.tagName[0]+idx);c=par;}return p.join(".");}',
+    'function skipEl(el){',
+    'if(el.closest("script,style,noscript,iframe,svg,#we-bar"))return true;',
+    // skip tel/mailto anchors — handled by sidebar
+    'if(el.tagName==="A"){var h=el.getAttribute("href")||"";',
+    'if(h.startsWith("tel:")||h.startsWith("mailto:"))return true;}',
+    // skip schedule detection — schedule modal already handles these
+    'var txt=el.textContent.trim();',
+    'if(txt.length<2||txt.length>500)return true;',
+    'if(el.children.length>4)return true;',
+    'return false;}',
+    // Schedule detection (same regex as modal)
+    'function isScheduleEl(el){',
+    'var txt=el.textContent.trim();',
+    'if(!txt||txt.length<4||txt.length>400)return false;',
+    'var dRx=/Lun|Mar|Mier|Joi|Vin|Sam|S\u00e2m|Dum/i;',
+    'var tRx=/\\d{1,2}[:.\\u2013\\-]\\d{2}/;',
+    'var cRx=/nchi/i;',
+    'return dRx.test(txt)&&(tRx.test(txt)||cRx.test(txt));}',
+    // Schedule modal
+    'function showScheduleModal(el){',
+    'var cur=el.textContent.trim();',
+    'var ov=document.createElement("div");',
+    'ov.style.cssText="position:fixed;inset:0;z-index:2147483648;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;";',
+    'var mo=document.createElement("div");',
+    'mo.style.cssText="background:#18181b;border-radius:16px;padding:28px;width:min(420px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:-apple-system,sans-serif;";',
+    'var ttl=document.createElement("div");ttl.textContent="\u270f Editeaz\u0103 Programul";',
+    'ttl.style.cssText="color:#fff;font-size:15px;font-weight:700;margin-bottom:6px;";',
+    'var hint=document.createElement("div");',
+    'hint.textContent="ex: Lun\u2013Vin: 09:00\u201318:00 / S\u00e2m: 09\u201314 / Dum: \u00cenchis";',
+    'hint.style.cssText="color:#888;font-size:11px;margin-bottom:14px;";',
+    'var ta=document.createElement("textarea");ta.value=cur;',
+    'ta.style.cssText="width:100%;box-sizing:border-box;background:#0f0f10;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:12px;color:#d4d4d8;font-size:13px;line-height:1.6;resize:vertical;min-height:90px;outline:none;font-family:inherit;";',
+    'var row=document.createElement("div");row.style.cssText="display:flex;gap:10px;margin-top:16px;";',
+    'var bSv=document.createElement("button");bSv.textContent="Salveaz\u0103";',
+    'bSv.style.cssText="flex:1;background:#6366f1;color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-size:13px;font-weight:600;";',
+    'var bCn=document.createElement("button");bCn.textContent="Anuleaz\u0103";',
+    'bCn.style.cssText="flex:1;background:rgba(255,255,255,.08);color:#d4d4d8;border:none;border-radius:8px;padding:10px;cursor:pointer;font-size:13px;";',
+    'row.appendChild(bSv);row.appendChild(bCn);',
+    'mo.appendChild(ttl);mo.appendChild(hint);mo.appendChild(ta);mo.appendChild(row);',
+    'ov.appendChild(mo);document.body.appendChild(ov);',
+    'setTimeout(function(){ta.focus();ta.selectionStart=ta.selectionEnd=ta.value.length;},50);',
+    'function doSave(){var nv=ta.value.trim();',
+    'if(nv&&nv!==cur){',
+    'var replaced=false;',
+    'el.childNodes.forEach(function(n){if(n.nodeType===3&&n.textContent.trim()){n.textContent=nv;replaced=true;}});',
+    'if(!replaced)el.textContent=nv;',
+    'var k=el.getAttribute("data-ek");',
+    'if(k){edits[k]={html:el.innerHTML};saveStore();',
+    'try{window.parent.postMessage({type:"we_edit",key:k,edit:edits[k]},"*");}catch(ex){}}}',
+    'ov.remove();}',
+    'bSv.onclick=doSave;bCn.onclick=function(){ov.remove();};',
+    'ov.onclick=function(e){if(e.target===ov)ov.remove();};',
+    'ta.addEventListener("keydown",function(e){',
+    'if(e.key==="Escape")ov.remove();',
+    'if(e.key==="Enter"&&(e.ctrlKey||e.metaKey))doSave();});}',
+    // attachListeners: adds blur/focus/keydown to a single [data-ek] element
+    'function attachListeners(el){',
+    'var k=el.getAttribute("data-ek");if(!k)return;',
+    'if(el.hasAttribute("data-schedule")){el.addEventListener("click",function(e){e.stopPropagation();showScheduleModal(el);},{once:false});return;}',
+    'if(el.getAttribute("contenteditable")!=="true")return;',
+    'var orig=el.innerHTML;',
+    'el.addEventListener("focus",function(){orig=el.innerHTML;});',
+    'el.addEventListener("keydown",function(e){',
+    'if(e.key==="Escape"){e.preventDefault();el.innerHTML=orig;el.blur();}',
+    'if(e.key==="Enter"&&!e.shiftKey&&(el.tagName==="BUTTON"||/^H\\d$/.test(el.tagName))){e.preventDefault();el.blur();}});',
+    'el.addEventListener("blur",function(){',
+    'var nv=el.innerHTML.trim();',
+    'if(!nv){el.innerHTML=orig;return;}',
+    'if(nv!==orig){edits[k]={html:nv};saveStore();',
+    'try{window.parent.postMessage({type:"we_edit",key:k,edit:{html:nv}},"*");}catch(e){}}});',
+    'if(edits[k]&&edits[k].html!=null)el.innerHTML=edits[k].html;}',
+    // init: primary path = [data-ek] already in HTML; fallback = add contenteditable via JS
+    'function init(){',
+    'var prepared=document.querySelectorAll("[data-ek]");',
+    'if(prepared.length>0){prepared.forEach(attachListeners);applyEdits();return;}',
+    // Fallback for standalone/downloaded HTML without prepareHtmlForEditing
+    'document.querySelectorAll("h1,h2,h3,h4,p,button,li,span").forEach(function(el){',
+    'if(skipEl(el))return;',
+    'var k=el.getAttribute("data-ek")||getKey(el);el.setAttribute("data-ek",k);',
+    'if(isScheduleEl(el)){el.style.cursor="pointer";el.addEventListener("click",function(e){e.stopPropagation();showScheduleModal(el);},{once:false});return;}',
+    'el.contentEditable="true";el.setAttribute("spellcheck","false");attachListeners(el);});',
+    'applyEdits();}',
+    'function applyEdits(){Object.keys(edits).forEach(function(k){',
+    'var el=document.querySelector(\'[data-ek="\'+k+\'"]\');',
+    'if(el&&edits[k].html!=null)el.innerHTML=edits[k].html;});}',
+    'window.addEventListener("message",function(e){',
+    'if(e.data&&e.data.type==="we_restore"){edits=e.data.edits||{};applyEdits();}});',
+    // Only run standalone (not inside iframe where parent handles editing)
+    'if(window.self===window.top){',
+    'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}',
+    '}',
+    '})();<\/scr'+'ipt>',
+  ].join('');
+
+  return css + js;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. Generează un fișier HTML complet, de înaltă calitate, pentru o afacere românească.\n\n═══ OUTPUT ═══\n- Răspunde EXCLUSIV cu HTML complet valid (de la <!DOCTYPE html> până la </html>)\n- OBLIGATORIU: <html lang="ro"> — atribut obligatoriu pentru accesibilitate\n- ZERO text în afara HTML-ului, ZERO markdown (fără \`\`\`html), ZERO explicații\n- Toate stilurile: în <style> în <head> SAU clase Tailwind pe elemente\n- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\\/script>\n- Google Fonts: 2 fonturi (1 display/serif pentru titluri, 1 sans-serif pentru body)\n\n═══ STRUCTURA PAGINII (obligatorie, în această ordine) ═══\n\n1. NAVBAR sticky (position: fixed, top:0, z-index:50, backdrop-blur)\n   - Container max-w-7xl mx-auto px-6, height 64px, flex items-center justify-between\n   - Stânga: logo (a href="#", font-weight:700, font-size:1.3rem, color:#ffffff, text-decoration:none, flex-shrink:0)\n   - Dreapta: OBLIGATORIU structura EXACTĂ în această ordine:\n     1) <div class="nav-links-desktop" style="display:flex;align-items:center;gap:28px;"> — conține toate linkurile nav (color:#ffffff;text-decoration:none;font-size:0.9rem;font-weight:500) + butonul CTA </div>\n     2) <button id="mob-btn" onclick="var m=document.getElementById(\\'mob-menu\\');var open=m.classList.toggle(\\'mob-open\\');this.innerHTML=open?\\'<svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 20 20\\" fill=\\"none\\"><path d=\\"M4 4l12 12M16 4L4 16\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/></svg>\\':\\'<svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 20 20\\" fill=\\"none\\"><line x1=\\"3\\" y1=\\"5\\" x2=\\"17\\" y2=\\"5\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"10\\" x2=\\"17\\" y2=\\"10\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/><line x1=\\"3\\" y1=\\"15\\" x2=\\"17\\" y2=\\"15\\" stroke=\\"#fff\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\"/></svg>\\'" style="display:none;background:none;border:none;padding:8px;cursor:pointer;line-height:0;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="3" y1="5" x2="17" y2="5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="17" y2="10" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="15" x2="17" y2="15" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>\n     3) <div id="mob-menu" style="display:none;position:fixed;top:64px;left:0;right:0;background:rgba(8,8,8,0.98);padding:20px 24px;flex-direction:column;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);z-index:999;">[aceleași linkuri repetate vertical, fiecare: display:block;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.07);color:#fff;font-size:1rem;text-decoration:none;]</div>\n   - CSS MOBILE OBLIGATORIU în <style>:\n     .nav-links-desktop{display:flex;}\n     @media(max-width:768px){\n       .nav-links-desktop{display:none!important;}\n       #mob-btn{display:flex!important;}\n       #mob-menu.mob-open{display:flex!important;}\n     }\n\n2. HERO (style="min-height:100vh;position:relative;overflow:hidden;" — overflow:hidden OBLIGATORIU pe container)\n   - Background image (REGULĂ STRICTĂ — nu devia): <img src="URL" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(0.32);" /> — FĂRĂ wrapper extra, FĂRĂ blur, FĂRĂ transform, FĂRĂ scale. Doar aceste stiluri exact.\n   - Overlay OBLIGATORIU: <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 50%,rgba(0,0,0,0.88) 100%);z-index:1;"></div>\n   - Content (DEASUPRA overlay-ului): style="position:relative;z-index:2;" flex flex-col items-center justify-center text-center px-6 pt-24\n   - Supertitlu: style="font-size:0.78rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#ffffff;text-shadow:0 1px 8px rgba(0,0,0,1),0 2px 24px rgba(0,0,0,1);margin-bottom:20px;background:rgba(0,0,0,0.3);padding:4px 14px;border-radius:20px;display:inline-block;"\n   - H1: style="font-size:clamp(2.4rem,6vw,5rem);font-weight:800;color:#ffffff;text-shadow:0 2px 24px rgba(0,0,0,1),0 4px 64px rgba(0,0,0,1);max-width:56rem;margin:0 auto;line-height:1.08;"\n   - Subtitle: style="font-size:1.05rem;color:#ffffff;max-width:38rem;margin:24px auto 0;line-height:1.7;text-shadow:0 1px 12px rgba(0,0,0,1),0 2px 32px rgba(0,0,0,0.9);"\n   - Butoane CTA: flex gap-4 mt-10 — primar (bg brand, text alb, px-8 py-4, rounded-lg) + secundar (border 2px solid white, text alb)\n\n3. STATS BAR — background culoarea brand sau gri închis, grid 4 coloane, număr mare alb + label alb\n\n4. SERVICII (background alb sau #f8f8f8)\n   - Section header centrat: supertitlu uppercase + H2 color #111 + subtitlu color #555\n   - Grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3, gap-8, max-w-7xl mx-auto px-6\n   - FIECARE CARD (structura exactă, nu devia):\n     <div style="border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);display:flex;flex-direction:column;">\n       <div style="position:relative;overflow:hidden;height:220px;">\n         <img src="https://placehold.co/WIDTHxHEIGHT" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.8);" />\n         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 60%);"></div>\n       </div>\n       <div style="padding:24px 28px 28px;flex:1;display:flex;flex-direction:column;">\n         <h3 style="font-size:1.2rem;font-weight:700;color:#111;margin-bottom:10px;">Titlu</h3>\n         <p style="font-size:13px;color:#555;line-height:1.7;flex:1;">Descriere.</p>\n         <a href="#contact" style="display:inline-block;margin-top:20px;padding:10px 24px;background:var(--brand);color:#fff;border-radius:8px;font-weight:600;font-size:14px;text-align:center;">Acțiune</a>\n       </div>\n     </div>\n   - Dimensiuni imagini: 400x220, 380x220, 420x220, 360x220, 410x220, 390x220\n\n5. DESPRE — 2 coloane (imagine stânga + text dreapta), max-w-7xl mx-auto, imagine cu filter brightness(0.85), text cu H2 + paragraf + liste + CTA\n\n6. TESTIMONIALE — background #f4f4f4, grid 3 coloane, fiecare card structură EXACTĂ:
      <div style="background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.08);display:flex;flex-direction:column;">
        <div style="display:flex;gap:3px;margin-bottom:14px;">[5 stele SVG 16px]</div>
        <p style="font-style:italic;color:#333;font-size:14px;line-height:1.75;flex:1;margin:0 0 20px;">"Text real."</p>
@@ -9,10 +130,10 @@ const SYSTEM_PROMPT = `Ești un generator expert de site-uri web profesionale. G
          <div><div style="font-weight:700;color:#111;font-size:14px;">Nume</div><div style="color:#888;font-size:12px;">Rol</div></div>
        </div>
      </div>
-     INTERZIS în testimoniale: imagini mari, avatar > 40px, position:absolute\n\n7. CTA BANNER — background culoarea brand, text alb centrat, H2 + buton alb\n\n8. FOOTER — background #1a1a1a, 4 coloane (logo+social | linkuri | contact | info), sub-footer copyright\n\n═══ DESIGN ═══\n- :root { --brand: #HEX; --brand-dark: #HEX; } — culori unice din domeniu, NU blue/indigo/purple Tailwind\n- CONTRAST SECȚIUNI: fundal deschis → text #111. Fundal închis → text #fff\n- CONTRAST BUTOANE (OBLIGATORIU): buton alb/galben/bej/deschis → text #111. Buton negru/închis/colorat → text #fff. CTA Banner buton alb pe fundal colorat → text = culoarea brand sau #111, NU alb\n- Shadows layered, animații DOAR transform și opacity, hover carduri translateY(-4px)\n- Secțiuni alternează: alb → gri deschis → alb\n\n═══ CONȚINUT ═══\n- Texte reale în română — ZERO Lorem Ipsum\n- Date contact: inventate veridic dacă lipsesc\n- Imagini: EXCLUSIV https://placehold.co/WIDTHxHEIGHT\n\n═══ INTERZIS ═══\n- transition-all\n- Blue/indigo/purple Tailwind ca brand\n- Lorem ipsum\n- Butoane fără stilizare\n- Imagini fără filter brightness(0.8)\n- Secțiuni fără max-w + mx-auto + px\n- Carduri servicii fără imagine\n`;
+     INTERZIS în testimoniale: imagini mari, avatar > 40px, position:absolute\n\n7. CTA BANNER — background culoarea brand, text alb centrat, H2 + buton alb\n\n8. FOOTER (background #1a1a1a)\n   - Grid 4 coloane (lg:grid-cols-4, md:grid-cols-2), gap-12, max-w-7xl mx-auto px-6 py-16\n   - Col 1: Logo (font-weight:800, color:var(--brand), font-size:1.3rem) + tagline 2 rânduri (color:#777, font-size:14px, line-height:1.6, margin-top:12px) + iconițe social SVG (Facebook, Instagram, LinkedIn — 22px, color:#555, gap:12px, margin-top:20px, hover:color=var(--brand); FIECARE LINK cu aria-label ex: aria-label="[NumeBrand] pe Facebook")\n   - Col 2: titlu "Navigare" (font-weight:700, color:#fff, font-size:14px, margin-bottom:16px) + linkuri (Acasă, Servicii, Despre Noi, Testimoniale, Contact — display:block, padding:5px 0, color:#777, font-size:14px, text-decoration:none; adaugă în <style> regula: .footer-nav-link:hover, .footer-nav-link:focus-visible { color: var(--brand); } și folosește class="footer-nav-link" pe fiecare link)\n   - Col 3: DATE DE CONTACT — titlu "Contact" (font-weight:700, color:#fff, font-size:14px, margin-bottom:16px) + OBLIGATORIU toate 4:\n     * Telefon <a href="tel:+40XXXXXXXXX"> cu SVG phone 16px, color:#777, hover:var(--brand), margin-bottom:14px\n     * Email <a href="mailto:contact@brand.ro"> cu SVG mail 16px, color:#777, hover:var(--brand), margin-bottom:14px\n     * Adresă <p> cu SVG pin 16px, color:#777, margin-bottom:14px\n     * Program <p> cu SVG clock 16px, color:#777 — folosește programul din câmpul "Program / Orar" furnizat de client; dacă lipsește, inventează veridic în funcție de domeniu și include zilele închise (ex: Sâm–Dum: Închis)\n   - Col 4: titlu "De ce noi?" (font-weight:700, color:#fff, font-size:14px, margin-bottom:16px) + 3-4 bullet-uri checkmark SVG (color:var(--brand)) + text color:#777, font-size:14px\n   - Border-top: 1px solid rgba(255,255,255,0.07)\n   - SUB-FOOTER OBLIGATORIU: text centrat, color:#555, font-size:12px — "© 2026 [Nume Brand]. Toate drepturile rezervate." — ANUL ESTE MEREU 2026, NU dinamic, NU new Date().getFullYear()\n\n═══ DESIGN ═══\n- :root { --brand: #HEX; --brand-dark: #HEX; } — culori unice din domeniu, NU blue/indigo/purple Tailwind\n- CONTRAST SECȚIUNI: fundal deschis → text #111. Fundal închis → text #fff\n- CONTRAST BUTOANE (OBLIGATORIU): buton alb/galben/bej/deschis → text #111. Buton negru/închis/colorat → text #fff. CTA Banner buton alb pe fundal colorat → text = culoarea brand sau #111, NU alb\n- Shadows layered, animații DOAR transform și opacity, hover carduri translateY(-4px)\n- Secțiuni alternează: alb → gri deschis → alb\n\n═══ CONȚINUT ═══\n- Texte reale în română — ZERO Lorem Ipsum\n- Date contact: inventate veridic dacă lipsesc\n- Imagini: EXCLUSIV https://placehold.co/WIDTHxHEIGHT\n\n═══ INTERZIS ═══\n- transition-all\n- Blue/indigo/purple Tailwind ca brand\n- Lorem ipsum\n- Butoane fără stilizare\n- Imagini fără filter brightness(0.8)\n- Secțiuni fără max-w + mx-auto + px\n- Carduri servicii fără imagine\n`;
 
 function buildUserPrompt(brief) {
-  return `Generează un site web complet pentru următoarea afacere:\n\n- Nume brand / companie: ${brief.brandName || 'nu a specificat'}\n- Activitate: ${brief.activity || 'nu a specificat clar, dedu tu un context rezonabil'}\n- Public țintă: ${brief.audience || 'nu a specificat'}\n- Acțiunea principală dorită a vizitatorilor: ${brief.mainAction || 'nu a specificat'}\n- Preferințe culori / fonturi: ${brief.colorsFonts || 'nu a specificat'}\n- Stil design dorit: ${brief.designStyle || 'modern'}\n${brief.extraNote ? `\nDetalii suplimentare de la client:\n${brief.extraNote}` : ''}\n\nGenerează ACUM fișierul HTML complet, începând cu <!DOCTYPE html>`;
+  return `Generează un site web complet pentru următoarea afacere:\n\n- Nume brand / companie: ${brief.brandName || 'nu a specificat'}\n- Activitate: ${brief.activity || 'nu a specificat clar, dedu tu un context rezonabil'}\n- Public țintă: ${brief.audience || 'nu a specificat'}\n- Acțiunea principală dorită a vizitatorilor: ${brief.mainAction || 'nu a specificat'}\n- Preferințe culori / fonturi: ${brief.colorsFonts || 'nu a specificat'}\n- Stil design dorit: ${brief.designStyle || 'modern'}\n- Program / Orar: ${brief.schedule || 'nu a specificat, inventează veridic în funcție de domeniu (include zilele închise, ex: Sâm–Dum: Închis)'}\n${brief.extraNote ? `\nDetalii suplimentare de la client:\n${brief.extraNote}` : ''}\n\nGenerează ACUM fișierul HTML complet, începând cu <!DOCTYPE html>`;
 }
 
 module.exports = async function handler(req, res) {
@@ -69,6 +190,351 @@ module.exports = async function handler(req, res) {
         .replace(/^```\s*/i, '')
         .replace(/\s*```$/i, '')
         .trim();
+
+      // Force copyright year to 2026
+      html = html.replace(/©\s*\d{4}/g, '© 2026');
+      html = html.replace(/new Date\(\)\.getFullYear\(\)/g, '2026');
+
+      // Inject universal mobile-fix CSS + JS before </body>
+      const mobileFix = `
+<style id="websiteai-mobile-fix">
+/* ── Focus-visible accesibilitate ── */
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--brand, #2563eb);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ── Nav: linkuri și logo mereu albe ── */
+nav a, nav span, nav li, header a, header span,
+nav button, header button {
+  color: #ffffff !important;
+}
+/* ── Excepție: butoane cu fundal alb explicit → text închis ── */
+nav a[style*="background:#fff"], nav a[style*="background: #fff"],
+nav a[style*="background:white"], nav a[style*="background: white"],
+nav a[style*="background-color:#fff"], nav a[style*="background-color: #fff"],
+nav a[style*="background-color:white"], nav a[style*="background-color: white"],
+nav button[style*="background:#fff"], nav button[style*="background:white"],
+header a[style*="background:#fff"], header a[style*="background:white"],
+header button[style*="background:#fff"], header button[style*="background:white"] {
+  color: #111111 !important;
+}
+/* ── Hamburger icon mereu alb ── */
+#mob-btn svg line, #mob-btn svg path {
+  stroke: #ffffff !important;
+}
+
+/* ── Hero: tot textul mereu alb cu contrast puternic ── */
+/* Targetăm conținutul DEASUPRA overlay-ului (z-index:2) */
+[style*="z-index:2"] h1,
+[style*="z-index: 2"] h1,
+[class*="hero"] h1, [id*="hero"] h1,
+section:first-of-type h1 {
+  text-shadow: 0 2px 24px rgba(0,0,0,1), 0 4px 64px rgba(0,0,0,1) !important;
+  color: #ffffff !important;
+}
+[style*="z-index:2"] h2,
+[style*="z-index: 2"] h2,
+[class*="hero"] h2, [id*="hero"] h2 {
+  text-shadow: 0 2px 16px rgba(0,0,0,1) !important;
+  color: #ffffff !important;
+}
+[style*="z-index:2"] p,
+[style*="z-index: 2"] p,
+[class*="hero"] p, [id*="hero"] p,
+section:first-of-type p {
+  text-shadow: 0 1px 12px rgba(0,0,0,1) !important;
+  color: #ffffff !important;
+}
+[style*="z-index:2"] span,
+[style*="z-index: 2"] span,
+[class*="hero"] span, [id*="hero"] span {
+  color: #ffffff !important;
+  text-shadow: 0 1px 8px rgba(0,0,0,1) !important;
+}
+
+@media(max-width:768px){
+  /* Navbar — ascunde linkurile desktop, arată hamburgerul */
+  .nav-links-desktop{display:none!important;}
+  /* Fallback: ascunde orice div/ul direct în nav care nu e mob-btn/mob-menu */
+  nav > div > div:not(#mob-menu),
+  nav > div > ul,
+  nav > div > nav {display:none!important;}
+  #mob-btn{display:flex!important;}
+  #mob-menu{display:none;}
+  #mob-menu.mob-open{display:flex!important;}
+
+  /* Hero text */
+  h1{font-size:clamp(1.7rem,7vw,2.8rem)!important;line-height:1.12!important;}
+  h2{font-size:clamp(1.4rem,5vw,2.2rem)!important;}
+
+  /* Padding sectiuni */
+  section,footer{padding-left:16px!important;padding-right:16px!important;}
+  .px-6{padding-left:16px!important;padding-right:16px!important;}
+  .px-8{padding-left:20px!important;padding-right:20px!important;}
+
+  /* Grid-uri -> 1 coloana */
+  .grid,.grid-cols-2,.grid-cols-3,.grid-cols-4{grid-template-columns:1fr!important;}
+  .md\\:grid-cols-2,.md\\:grid-cols-3,.lg\\:grid-cols-3{grid-template-columns:1fr!important;}
+
+  /* Stats 2 coloane */
+  .grid-cols-4{grid-template-columns:1fr 1fr!important;}
+
+  /* Butoane CTA stacked */
+  .flex.gap-4{flex-direction:column!important;align-items:stretch!important;}
+  .flex.gap-4 a,.flex.gap-4 button{text-align:center!important;}
+
+  /* Sectiunea despre: 1 coloana */
+  .md\\:flex-row{flex-direction:column!important;}
+  .md\\:w-1\\/2{width:100%!important;}
+
+  /* Carduri mai mici */
+  [style*="height:220px"]{height:180px!important;}
+
+  /* Footer 1 coloana */
+  footer .grid{grid-template-columns:1fr!important;gap:32px!important;}
+
+  /* Imagini full width */
+  img{max-width:100%!important;}
+}
+</style>
+<script id="websiteai-mob-js">
+(function(){
+  var W='#ffffff';
+  function hSvg(){return'<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><line x1="3" y1="5" x2="19" y2="5" stroke="'+W+'" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="11" x2="19" y2="11" stroke="'+W+'" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="17" x2="19" y2="17" stroke="'+W+'" stroke-width="2" stroke-linecap="round"/></svg>';}
+  function xSvg(){return'<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 4l14 14M18 4L4 18" stroke="'+W+'" stroke-width="2" stroke-linecap="round"/></svg>';}
+
+  var nav=document.querySelector('nav');
+  if(!nav)return;
+  var mobBtn=document.getElementById('mob-btn');
+  var mobMenu=document.getElementById('mob-menu');
+
+  if(!mobBtn||!mobMenu){
+    var links=Array.from(nav.querySelectorAll('a')).filter(function(a,i){return i>0;});
+    if(!links.length)return;
+    var btn=document.createElement('button');
+    btn.id='mob-btn';
+    btn.style.cssText='display:none;background:none;border:none;padding:8px;cursor:pointer;flex-shrink:0;line-height:0;';
+    btn.innerHTML=hSvg();
+    var menu=document.createElement('div');
+    menu.id='mob-menu';
+    menu.style.cssText='display:none;position:fixed;top:64px;left:0;right:0;background:rgba(8,8,8,0.97);padding:20px 24px;flex-direction:column;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);z-index:9999;';
+    links.forEach(function(el){
+      var a=document.createElement('a');
+      a.href=el.href||'#';a.textContent=el.textContent.trim();
+      a.style.cssText='color:#fff!important;text-decoration:none;font-size:1rem;font-weight:500;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:block;';
+      a.onclick=function(){menu.classList.remove('mob-open');btn.innerHTML=hSvg();isOpen=false;};
+      menu.appendChild(a);
+    });
+    var isOpen=false;
+    btn.addEventListener('click',function(){isOpen=!isOpen;menu.classList.toggle('mob-open',isOpen);btn.innerHTML=isOpen?xSvg():hSvg();});
+    var st=document.createElement('style');
+    st.textContent='@media(max-width:768px){#mob-btn{display:flex!important;}#mob-menu.mob-open{display:flex!important;}}';
+    document.head.appendChild(st);
+    nav.style.position='relative';
+    nav.appendChild(btn);
+    document.body.appendChild(menu);
+  } else {
+    var isOpen=false;
+    mobBtn.innerHTML=hSvg();
+    mobBtn.onclick=function(){isOpen=!isOpen;mobMenu.classList.toggle('mob-open',isOpen);mobBtn.innerHTML=isOpen?xSvg():hSvg();};
+  }
+
+  // Returnează true dacă culoarea de fundal e deschisă (text alb ar fi invizibil)
+  function isLightBg(el){
+    var bg=window.getComputedStyle(el).backgroundColor;
+    var m=bg.match(/\d+/g);
+    if(!m||m.length<3)return false;
+    var a=m.length>=4?+m[3]:1;
+    if(a<0.15)return false; // transparent — nu contează
+    var lum=(+m[0]*299+ +m[1]*587+ +m[2]*114)/1000;
+    return lum>160;
+  }
+
+  // Forțează nav alb + hero text alb la intervale multiple (bate Tailwind CDN async)
+  function forceStyles(){
+    var brand=(getComputedStyle(document.documentElement).getPropertyValue('--brand')||'').trim()||'#1a1a1a';
+    // Nav: toate elementele text → alb; butoanele cu fundal deschis → bg=brand
+    var navEl=document.querySelector('nav,header');
+    if(navEl){
+      var all=navEl.getElementsByTagName('*');
+      for(var i=0;i<all.length;i++){
+        var t=all[i].tagName;
+        if(t==='A'||t==='BUTTON'){
+          if(isLightBg(all[i])){
+            all[i].style.setProperty('background',brand,'important');
+            all[i].style.setProperty('background-color',brand,'important');
+            all[i].style.setProperty('color','#ffffff','important');
+          } else {
+            all[i].style.setProperty('color','#ffffff','important');
+          }
+        } else if(t==='SPAN'||t==='LI'||t==='P'||t==='H1'||t==='H2'||t==='H3'||t==='DIV'){
+          all[i].style.setProperty('color','#ffffff','important');
+        }
+      }
+    }
+    // Hamburger SVG → alb
+    var mb=document.getElementById('mob-btn');
+    if(mb)mb.querySelectorAll('line,path').forEach(function(s){s.setAttribute('stroke','#ffffff');});
+    // Hero: găsește secțiunea cu img absolut (fundalul hero)
+    var hero=null;
+    var divs=document.querySelectorAll('section,div');
+    for(var d=0;d<divs.length;d++){
+      var el=divs[d];
+      if(el.style&&el.style.minHeight==='100vh'){hero=el;break;}
+      var ai=el.querySelector('img[style*="position:absolute"],img[style*="position: absolute"]');
+      if(ai&&el.offsetHeight>200){hero=el;break;}
+    }
+    if(!hero&&navEl)hero=navEl.nextElementSibling;
+    if(hero){
+      var cnt=hero.querySelector('[style*="z-index:2"],[style*="z-index: 2"],[style*="z-index:10"]')||hero;
+      cnt.querySelectorAll('h1,h2,h3,p,span').forEach(function(e){
+        e.style.setProperty('color','#ffffff','important');
+        if(e.tagName==='H1'||e.tagName==='H2')
+          e.style.setProperty('text-shadow','0 2px 24px rgba(0,0,0,1),0 4px 64px rgba(0,0,0,1)','important');
+        else
+          e.style.setProperty('text-shadow','0 1px 12px rgba(0,0,0,1)','important');
+      });
+    }
+  }
+  [0,100,300,700,1500,3000].forEach(function(t){setTimeout(forceStyles,t);});
+})();
+</script>`;
+
+      // ── Inline editor block ────────────────────────────────────────────────
+      const inlineEditorBlock = _weInlineEditorBlockStr();
+      // ── End inline editor block ──────────────────────────────────────────
+
+      html = html.replace(/<\/body>/i, inlineEditorBlock + mobileFix + '\n</body>');
+
+      // Inject global contact section before </footer>
+      const contactSection = `
+<section id="wai-contact-section" style="padding:80px 0;background:#f4f4f4;">
+  <div style="max-width:1080px;margin:0 auto;padding:0 24px;">
+    <div id="wai-contact-wrap" style="display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,0.14);">
+      <div id="wai-contact-left" style="background:#1e3a8a;padding:52px 44px;display:flex;flex-direction:column;justify-content:center;">
+        <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin:0 0 10px;">Contactează-ne</p>
+        <h2 style="font-size:1.85rem;font-weight:800;color:#fff;margin:0 0 14px;line-height:1.18;">Suntem aici să te ajutăm</h2>
+        <p style="color:rgba(255,255,255,0.8);margin:0 0 36px;line-height:1.7;font-size:0.95rem;">Trimite-ne un mesaj și te vom contacta în cel mai scurt timp posibil.</p>
+        <div id="wai-contact-info" style="display:flex;flex-direction:column;gap:16px;"></div>
+      </div>
+      <div style="background:#fff;padding:52px 44px;">
+        <form id="wai-contact-form" novalidate>
+          <input type="text" name="wai_hp" style="display:none;" tabindex="-1" autocomplete="off" />
+          <div style="display:grid;gap:16px;">
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Nume complet *</label>
+              <input id="wai-f-name" type="text" placeholder="Numele tău" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Email *</label>
+              <input id="wai-f-email" type="email" placeholder="email@exemplu.ro" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Telefon</label>
+              <input id="wai-f-phone" type="tel" placeholder="07xx xxx xxx" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Mesaj *</label>
+              <textarea id="wai-f-msg" placeholder="Descrie cum te putem ajuta..." rows="4" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;resize:vertical;min-height:110px;"></textarea>
+            </div>
+            <button id="wai-f-btn" type="submit" style="padding:14px 32px;border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;background:#2563eb;cursor:pointer;">Trimite mesajul →</button>
+            <p id="wai-f-status" style="display:none;font-size:14px;text-align:center;margin:0;padding:10px;border-radius:8px;"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+@media(max-width:768px){
+  #wai-contact-wrap{grid-template-columns:1fr!important;}
+  #wai-contact-left{padding:36px 28px!important;}
+  #wai-contact-wrap>div:last-child{padding:36px 28px!important;}
+}
+</style>
+<script>
+(function(){
+  var brand=(getComputedStyle(document.documentElement).getPropertyValue('--brand')||'').trim()||'#2563eb';
+  var lp=document.getElementById('wai-contact-left');
+  var btn=document.getElementById('wai-f-btn');
+  if(lp)lp.style.background=brand;
+  if(btn)btn.style.background=brand;
+
+  // Focus border = brand color
+  ['wai-f-name','wai-f-email','wai-f-phone','wai-f-msg'].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    el.addEventListener('focus',function(){this.style.borderColor=brand;});
+    el.addEventListener('blur',function(){this.style.borderColor='#e5e5e5';});
+  });
+
+  // Extract contact info from page text
+  var txt=document.body.innerText||'';
+  var phones=txt.match(/(?:\\+?4?0?\\s?)?(?:07\\d[\\s\\-.]?\\d{2}[\\s\\-.]?\\d{3}[\\s\\-.]?\\d{3}|[23]\\d[\\s\\-.]?\\d{3}[\\s\\-.]?\\d{4})/g);
+  var emails=txt.match(/[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}/g);
+  var ic=document.getElementById('wai-contact-info');
+  if(ic){
+    var items=[];
+    if(phones&&phones.length)items.push({i:'📞',t:phones[0].trim()});
+    if(emails&&emails.length){
+      var fe=(emails||[]).filter(function(e){return!/google|cdn|example|test/.test(e);});
+      if(fe.length)items.push({i:'✉️',t:fe[0]});
+    }
+    if(items.length){
+      items.forEach(function(x){
+        var d=document.createElement('div');
+        d.style.cssText='display:flex;align-items:center;gap:12px;';
+        d.innerHTML='<div style="width:38px;height:38px;background:rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">'+x.i+'</div><span style="color:rgba(255,255,255,0.9);font-size:0.93rem;font-weight:500;">'+x.t+'</span>';
+        ic.appendChild(d);
+      });
+    } else {
+      ic.innerHTML='<p style="color:rgba(255,255,255,0.7);font-size:0.9rem;margin:0;">Răspundem în mai puțin de 24 de ore.</p>';
+    }
+  }
+
+  // Brand name for notification
+  var bName=document.title||(document.querySelector('h1')?document.querySelector('h1').textContent.trim().slice(0,60):'');
+
+  // Form submit
+  var form=document.getElementById('wai-contact-form');
+  var statusEl=document.getElementById('wai-f-status');
+  if(!form)return;
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var hp=form.querySelector('input[name="wai_hp"]');
+    var name=document.getElementById('wai-f-name').value.trim();
+    var email=document.getElementById('wai-f-email').value.trim();
+    var phone=document.getElementById('wai-f-phone').value.trim();
+    var msg=document.getElementById('wai-f-msg').value.trim();
+    if(!name||!email||!msg){
+      statusEl.style.display='block';statusEl.style.color='#c53030';statusEl.style.background='#fff5f5';
+      statusEl.textContent='Te rugăm să completezi câmpurile obligatorii (*)';return;
+    }
+    var submitBtn=document.getElementById('wai-f-btn');
+    submitBtn.disabled=true;submitBtn.textContent='Se trimite...';
+    statusEl.style.display='none';
+    fetch('https://websiteai.ro/api/contact',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:name,email:email,phone:phone||null,message:msg,brand:bName||null,hp:hp?hp.value:''})
+    }).then(function(r){return r.json();}).then(function(d){
+      if(d.ok){
+        statusEl.style.display='block';statusEl.style.color='#276749';statusEl.style.background='#f0fff4';
+        statusEl.textContent='✓ Mesajul a fost trimis! Vă vom contacta în curând.';
+        form.reset();submitBtn.textContent='✓ Trimis!';
+        setTimeout(function(){submitBtn.disabled=false;submitBtn.textContent='Trimite mesajul →';},4000);
+      } else { throw new Error(d.error||'Eroare'); }
+    }).catch(function(){
+      statusEl.style.display='block';statusEl.style.color='#c53030';statusEl.style.background='#fff5f5';
+      statusEl.textContent='A apărut o eroare. Vă rugăm să ne contactați direct.';
+      submitBtn.disabled=false;submitBtn.textContent='Trimite mesajul →';
+    });
+  });
+})();
+</script>`;
+
+      html = html.replace(/<footer[\s>]/i, function(m){ return contactSection + '\n' + m; });
 
       break;
     }
