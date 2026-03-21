@@ -142,7 +142,7 @@ module.exports = async function handler(req, res) {
     `;
 
     // Build recipient list: owner email + default admins
-    const recipients = ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
+    const recipients = ['IT@websiteai.ro', 'adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
     if (ownerEmail && !recipients.includes(ownerEmail)) {
       recipients.unshift(ownerEmail);
     }
