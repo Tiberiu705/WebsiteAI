@@ -1330,35 +1330,7 @@ function quickStart(btn) {
       <p class="body-lg" style="margin-top:16px;font-size:1rem;">Fără abonamente ascunse, fără taxe surpriză. Plătești doar pentru ce folosești.</p>
     </div>
 
-    <div class="pricing-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start;">
-
-      <!-- Free -->
-      <div class="pricing-card">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;color:#666;margin-bottom:24px;">Gratuit</div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
-          <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;letter-spacing:-0.04em;line-height:1;">0</span>
-          <span style="font-family:'Inter',sans-serif;color:#666;font-size:0.95rem;">RON</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;">
-          <div class="check-item">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            1 site generat
-          </div>
-          <div class="check-item">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Hosting 30 zile inclus
-          </div>
-          <div class="check-item">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.12)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Badge WebsiteAI pe site
-          </div>
-          <div class="check-item" style="opacity:0.35;">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(255,255,255,0.05)"/><path d="M5.5 10.5l5-5M10.5 10.5l-5-5" stroke="#666" stroke-width="1.5" stroke-linecap="round"/></svg>
-            Domeniu personalizat
-          </div>
-        </div>
-        <a href="#generator" class="btn-ghost" style="width:100%;justify-content:center;">Încearcă gratuit</a>
-      </div>
+    <div class="pricing-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;max-width:740px;margin:0 auto;">
 
       <!-- Pro — featured -->
       <div class="pricing-card featured" style="position:relative;">
@@ -1397,7 +1369,7 @@ function quickStart(btn) {
             Suport prioritar
           </div>
         </div>
-        <a href="#" class="btn-acid" style="width:100%;justify-content:center;" onclick="event.preventDefault();startProCheckout(this);">Începe 7 zile gratuit</a>
+        <a href="/dashboard" class="btn-acid" style="width:100%;justify-content:center;">Începe 7 zile gratuit</a>
       </div>
 
       <!-- Agency -->
