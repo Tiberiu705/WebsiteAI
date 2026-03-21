@@ -2136,8 +2136,8 @@ async function submitContactForm(e) {
       var link = e.target.closest('a[href]');
       if (link) {
         var href = link.getAttribute('href') || '';
-        // Allow anchor-only links for smooth scroll within iframe
-        if (href.startsWith('#')) return;
+        // Allow anchor links, tel: and mailto: (handled by their own editors)
+        if (href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
         e.preventDefault();
         e.stopPropagation();
       }
