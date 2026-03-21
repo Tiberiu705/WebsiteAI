@@ -2032,6 +2032,85 @@ async function submitContactForm(e) {
       } catch(e) {}
     });
 
+    // Make tel: and mailto: links editable via click modal
+    var contactCSS = iframeDoc.createElement('style');
+    contactCSS.textContent = 'a[href^="tel:"],a[href^="mailto:"]{cursor:pointer!important;}a[href^="tel:"]:hover,a[href^="mailto:"]:hover{outline:2px dashed rgba(251,146,60,.6)!important;outline-offset:3px;border-radius:4px;}';
+    (iframeDoc.head || iframeDoc.documentElement).appendChild(contactCSS);
+
+    iframeDoc.querySelectorAll('a[href^="tel:"],a[href^="mailto:"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var isTel = link.getAttribute('href').startsWith('tel:');
+        var curVal = isTel
+          ? link.getAttribute('href').replace('tel:', '').replace(/^\+?40/, '0').trim()
+          : link.getAttribute('href').replace('mailto:', '').trim();
+        var curText = link.textContent.trim();
+
+        var ov = iframeDoc.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;';
+        var box = iframeDoc.createElement('div');
+        box.style.cssText = 'background:#18181b;border-radius:16px;padding:28px;width:min(380px,90vw);box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:-apple-system,sans-serif;';
+
+        var title = iframeDoc.createElement('div');
+        title.textContent = isTel ? '✏ Editează telefonul' : '✏ Editează email-ul';
+        title.style.cssText = 'color:#fff;font-size:15px;font-weight:700;margin-bottom:14px;';
+
+        var inp = iframeDoc.createElement('input');
+        inp.type = isTel ? 'tel' : 'email';
+        inp.value = curVal || curText;
+        inp.placeholder = isTel ? 'ex: 0722 123 456' : 'ex: contact@firma.ro';
+        inp.style.cssText = 'width:100%;box-sizing:border-box;background:#0f0f10;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:12px;color:#d4d4d8;font-size:14px;outline:none;font-family:inherit;';
+
+        var row = iframeDoc.createElement('div');
+        row.style.cssText = 'display:flex;gap:10px;margin-top:16px;';
+        var bSv = iframeDoc.createElement('button');
+        bSv.textContent = 'Salvează';
+        bSv.style.cssText = 'flex:1;background:#6366f1;color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-size:13px;font-weight:600;';
+        var bCn = iframeDoc.createElement('button');
+        bCn.textContent = 'Anulează';
+        bCn.style.cssText = 'flex:1;background:rgba(255,255,255,.08);color:#d4d4d8;border:none;border-radius:8px;padding:10px;cursor:pointer;font-size:13px;';
+
+        row.appendChild(bSv); row.appendChild(bCn);
+        box.appendChild(title); box.appendChild(inp); box.appendChild(row);
+        ov.appendChild(box);
+        iframeDoc.body.appendChild(ov);
+        setTimeout(() => { inp.focus(); inp.select(); }, 50);
+
+        function doSave() {
+          var nv = inp.value.trim();
+          if (nv) {
+            // Update this link
+            link.setAttribute('href', isTel ? 'tel:' + nv.replace(/\s/g,'') : 'mailto:' + nv);
+            // Update visible text — find the text node with the old value
+            var textUpdated = false;
+            link.childNodes.forEach(n => {
+              if (n.nodeType === 3 && n.textContent.trim()) { n.textContent = nv; textUpdated = true; }
+            });
+            if (!textUpdated) link.textContent = nv;
+            // Also update all other matching links in the document
+            var prefix = isTel ? 'tel:' : 'mailto:';
+            iframeDoc.querySelectorAll('a[href^="' + prefix + '"]').forEach(other => {
+              if (other !== link) {
+                other.setAttribute('href', prefix + (isTel ? nv.replace(/\s/g,'') : nv));
+                other.childNodes.forEach(n => { if (n.nodeType === 3 && n.textContent.trim()) n.textContent = nv; });
+              }
+            });
+            // Sync HTML back
+            if (typeof window.syncHtml === 'function') window.syncHtml();
+          }
+          ov.remove();
+        }
+        bSv.onclick = doSave;
+        bCn.onclick = () => ov.remove();
+        ov.onclick = e2 => { if (e2.target === ov) ov.remove(); };
+        inp.addEventListener('keydown', e2 => {
+          if (e2.key === 'Enter') doSave();
+          if (e2.key === 'Escape') ov.remove();
+        });
+      });
+    });
+
     // Prevent all link navigation inside iframe (srcdoc has no useful targets)
     iframeDoc.addEventListener('click', function(e) {
       var link = e.target.closest('a[href]');
