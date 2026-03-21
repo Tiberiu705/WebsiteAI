@@ -1398,7 +1398,7 @@ function quickStart(btn) {
             Suport prioritar
           </div>
         </div>
-        <a href="#generator" class="btn-acid" style="width:100%;justify-content:center;">Începe Pro</a>
+        <a href="#" class="btn-acid" style="width:100%;justify-content:center;" onclick="event.preventDefault();startProCheckout(this);">Începe Pro</a>
       </div>
 
       <!-- Agency -->
@@ -1560,6 +1560,26 @@ function quickStart(btn) {
 </section>
 
 <script>
+async function startProCheckout(btn) {
+  var origText = btn.textContent;
+  btn.textContent = '···';
+  btn.style.pointerEvents = 'none';
+  try {
+    var res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brandName: 'Pro Plan', origin: window.location.origin }),
+    });
+    var data = await res.json();
+    if (!data.url) throw new Error(data.error || 'Eroare la plată');
+    window.location.href = data.url;
+  } catch(e) {
+    alert('Eroare: ' + e.message);
+    btn.textContent = origText;
+    btn.style.pointerEvents = '';
+  }
+}
+
 async function submitContactForm(e) {
   e.preventDefault();
   var btn = document.getElementById('cf-btn');
