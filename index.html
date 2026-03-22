@@ -3377,6 +3377,18 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     e.preventDefault();
     hideError();
 
+    // Require login before generating
+    if (!_wsSession()) {
+      const brief = collectBrief();
+      lastBrief = brief;
+      window.lastBrief = brief;
+      openLoginModal(() => {
+        // After login, re-submit the form automatically
+        generate(brief);
+      });
+      return;
+    }
+
     const brief = collectBrief();
 
     if (!brief.brandName) {
