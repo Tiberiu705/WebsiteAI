@@ -554,8 +554,8 @@ footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{
   // Brand name for notification
   var bName=document.title||(document.querySelector('h1')?document.querySelector('h1').textContent.trim().slice(0,60):'');
 
-  // Extract siteId from URL path (/site/WEB-XXXXXX)
-  var siteId=(function(){var m=window.location.pathname.match(/\\/site\\/(WEB-[A-Z0-9]+)/i);return m?m[1]:null;})();
+  // Extract siteId: prefer meta tag (injected on custom domains), fallback to URL path
+  var siteId=(function(){var mt=document.querySelector('meta[name="wai-site-id"]');if(mt)return mt.content;var m=window.location.pathname.match(/\\/site\\/(WEB-[A-Z0-9]+)/i);return m?m[1]:null;})();
 
   // Form submit
   var form=document.getElementById('wai-contact-form');

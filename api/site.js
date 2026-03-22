@@ -97,7 +97,23 @@ module.exports = async function handler(req, res) {
       `);
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      return res.status(200).send(stripInlineEditor(html));
+      // Inject siteId meta tag so contact form can find the owner's notification email
+      let cleanHtml = stripInlineEditor(html);
+      // Also look up the SKU for this site
+      let siteSku = '';
+      try {
+        const members = await redis(['ZRANGE', `user:sites:${JSON.parse(meta || '{}').userId || ''}`, 0, -1]);
+        for (const m of (members || [])) {
+          try { const s = JSON.parse(m); if (s.id === siteId && s.sku) { siteSku = s.sku; break; } } catch {}
+        }
+      } catch {}
+      const metaTag = `<meta name="wai-site-id" content="${siteId}">` + (siteSku ? `<meta name="wai-site-sku" content="${siteSku}">` : '');
+      if (/<head[^>]*>/i.test(cleanHtml)) {
+        cleanHtml = cleanHtml.replace(/<head[^>]*>/i, '$&\n' + metaTag);
+      } else {
+        cleanHtml = metaTag + '\n' + cleanHtml;
+      }
+      return res.status(200).send(cleanHtml);
     } catch (e) {
       return res.status(500).send('Eroare server');
     }

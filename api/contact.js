@@ -110,10 +110,21 @@ module.exports = async function handler(req, res) {
   } catch (_) { /* proceed if Redis fails */ }
 
   // Look up owner's notification email
-  let ownerEmail = null;
-  if (siteId) {
+  // siteId can be an internal ID or a SKU (WEB-XXXXXX) — resolve to internal ID if needed
+  let resolvedSiteId = siteId;
+  if (siteId && /^WEB-[A-Z0-9]{6}$/i.test(siteId)) {
     try {
-      ownerEmail = await redis(['GET', `contact-email:${siteId}`]);
+      const skuData = await redis(['GET', `sku:${siteId.toUpperCase()}`]);
+      if (skuData) {
+        const parsed = JSON.parse(skuData);
+        if (parsed.siteId) resolvedSiteId = parsed.siteId;
+      }
+    } catch (_) {}
+  }
+  let ownerEmail = null;
+  if (resolvedSiteId) {
+    try {
+      ownerEmail = await redis(['GET', `contact-email:${resolvedSiteId}`]);
     } catch (_) {}
   }
 
