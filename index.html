@@ -594,7 +594,7 @@
     <a href="#preturi" class="nav-mob-link" onclick="closeMobileMenu()">Prețuri</a>
     <a href="#contact" class="nav-mob-link" onclick="closeMobileMenu()">Contact</a>
     <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0;"></div>
-    <a href="#" id="nav-mob-generate" class="nav-mob-link" onclick="closeMobileMenu();setTimeout(function(){if(typeof openLoginModal==='function'&&!localStorage.getItem('ws_session')){openLoginModal(function(){if(typeof openOverlay==='function')openOverlay();});}else if(typeof openOverlay==='function'){openOverlay();}else{document.getElementById('generator').scrollIntoView({behavior:'smooth'});}},100);return false;" style="color:#C8FF00;font-weight:600;">Generează Gratuit →</a>
+    <a href="#" id="nav-mob-generate" class="nav-mob-link" onclick="closeMobileMenu();setTimeout(function(){if(typeof openOverlay==='function'){openOverlay();}else{document.getElementById('generator').scrollIntoView({behavior:'smooth'});}},100);return false;" style="color:#C8FF00;font-weight:600;">Generează Gratuit →</a>
     <a href="/dashboard" id="nav-mob-dashboard" class="nav-mob-link" style="display:none;color:#C8FF00;font-weight:600;" onclick="closeMobileMenu()">Dashboard →</a>
   </div>
 </nav>
@@ -2779,7 +2779,7 @@ async function submitContactForm(e) {
 
   /* ── Trigger: hero button ── */
   document.getElementById('btn-generate-hero')?.addEventListener('click', () => {
-    if (_wsSession()) { openOverlay(); } else { openLoginModal(() => openOverlay()); }
+    openOverlay();
   });
 
   /* ── Trigger: all other "Generează" / "Încearcă" buttons ── */
@@ -2788,7 +2788,7 @@ async function submitContactForm(e) {
     if (btn.getAttribute('href') === '#generator') {
       btn.addEventListener('click', e => {
         e.preventDefault();
-        if (_wsSession()) { openOverlay(); } else { openLoginModal(() => openOverlay()); }
+        openOverlay();
       });
     }
   });
