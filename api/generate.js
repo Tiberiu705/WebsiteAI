@@ -489,38 +489,35 @@ footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{
 
       // Inject global contact section before </footer>
       const contactSection = `
-<section id="wai-contact-section" style="padding:80px 0;background:#f4f4f4;">
+<section id="wai-contact-section" style="padding:80px 0;background:#111;">
   <div style="max-width:1080px;margin:0 auto;padding:0 24px;">
-    <div id="wai-contact-wrap" style="display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,0.14);">
-      <div id="wai-contact-left" style="background:#1e3a8a;padding:52px 44px;display:flex;flex-direction:column;justify-content:center;">
-        <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin:0 0 10px;">Contactează-ne</p>
-        <h2 style="font-size:1.85rem;font-weight:800;color:#fff;margin:0 0 14px;line-height:1.18;">Suntem aici să te ajutăm</h2>
-        <p style="color:rgba(255,255,255,0.8);margin:0 0 36px;line-height:1.7;font-size:0.95rem;">Trimite-ne un mesaj și te vom contacta în cel mai scurt timp posibil.</p>
-        <div id="wai-contact-info" style="display:flex;flex-direction:column;gap:16px;"></div>
-      </div>
-      <div style="background:#fff;padding:52px 44px;">
-        <form id="wai-contact-form" novalidate>
+    <div id="wai-contact-wrap" style="background:#181818;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,0.3);">
+      <div style="padding:40px 48px;">
+        <h3 id="wai-contact-title" style="font-size:1.5rem;font-weight:700;color:#fff;margin:0 0 8px;">Contact</h3>
+        <p style="color:rgba(255,255,255,0.5);font-size:0.875rem;margin:0 0 32px;">Lasă-ne un mesaj și te contactăm noi.</p>
+        <form id="wai-contact-form" novalidate style="display:flex;flex-direction:column;gap:20px;">
           <input type="text" name="wai_hp" style="display:none;" tabindex="-1" autocomplete="off" />
-          <div style="display:grid;gap:16px;">
-            <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Nume complet *</label>
-              <input id="wai-f-name" type="text" placeholder="Numele tău" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;" />
-            </div>
-            <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Email *</label>
-              <input id="wai-f-email" type="email" placeholder="email@exemplu.ro" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;" />
-            </div>
-            <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Telefon</label>
-              <input id="wai-f-phone" type="tel" placeholder="07xx xxx xxx" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;" />
-            </div>
-            <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;">Mesaj *</label>
-              <textarea id="wai-f-msg" placeholder="Descrie cum te putem ajuta..." rows="4" style="width:100%;padding:12px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;color:#111;outline:none;box-sizing:border-box;resize:vertical;min-height:110px;"></textarea>
-            </div>
-            <button id="wai-f-btn" type="submit" style="padding:14px 32px;border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;background:#2563eb;cursor:pointer;">Trimite mesajul →</button>
-            <p id="wai-f-status" style="display:none;font-size:14px;text-align:center;margin:0;padding:10px;border-radius:8px;"></p>
+          <div>
+            <label style="display:block;font-size:0.875rem;font-weight:500;color:rgba(255,255,255,0.5);margin-bottom:8px;">Nume complet</label>
+            <input id="wai-f-name" type="text" required placeholder="ex. Ion Popescu" style="width:100%;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;color:#fff;font-size:15px;outline:none;box-sizing:border-box;" />
           </div>
+          <div>
+            <label style="display:block;font-size:0.875rem;font-weight:500;color:rgba(255,255,255,0.5);margin-bottom:8px;">Telefon</label>
+            <input id="wai-f-phone" type="tel" required placeholder="07XX XXX XXX" style="width:100%;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;color:#fff;font-size:15px;outline:none;box-sizing:border-box;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.875rem;font-weight:500;color:rgba(255,255,255,0.5);margin-bottom:8px;">Email (opțional)</label>
+            <input id="wai-f-email" type="email" placeholder="adresa@email.com" style="width:100%;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;color:#fff;font-size:15px;outline:none;box-sizing:border-box;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.875rem;font-weight:500;color:rgba(255,255,255,0.5);margin-bottom:8px;">Mesaj</label>
+            <textarea id="wai-f-msg" rows="3" required placeholder="Cum te putem ajuta..." style="width:100%;background:#222;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;color:#fff;font-size:15px;outline:none;box-sizing:border-box;resize:vertical;min-height:90px;"></textarea>
+          </div>
+          <button id="wai-f-btn" type="submit" style="width:100%;background:#fff;color:#000;border:none;font-weight:700;padding:16px;border-radius:12px;font-size:15px;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;">
+            Trimite Mesaj
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
+          <p id="wai-f-status" style="display:none;font-size:14px;text-align:center;margin:0;padding:10px;border-radius:8px;"></p>
         </form>
       </div>
     </div>
@@ -528,52 +525,14 @@ footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{
 </section>
 <style>
 @media(max-width:768px){
-  #wai-contact-wrap{grid-template-columns:1fr!important;}
-  #wai-contact-left{padding:36px 28px!important;}
-  #wai-contact-wrap>div:last-child{padding:36px 28px!important;}
+  #wai-contact-wrap>div{padding:28px 24px!important;}
 }
+#wai-contact-form input:focus,#wai-contact-form textarea:focus{border-color:var(--brand,#fff)!important;box-shadow:0 0 0 1px var(--brand,#fff)!important;}
+#wai-f-btn:hover{background:#e5e5e5!important;}
 </style>
 <script>
 (function(){
   var brand=(getComputedStyle(document.documentElement).getPropertyValue('--brand')||'').trim()||'#2563eb';
-  var lp=document.getElementById('wai-contact-left');
-  var btn=document.getElementById('wai-f-btn');
-  if(lp)lp.style.background=brand;
-  if(btn)btn.style.background=brand;
-
-  // Focus border = brand color
-  ['wai-f-name','wai-f-email','wai-f-phone','wai-f-msg'].forEach(function(id){
-    var el=document.getElementById(id);if(!el)return;
-    el.addEventListener('focus',function(){this.style.borderColor=brand;});
-    el.addEventListener('blur',function(){this.style.borderColor='#e5e5e5';});
-  });
-
-  // Extract contact info from page text
-  var txt=document.body.innerText||'';
-  var phones=txt.match(/(?:\\+?4?0?\\s?)?(?:07\\d[\\s\\-.]?\\d{2}[\\s\\-.]?\\d{3}[\\s\\-.]?\\d{3}|[23]\\d[\\s\\-.]?\\d{3}[\\s\\-.]?\\d{4})/g);
-  var emails=txt.match(/[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}/g);
-  var ic=document.getElementById('wai-contact-info');
-  if(ic){
-    var items=[];
-    var phoneSvg='<svg style="flex-shrink:0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
-    var mailSvg='<svg style="flex-shrink:0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>';
-    if(phones&&phones.length)items.push({svg:phoneSvg,t:phones[0].trim(),href:'tel:'+phones[0].trim().replace(/\\s/g,'')});
-    if(emails&&emails.length){
-      var fe=(emails||[]).filter(function(e){return!/google|cdn|example|test/.test(e);});
-      if(fe.length)items.push({svg:mailSvg,t:fe[0],href:'mailto:'+fe[0]});
-    }
-    if(items.length){
-      items.forEach(function(x){
-        var d=document.createElement('a');
-        d.href=x.href;
-        d.style.cssText='display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.85rem;font-weight:400;margin-bottom:6px;';
-        d.innerHTML=x.svg+'<span>'+x.t+'</span>';
-        ic.appendChild(d);
-      });
-    } else {
-      ic.innerHTML='<p style="color:rgba(255,255,255,0.7);font-size:0.9rem;margin:0;">Răspundem în mai puțin de 24 de ore.</p>';
-    }
-  }
 
   // Brand name for notification
   var bName=document.title||(document.querySelector('h1')?document.querySelector('h1').textContent.trim().slice(0,60):'');
@@ -589,12 +548,12 @@ footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{
     e.preventDefault();
     var hp=form.querySelector('input[name="wai_hp"]');
     var name=document.getElementById('wai-f-name').value.trim();
-    var email=document.getElementById('wai-f-email').value.trim();
     var phone=document.getElementById('wai-f-phone').value.trim();
+    var email=document.getElementById('wai-f-email').value.trim();
     var msg=document.getElementById('wai-f-msg').value.trim();
-    if(!name||!email||!msg){
-      statusEl.style.display='block';statusEl.style.color='#c53030';statusEl.style.background='#fff5f5';
-      statusEl.textContent='Te rugăm să completezi câmpurile obligatorii (*)';return;
+    if(!name||!phone){
+      statusEl.style.display='block';statusEl.style.color='#fca5a5';statusEl.style.background='rgba(220,38,38,0.15)';
+      statusEl.textContent='Te rugăm să completezi numele și telefonul.';return;
     }
     var submitBtn=document.getElementById('wai-f-btn');
     submitBtn.disabled=true;submitBtn.textContent='Se trimite...';
@@ -602,18 +561,18 @@ footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{
     fetch('https://websiteai.ro/api/contact',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name:name,email:email,phone:phone||null,message:msg,brand:bName||null,siteId:siteId||null,hp:hp?hp.value:''})
+      body:JSON.stringify({name:name,email:email||null,phone:phone,message:msg||null,brand:bName||null,siteId:siteId||null,hp:hp?hp.value:''})
     }).then(function(r){return r.json();}).then(function(d){
       if(d.ok){
-        statusEl.style.display='block';statusEl.style.color='#276749';statusEl.style.background='#f0fff4';
+        statusEl.style.display='block';statusEl.style.color='#86efac';statusEl.style.background='rgba(34,197,94,0.12)';
         statusEl.textContent='✓ Mesajul a fost trimis! Vă vom contacta în curând.';
         form.reset();submitBtn.textContent='✓ Trimis!';
-        setTimeout(function(){submitBtn.disabled=false;submitBtn.textContent='Trimite mesajul →';},4000);
+        setTimeout(function(){submitBtn.disabled=false;submitBtn.textContent='Trimite Mesaj';},4000);
       } else { throw new Error(d.error||'Eroare'); }
     }).catch(function(){
-      statusEl.style.display='block';statusEl.style.color='#c53030';statusEl.style.background='#fff5f5';
+      statusEl.style.display='block';statusEl.style.color='#fca5a5';statusEl.style.background='rgba(220,38,38,0.15)';
       statusEl.textContent='A apărut o eroare. Vă rugăm să ne contactați direct.';
-      submitBtn.disabled=false;submitBtn.textContent='Trimite mesajul →';
+      submitBtn.disabled=false;submitBtn.textContent='Trimite Mesaj';
     });
   });
 })();
