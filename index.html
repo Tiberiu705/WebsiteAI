@@ -3126,6 +3126,14 @@ async function submitContactForm(e) {
 
   /* ── Generate ── */
   async function generate(brief) {
+    // Require login before generating
+    if (!_wsSession()) {
+      lastBrief = brief;
+      window.lastBrief = brief;
+      openLoginModal(() => generate(brief));
+      return;
+    }
+
     lastBrief = brief;
     window.lastBrief = brief;
     showPanel('loading');
