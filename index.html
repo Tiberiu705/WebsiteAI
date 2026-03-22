@@ -2020,9 +2020,10 @@ async function submitContactForm(e) {
         <button id="btn-save-account" style="display:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;white-space:nowrap;" onclick="manuallySaveToAccount()" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
           💾 Salvează în cont
         </button>
-        <a id="btn-my-sites" href="/dashboard" target="_blank" style="display:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;white-space:nowrap;text-decoration:none;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
+        <a id="btn-my-sites" href="/dashboard" style="display:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;white-space:nowrap;text-decoration:none;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
           Istoricul meu →
         </a>
+        <script>(function(){try{if(localStorage.getItem('ws_session')){var b=document.getElementById('btn-my-sites');if(b)b.style.display='inline-flex';}}catch(e){}})()</script>
         <button id="btn-close-preview" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#888;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">
           ✕ Închide
         </button>
@@ -2257,27 +2258,20 @@ async function submitContactForm(e) {
     }
 
     if (mobBtn && mobMenu) {
+      var _mobOpen = false;
       mobBtn.addEventListener('click', function(e) {
+        e.preventDefault();
         e.stopPropagation();
-        // Toggle visibility
-        var isHidden = mobMenu.classList.contains('hidden') || mobMenu.style.display === 'none';
-        if (mobMenu.classList.contains('hidden')) {
+        _mobOpen = !_mobOpen;
+        if (_mobOpen) {
+          mobMenu.classList.add('mob-open');
           mobMenu.classList.remove('hidden');
-          mobMenu.style.display = '';
-        } else if (mobMenu.style.display === 'none') {
-          mobMenu.style.display = '';
+          mobMenu.style.setProperty('display', 'flex', 'important');
         } else {
-          // Currently visible, hide it
-          if (mobMenu.className && mobMenu.className.indexOf('hidden') === -1) {
-            mobMenu.classList.add('hidden');
-          } else {
-            mobMenu.style.display = 'none';
-          }
-          isHidden = false;
+          mobMenu.classList.remove('mob-open');
+          mobMenu.style.setProperty('display', 'none', 'important');
         }
-        var isOpen = isHidden; // was hidden, now open
-        mobMenu.classList.toggle('mob-open', isOpen);
-        mobBtn.innerHTML = isOpen
+        mobBtn.innerHTML = _mobOpen
           ? '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>'
           : '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="3" y1="5" x2="17" y2="5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="17" y2="10" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="15" x2="17" y2="15" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
       });
@@ -2312,9 +2306,14 @@ async function submitContactForm(e) {
       '[contenteditable]:focus{',
       '  outline:2px solid rgba(99,102,241,.9)!important;',
       '  outline-offset:3px;border-radius:4px;}',
-      // Tel/email links: keep natural size
-      'a[href^="tel:"][contenteditable],a[href^="mailto:"][contenteditable]{',
-      '  display:inline-block!important;cursor:text!important;}',
+      // Tel/email links: single tight outline on entire link
+      'a[href^="tel:"][contenteditable]:hover:not(:focus),a[href^="mailto:"][contenteditable]:hover:not(:focus){',
+      '  outline:1px dashed rgba(99,102,241,.5)!important;outline-offset:2px!important;border-radius:4px!important;}',
+      'a[href^="tel:"][contenteditable]:focus,a[href^="mailto:"][contenteditable]:focus{',
+      '  outline:1.5px solid rgba(99,102,241,.8)!important;outline-offset:2px!important;border-radius:4px!important;}',
+      // No outline on anything inside tel/email links
+      'a[href^="tel:"] *,a[href^="mailto:"] *{outline:none!important;pointer-events:none!important;}',
+      'a[href^="tel:"] span,a[href^="mailto:"] span{pointer-events:auto!important;}',
       // Button-like elements: hover outline
       'button[data-ek]:hover,a[data-ek][contenteditable="false"]:hover{',
       '  outline:2px dashed rgba(99,102,241,.6)!important;outline-offset:3px;border-radius:4px;cursor:pointer!important;}',
@@ -2417,6 +2416,13 @@ async function submitContactForm(e) {
       try {
         // Skip script/style/svg subtrees
         if (el.closest('script,style,noscript,iframe,svg')) return;
+        // Skip tel/mailto links — handled separately below
+        if (el.tagName === 'A') {
+          var href = el.getAttribute('href') || '';
+          if (href.startsWith('tel:') || href.startsWith('mailto:')) return;
+        }
+        // Skip elements inside tel/mailto links (spans inside tel/mailto anchors)
+        if (el.closest('a[href^="tel:"],a[href^="mailto:"]')) return;
         // Skip very short or very long text
         const txt = el.textContent.trim();
         if (txt.length < 2 || txt.length > 400) return;
@@ -2463,12 +2469,17 @@ async function submitContactForm(e) {
       } catch(e) {}
     });
 
-    // Tel/mailto links: contenteditable, update href on blur
+    // Tel/mailto links: single outline on the whole <a>, editable text
     iframeDoc.querySelectorAll('a[href^="tel:"],a[href^="mailto:"]').forEach(link => {
       if (link.getAttribute('contenteditable') === 'true') return;
+      var isTel = link.getAttribute('href').startsWith('tel:');
+      // Make the whole link contenteditable — single outline on the entire element
       link.setAttribute('contenteditable', 'true');
       link.setAttribute('spellcheck', 'false');
-      var isTel = link.getAttribute('href').startsWith('tel:');
+      // Mark SVGs inside as non-editable so cursor doesn't enter them
+      link.querySelectorAll('svg').forEach(svg => {
+        svg.setAttribute('contenteditable', 'false');
+      });
       link.addEventListener('blur', function() {
         var nv = link.textContent.trim();
         if (nv) {
@@ -5676,7 +5687,7 @@ async function manuallySaveToAccount() {
     var res = await fetch('/api/user/sites', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
-      body: JSON.stringify({ html: processedHtml, brandName: window.lastBrief.brandName, activity: window.lastBrief.activity, editId: window.editingSiteId || null }),
+      body: JSON.stringify({ html: processedHtml, brandName: window.lastBrief.brandName || 'Site WebsiteAI', activity: window.lastBrief.activity || '', editId: window.editingSiteId || null, adminEdit: window.isAdminEdit || false, adminSku: window.isAdminEdit ? (window.editingSku || '') : '' }),
     });
     if (res.status === 401) {
       localStorage.removeItem('ws_session');
@@ -5810,6 +5821,7 @@ async function _saveUserSite(session, html, brief) {
   var brand  = params.get('brand') || '';
   var act    = params.get('act')   || '';
   var sku    = params.get('sku')   || '';
+  var isAdmin = params.get('admin') === '1';
   if (!editId) return;
 
   // Update URL to show /site/SKU (unique per site)
@@ -5830,6 +5842,7 @@ async function _saveUserSite(session, html, brief) {
   window.lastBrief = { brandName: brand, activity: act };
   window.editingSiteId = editId;
   window.editingSku = sku;
+  window.isAdminEdit = isAdmin;
 
   try {
     var res = await fetch('/api/preview?id=' + encodeURIComponent(editId));
