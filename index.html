@@ -2135,16 +2135,20 @@ async function submitContactForm(e) {
 
 <!-- ══════════════════════ SCRIPTS ══════════════════════ -->
 <script>
-  /* ── Scroll fade-in ── */
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.01, rootMargin: '200px 0px 200px 0px' });
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  /* ── Scroll fade-in (isolated — must not break) ── */
+  try {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.01, rootMargin: '200px 0px 200px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  } catch(e) {
+    document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+  }
   window.addEventListener('load', () => {
     setTimeout(() => {
       document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
@@ -2159,7 +2163,9 @@ async function submitContactForm(e) {
       if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     });
   });
+</script>
 
+<script>
   /* ══════════════════════════════════════════════════════
      GENERATE FLOW
   ══════════════════════════════════════════════════════ */
@@ -3127,10 +3133,15 @@ async function submitContactForm(e) {
   /* ── Generate ── */
   async function generate(brief) {
     // Require login before generating
-    if (!_wsSession()) {
+    var _ss = (typeof _wsSession === 'function') ? _wsSession() : localStorage.getItem('ws_session');
+    if (!_ss) {
       lastBrief = brief;
       window.lastBrief = brief;
-      openLoginModal(() => generate(brief));
+      if (typeof openLoginModal === 'function') {
+        openLoginModal(() => generate(brief));
+      } else {
+        alert('Te rog conectează-te pentru a genera un site.');
+      }
       return;
     }
 
@@ -3378,14 +3389,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     hideError();
 
     // Require login before generating
-    if (!_wsSession()) {
+    var _ss2 = (typeof _wsSession === 'function') ? _wsSession() : localStorage.getItem('ws_session');
+    if (!_ss2) {
       const brief = collectBrief();
       lastBrief = brief;
       window.lastBrief = brief;
-      openLoginModal(() => {
-        // After login, re-submit the form automatically
-        generate(brief);
-      });
+      if (typeof openLoginModal === 'function') {
+        openLoginModal(() => generate(brief));
+      } else {
+        alert('Te rog conectează-te pentru a genera un site.');
+      }
       return;
     }
 
