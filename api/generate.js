@@ -185,11 +185,24 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({ error: `Gemini nu a returnat HTML. Motiv: ${reason}` });
       }
 
+      // Check if output was truncated
+      const finishReason = data?.candidates?.[0]?.finishReason || '';
+
       html = html
         .replace(/^```html\s*/i, '')
         .replace(/^```\s*/i, '')
         .replace(/\s*```$/i, '')
         .trim();
+
+      // If truncated (MAX_TOKENS), close open tags so page still renders
+      if (finishReason === 'MAX_TOKENS' || (!html.includes('</html>') && !html.includes('</body>'))) {
+        // Close any unclosed tags
+        if (!html.includes('</footer>') && /<footer[\s>]/i.test(html)) {
+          html += '\n</footer>';
+        }
+        if (!html.includes('</body>')) html += '\n</body>';
+        if (!html.includes('</html>')) html += '\n</html>';
+      }
 
       // Force copyright year to 2026
       html = html.replace(/©\s*\d{4}/g, '© 2026');
