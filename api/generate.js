@@ -161,7 +161,7 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
           contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
-          generationConfig: { maxOutputTokens: 32768, temperature: 0.75, topP: 0.95 },
+          generationConfig: { maxOutputTokens: 16384, temperature: 0.75, topP: 0.95 },
         }),
       });
 
@@ -299,8 +299,10 @@ section:first-of-type p {
   img{max-width:100%!important;}
 }
 /* FOOTER CONTACT FIX: icon + text pe aceeasi linie MEREU */
-a[href^="tel:"],a[href^="mailto:"]{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;}
-a[href^="tel:"] svg,a[href^="mailto:"] svg{flex-shrink:0!important;width:16px!important;height:16px!important;display:inline-block!important;}
+a[href^="tel:"],a[href^="mailto:"]{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
+a[href^="tel:"] svg,a[href^="mailto:"] svg{flex-shrink:0!important;width:16px!important;height:16px!important;min-width:16px!important;display:inline-block!important;}
+footer div:has(> svg:only-of-type),footer a:has(> svg:only-of-type),footer span:has(> svg:only-of-type),footer p:has(> svg:only-of-type){display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
+footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{flex-shrink:0!important;width:16px!important;height:16px!important;min-width:16px!important;}
 </style>
 <script id="websiteai-mob-js">
 (function(){
@@ -403,39 +405,65 @@ a[href^="tel:"] svg,a[href^="mailto:"] svg{flex-shrink:0!important;width:16px!im
   }
   [0,100,300,700,1500,3000].forEach(function(t){setTimeout(forceStyles,t);});
 
-  // Fix footer contact: force icon + text on same line (no footer tag dependency)
+  // Fix footer contact: force icon + text pe ACEEASI LINIE
   function fixFooterContact(){
-    // Fix ALL tel/mailto links anywhere on page
+    // 1) Fix ALL tel/mailto links anywhere — icon langa text
     document.querySelectorAll('a[href^="tel:"],a[href^="mailto:"]').forEach(function(el){
       el.style.setProperty('display','flex','important');
       el.style.setProperty('flex-direction','row','important');
       el.style.setProperty('align-items','center','important');
-      if(!el.style.gap)el.style.setProperty('gap','10px','important');
+      el.style.setProperty('gap','10px','important');
       el.querySelectorAll('svg').forEach(function(svg){
         svg.style.setProperty('flex-shrink','0','important');
         svg.style.setProperty('width','16px','important');
         svg.style.setProperty('height','16px','important');
       });
     });
-    // Find footer-like area: last section/div/footer on page, or any section containing contact-like content
+    // 2) Gaseste footer-ul (tag <footer> sau ultimul section/div mare de pe pagina)
     var footerArea=document.querySelector('footer');
     if(!footerArea){
-      // Try last major section on the page
-      var allSections=document.querySelectorAll('body > section, body > div, body > footer');
-      if(allSections.length)footerArea=allSections[allSections.length-1];
+      var all=document.querySelectorAll('body > section, body > div');
+      if(all.length)footerArea=all[all.length-1];
     }
     if(!footerArea)return;
-    // Fix elements with SVG child inside footer area (address, phone, schedule items)
+    // 3) Gaseste coloana "Contact" din footer si reconstruieste elementele
+    footerArea.querySelectorAll('div,h3,h4,span,p').forEach(function(heading){
+      var t=(heading.textContent||'').trim();
+      if(t!=='Contact')return;
+      var col=heading.parentElement;
+      if(!col)return;
+      // Gaseste toate elementele care contin SVG in aceasta coloana
+      col.querySelectorAll('a,div,p,span,li').forEach(function(el){
+        // Daca elementul contine un SVG (direct sau in copii)
+        var svg=el.querySelector('svg');
+        if(!svg)return;
+        // Daca are mai mult de 1 SVG (ex: social icons), skip
+        if(el.querySelectorAll('svg').length>1)return;
+        // Daca e heading-ul Contact, skip
+        if(el===heading)return;
+        // Forteaza flex row — icon + text pe aceeasi linie
+        el.style.setProperty('display','flex','important');
+        el.style.setProperty('flex-direction','row','important');
+        el.style.setProperty('align-items','center','important');
+        el.style.setProperty('gap','10px','important');
+        el.style.setProperty('flex-wrap','nowrap','important');
+        svg.style.setProperty('flex-shrink','0','important');
+        svg.style.setProperty('width','16px','important');
+        svg.style.setProperty('height','16px','important');
+        svg.style.setProperty('min-width','16px','important');
+        svg.style.setProperty('display','inline-block','important');
+      });
+    });
+    // 4) Fix generic: ORICE element cu SVG direct child in footer
     footerArea.querySelectorAll('a,div,p,span,li').forEach(function(el){
       var svg=el.querySelector(':scope > svg');
       if(!svg)return;
       if(el.querySelectorAll('svg').length>1)return;
-      // Skip nav-like or hero elements
       if(el.closest('nav'))return;
       el.style.setProperty('display','flex','important');
       el.style.setProperty('flex-direction','row','important');
       el.style.setProperty('align-items','center','important');
-      if(!el.style.gap)el.style.setProperty('gap','10px','important');
+      el.style.setProperty('gap','10px','important');
       svg.style.setProperty('flex-shrink','0','important');
       svg.style.setProperty('width','16px','important');
       svg.style.setProperty('height','16px','important');
