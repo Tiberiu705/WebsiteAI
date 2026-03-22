@@ -152,11 +152,9 @@ module.exports = async function handler(req, res) {
       </div>
     `;
 
-    // Build recipient list: if owner has set a notification email, send ONLY to them
-    // Admins only receive if no owner email is configured
-    const recipients = ownerEmail
-      ? [ownerEmail]
-      : ['IT@websiteai.ro', 'adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
+    // Send only to site owner — if no owner email configured, don't send
+    if (!ownerEmail) return res.status(200).json({ ok: true });
+    const recipients = [ownerEmail];
 
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
