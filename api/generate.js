@@ -110,8 +110,11 @@ function _weInlineEditorBlockStr() {
     'if(el&&edits[k].html!=null)el.innerHTML=edits[k].html;});}',
     'window.addEventListener("message",function(e){',
     'if(e.data&&e.data.type==="we_restore"){edits=e.data.edits||{};applyEdits();}});',
-    // Only run standalone (not inside iframe where parent handles editing)
-    'if(window.self===window.top){',
+    // Only run when inside iframe (dashboard editing) or on websiteai.ro/localhost/vercel preview
+    // Never run on custom domains (visitors should not be able to edit)
+    'var h=location.hostname;',
+    'var isApp=h==="websiteai.ro"||h==="www.websiteai.ro"||h==="localhost"||h.endsWith(".vercel.app");',
+    'if(window.self!==window.top||isApp){',
     'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}',
     '}',
     '})();<\/scr'+'ipt>',
