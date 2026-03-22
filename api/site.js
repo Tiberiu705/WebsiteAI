@@ -12,6 +12,25 @@ async function redis(command) {
   return json.result;
 }
 
+// Strip inline editing artifacts from HTML so published sites are not editable
+function stripInlineEditor(html) {
+  if (!html || typeof html !== 'string') return html;
+  // Remove the editor style block
+  html = html.replace(/<style id="we-css">[\s\S]*?<\/style>/gi, '');
+  // Remove the editor script block
+  html = html.replace(/<scr[^>]*id="we-js"[^>]*>[\s\S]*?<\/script>/gi, '');
+  // Remove contenteditable attributes
+  html = html.replace(/\s+contenteditable="[^"]*"/gi, '');
+  html = html.replace(/\s+contenteditable='[^']*'/gi, '');
+  html = html.replace(/\s+contenteditable(?=[>\s/])/gi, '');
+  // Remove data-ek attributes
+  html = html.replace(/\s+data-ek="[^"]*"/gi, '');
+  html = html.replace(/\s+data-ek='[^']*'/gi, '');
+  // Remove spellcheck="false" left by editor
+  html = html.replace(/\s+spellcheck="false"/gi, '');
+  return html;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -78,7 +97,7 @@ module.exports = async function handler(req, res) {
       `);
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      return res.status(200).send(html);
+      return res.status(200).send(stripInlineEditor(html));
     } catch (e) {
       return res.status(500).send('Eroare server');
     }
@@ -101,15 +120,31 @@ module.exports = async function handler(req, res) {
     if (!skuData) return res.status(404).json({ error: 'Site negăsit' });
     const { siteId, ownerId } = JSON.parse(skuData);
 
-    // Verify ownership
-    if (user.sub !== ownerId) return res.status(403).json({ error: 'Acces interzis' });
+    // Verify ownership (admin emails bypass)
+    const ADMIN_EMAILS = ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
+    const isAdmin = ADMIN_EMAILS.includes(user.email);
+    if (!isAdmin && user.sub !== ownerId) return res.status(403).json({ error: 'Acces interzis' });
 
-    // Return site HTML
+    // Return site HTML + siteId for admin editing
     const html = await redis(['GET', `site:html:${siteId}`]);
     if (!html) return res.status(404).json({ error: 'Site-ul nu mai este disponibil' });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('X-Robots-Tag', 'noindex');
+    // If admin requested JSON mode, return siteId + site metadata
+    if (req.query.format === 'json') {
+      let brandName = '', activity = '';
+      try {
+        const members = await redis(['ZRANGE', `user:sites:${ownerId}`, 0, -1]);
+        for (const m of (members || [])) {
+          try {
+            const s = JSON.parse(m);
+            if (s.id === siteId) { brandName = s.brandName || ''; activity = s.activity || ''; break; }
+          } catch {}
+        }
+      } catch {}
+      return res.status(200).json({ html, siteId, ownerId, sku, brandName, activity });
+    }
     return res.status(200).send(html);
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Eroare internă' });
