@@ -3214,7 +3214,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
         // Also try auto-save
         if (brief.brandName) {
           _saveUserSite(wsSession, html, brief)
-            .then(() => {
+            .then((saved) => {
+              if (saved && saved.site && saved.site.id) window.editingSiteId = saved.site.id;
               const saveBtn2 = document.getElementById('btn-save-account');
               if (saveBtn2) { saveBtn2.textContent = '✓ Salvat'; saveBtn2.style.color = '#C8FF00'; saveBtn2.disabled = true; setTimeout(function(){ saveBtn2.textContent = '💾 Salvează modificările'; saveBtn2.disabled = false; }, 3000); }
               const mySites = document.getElementById('btn-my-sites');
@@ -4434,6 +4435,91 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
         }
       }
     }
+
+    // ── Email notificări (unde primește clientul mesajele din formular) ──
+    panel.appendChild(editorSectionHead('Email notificări'));
+
+    const notifWrap = document.createElement('div');
+    notifWrap.style.cssText = 'margin-bottom:24px;';
+
+    const notifDesc = document.createElement('p');
+    notifDesc.textContent = 'Adaugă email-ul pe care vrei să primești mesajele trimise prin formularul de contact de pe site.';
+    notifDesc.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.78rem;color:#666;line-height:1.5;margin:0 0 10px;';
+    notifWrap.appendChild(notifDesc);
+
+    const notifInput = document.createElement('input');
+    notifInput.type = 'email';
+    notifInput.placeholder = 'email@exemplu.ro';
+    notifInput.style.cssText = 'width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e0e0e0;font-family:"Inter",sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.15s;';
+    notifInput.addEventListener('focus', () => notifInput.style.borderColor = 'rgba(200,255,0,0.35)');
+    notifInput.addEventListener('blur',  () => notifInput.style.borderColor = 'rgba(255,255,255,0.08)');
+    notifWrap.appendChild(notifInput);
+
+    const notifStatus = document.createElement('div');
+    notifStatus.style.cssText = 'font-family:"Inter",sans-serif;font-size:0.75rem;margin-top:6px;min-height:18px;';
+    notifWrap.appendChild(notifStatus);
+
+    const notifBtn = document.createElement('button');
+    notifBtn.textContent = 'Salvează email notificări';
+    notifBtn.style.cssText = 'margin-top:8px;width:100%;padding:10px;background:rgba(200,255,0,0.12);border:1px solid rgba(200,255,0,0.25);border-radius:8px;color:#C8FF00;font-family:"Syne",sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;';
+    notifBtn.addEventListener('mouseenter', () => notifBtn.style.background = 'rgba(200,255,0,0.2)');
+    notifBtn.addEventListener('mouseleave', () => notifBtn.style.background = 'rgba(200,255,0,0.12)');
+    notifWrap.appendChild(notifBtn);
+
+    // Load existing notification email
+    (async function() {
+      const siteId = window._currentSiteId || window._editSiteId;
+      if (!siteId) return;
+      try {
+        const r = await fetch('https://websiteai.ro/api/contact?action=get-email&siteId=' + encodeURIComponent(siteId));
+        const d = await r.json();
+        if (d.email) {
+          notifInput.value = d.email;
+          notifStatus.textContent = '✓ Email activ';
+          notifStatus.style.color = '#86efac';
+        }
+      } catch(e) {}
+    })();
+
+    notifBtn.addEventListener('click', async () => {
+      const email = notifInput.value.trim();
+      if (!email || !email.includes('@')) {
+        notifStatus.textContent = 'Introdu un email valid';
+        notifStatus.style.color = '#fca5a5';
+        return;
+      }
+      const siteId = window._currentSiteId || window._editSiteId;
+      const token = localStorage.getItem('ws_session') || '';
+      if (!siteId) {
+        notifStatus.textContent = 'Salvează site-ul mai întâi';
+        notifStatus.style.color = '#fca5a5';
+        return;
+      }
+      notifBtn.disabled = true;
+      notifBtn.textContent = 'Se salvează...';
+      try {
+        const r = await fetch('https://websiteai.ro/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'set-email', siteId, notificationEmail: email, token })
+        });
+        const d = await r.json();
+        if (d.ok) {
+          notifStatus.textContent = '✓ Email salvat! Vei primi notificări aici.';
+          notifStatus.style.color = '#86efac';
+        } else {
+          notifStatus.textContent = d.error || 'Eroare la salvare';
+          notifStatus.style.color = '#fca5a5';
+        }
+      } catch(e) {
+        notifStatus.textContent = 'Eroare: ' + e.message;
+        notifStatus.style.color = '#fca5a5';
+      }
+      notifBtn.disabled = false;
+      notifBtn.textContent = 'Salvează email notificări';
+    });
+
+    panel.appendChild(notifWrap);
 
     panel.appendChild(editorSectionHead('Date de contact'));
 
