@@ -3391,8 +3391,89 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
   document.getElementById('btn-regenerate').addEventListener('click', () => {
     const brief = lastBrief || window.lastBrief;
     if (!brief) return;
-    generate(brief);
+    _showRegenModal(brief);
   });
+
+  /* ── Regenerate modal with color picker ── */
+  function _showRegenModal(brief) {
+    if (document.getElementById('regen-modal-overlay')) return;
+    const ov = document.createElement('div');
+    ov.id = 'regen-modal-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px;';
+
+    const currentBrand = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#C8FF00';
+
+    const presetColors = [
+      { hex: '#C8FF00', name: 'Lime' },
+      { hex: '#FF6B35', name: 'Portocaliu' },
+      { hex: '#E63946', name: 'Roșu' },
+      { hex: '#2EC4B6', name: 'Turcoaz' },
+      { hex: '#4361EE', name: 'Albastru' },
+      { hex: '#7209B7', name: 'Violet' },
+      { hex: '#F72585', name: 'Roz' },
+      { hex: '#FFB703', name: 'Galben' },
+      { hex: '#06D6A0', name: 'Verde' },
+      { hex: '#8338EC', name: 'Purple' },
+      { hex: '#118AB2', name: 'Teal' },
+      { hex: '#EF476F', name: 'Coral' },
+    ];
+
+    const swatches = presetColors.map(c =>
+      `<button data-color="${c.hex}" title="${c.name}" style="width:36px;height:36px;border-radius:50%;border:2px solid ${c.hex === currentBrand ? '#fff' : 'transparent'};background:${c.hex};cursor:pointer;transition:transform 0.15s,border-color 0.15s;flex-shrink:0;" onmouseenter="this.style.transform='scale(1.15)'" onmouseleave="this.style.transform='scale(1)'">${c.hex === currentBrand ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:block;margin:auto;"><path d="M3.5 8.5L6.5 11.5L12.5 5.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</button>`
+    ).join('');
+
+    ov.innerHTML = `
+      <div style="background:#141414;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:32px;max-width:420px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.5);">
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;margin:0 0 6px;">Regenerează site-ul</h3>
+        <p style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#777;margin:0 0 24px;line-height:1.5;">Se va genera un design nou păstrând datele site-ului. Alege o culoare principală:</p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+          ${swatches}
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+          <label style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#999;">Sau alege manual:</label>
+          <input type="color" id="regen-color-picker" value="${currentBrand}" style="width:40px;height:32px;border:none;border-radius:8px;cursor:pointer;background:transparent;" />
+          <span id="regen-color-hex" style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#C8FF00;font-weight:600;">${currentBrand}</span>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button id="regen-cancel-btn" style="flex:1;padding:12px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:transparent;color:#999;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;">Anulează</button>
+          <button id="regen-confirm-btn" style="flex:1;padding:12px;border:none;border-radius:10px;background:#C8FF00;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;cursor:pointer;">Regenerează</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+
+    let selectedColor = currentBrand;
+    const hexLabel = ov.querySelector('#regen-color-hex');
+    const colorPicker = ov.querySelector('#regen-color-picker');
+
+    function selectColor(hex) {
+      selectedColor = hex;
+      hexLabel.textContent = hex;
+      hexLabel.style.color = hex;
+      colorPicker.value = hex;
+      ov.querySelectorAll('[data-color]').forEach(b => {
+        b.style.borderColor = b.dataset.color === hex ? '#fff' : 'transparent';
+        b.innerHTML = b.dataset.color === hex ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:block;margin:auto;"><path d="M3.5 8.5L6.5 11.5L12.5 5.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
+      });
+    }
+
+    ov.querySelectorAll('[data-color]').forEach(b => {
+      b.addEventListener('click', () => selectColor(b.dataset.color));
+    });
+    colorPicker.addEventListener('input', (e) => selectColor(e.target.value));
+
+    ov.querySelector('#regen-cancel-btn').addEventListener('click', () => ov.remove());
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+
+    ov.querySelector('#regen-confirm-btn').addEventListener('click', () => {
+      ov.remove();
+      const newBrief = { ...brief, colorsFonts: 'Culoare principală: ' + selectedColor };
+      generate(newBrief);
+    });
+  }
 
   /* ══════════════════════════════════════════════════════
      EDITOR SIDEBAR
