@@ -3315,15 +3315,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outl
     html = html.replace(/<base[^>]*>/gi, '');
     // Remove target="_top" and target="_parent" from all elements
     html = html.replace(/\btarget\s*=\s*["'](_top|_parent)["']/gi, '');
-    // Strip ALL generated scripts (keep only Tailwind CDN, Tailwind config, Google Fonts, our editing scripts)
+    // Strip ALL generated scripts (keep only Tailwind CDN, Tailwind config, Google Fonts, our editing scripts, contact form)
     // This prevents generated JS from doing window.top.location or other parent navigation
     html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, function(match) {
       if (match.indexOf('tailwindcss') > -1) return match;
       if (match.indexOf('tailwind.config') > -1) return match;
       if (match.indexOf('googleapis') > -1) return match;
       if (match.indexOf('id="we-') > -1) return match;
+      if (match.indexOf('wai-contact-form') > -1) return match;
       return '';
     });
+
+    // Inject contact form if not already present
+    if (!html.includes('wai-contact-section')) {
+      html = _injectContactSection(html);
+    }
 
     // Inject editing script directly into HTML (runs inside iframe — most reliable approach)
     if (!html.includes('id="we-s"')) {
