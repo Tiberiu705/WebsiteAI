@@ -1996,6 +1996,9 @@ async function submitContactForm(e) {
         <button id="btn-open-tab" onclick="(function(){if(!window.generatedHtml)return;var h=window.generatedHtml;var d=new DOMParser().parseFromString(h,'text/html');d.querySelectorAll('[contenteditable]').forEach(function(e){e.removeAttribute('contenteditable');});d.querySelectorAll('[data-ek]').forEach(function(e){e.removeAttribute('data-ek');});d.querySelectorAll('[spellcheck]').forEach(function(e){e.removeAttribute('spellcheck');});d.querySelectorAll('[data-we-ready]').forEach(function(e){e.removeAttribute('data-we-ready');});d.querySelectorAll('[data-nav-guard]').forEach(function(e){e.removeAttribute('data-nav-guard');});d.querySelectorAll('#we-s,#we-e,#we-css,#we-js,#we-edit-css').forEach(function(e){e.remove();});var clean='<!DOCTYPE html>\n'+d.documentElement.outerHTML;var w=window.open('','_blank');if(w){w.document.open();w.document.write(clean);w.document.close();}})()" style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:8px 16px;color:#C8FF00;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;touch-action:manipulation;" onmouseenter="this.style.background='rgba(200,255,0,0.18)'" onmouseleave="this.style.background='rgba(200,255,0,0.1)'">
           Deschide în tab
         </button>
+        <button id="btn-view-html" style="display:none;background:rgba(100,200,255,0.1);border:1px solid rgba(100,200,255,0.25);border-radius:8px;padding:8px 16px;color:#64c8ff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:background 0.15s;touch-action:manipulation;" onmouseenter="this.style.background='rgba(100,200,255,0.18)'" onmouseleave="this.style.background='rgba(100,200,255,0.1)'" onclick="openHtmlEditor()">
+          &lt;/&gt; HTML
+        </button>
         <button id="btn-mob-preview" onclick="(function(){var iframe=document.getElementById('preview-iframe');var btn=document.getElementById('btn-mob-preview');var wrap=document.getElementById('preview-iframe-wrap');var on=iframe.classList.toggle('mob-preview');btn.style.background=on?'rgba(200,255,0,0.12)':'rgba(255,255,255,0.06)';btn.style.borderColor=on?'rgba(200,255,0,0.4)':'rgba(255,255,255,0.1)';btn.style.color=on?'#C8FF00':'#fff';if(wrap){wrap.style.alignItems=on?'flex-start':'stretch';wrap.style.justifyContent=on?'center':'stretch';}})()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:all 0.15s;touch-action:manipulation;">
           📱 Mobil
         </button>
@@ -6114,6 +6117,11 @@ async function _saveUserSite(session, html, brief) {
             saveBtn.textContent = '💾 Salvează modificările';
             saveBtn.style.display = 'inline-block';
           }
+          // Show HTML editor button only for admin
+          if (window.isAdminEdit) {
+            var htmlBtn = document.getElementById('btn-view-html');
+            if (htmlBtn) htmlBtn.style.display = 'inline-flex';
+          }
         }, 900);
       } else if (attempts > 50) {
         clearInterval(iv);
@@ -6273,6 +6281,53 @@ function _showPaymentSuccessNotif(siteId) {
     notif.style.opacity = '0';
     setTimeout(function() { notif.remove(); }, 600);
   }, 9000);
+}
+</script>
+
+<!-- ══════════════════════ ADMIN HTML EDITOR MODAL ══════════════════════ -->
+<div id="html-editor-overlay" style="display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
+  <div style="display:flex;flex-direction:column;height:100%;padding:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#64c8ff;">&lt;/&gt; Editor HTML — Admin</span>
+      <div style="display:flex;gap:10px;">
+        <button id="html-editor-apply" onclick="applyHtmlEditor()" style="background:#C8FF00;border:none;border-radius:8px;padding:8px 20px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer;">Aplică modificările</button>
+        <button onclick="closeHtmlEditor()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 20px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">Închide</button>
+      </div>
+    </div>
+    <textarea id="html-editor-textarea" spellcheck="false" style="flex:1;background:#0a0a0a;border:1px solid rgba(100,200,255,0.2);border-radius:10px;padding:16px;color:#e0e0e0;font-family:'Fira Code','SF Mono','Consolas',monospace;font-size:13px;line-height:1.6;resize:none;outline:none;tab-size:2;white-space:pre;overflow:auto;" onkeydown="handleTabKey(event)"></textarea>
+  </div>
+</div>
+<script>
+function openHtmlEditor() {
+  if (!window.generatedHtml) return;
+  if (typeof syncHtml === 'function') syncHtml();
+  var ta = document.getElementById('html-editor-textarea');
+  ta.value = window.generatedHtml;
+  document.getElementById('html-editor-overlay').style.display = 'block';
+}
+function closeHtmlEditor() {
+  document.getElementById('html-editor-overlay').style.display = 'none';
+}
+function applyHtmlEditor() {
+  var html = document.getElementById('html-editor-textarea').value;
+  if (html.length < 50) { alert('HTML-ul este prea scurt'); return; }
+  window.generatedHtml = html;
+  var iframe = document.getElementById('preview-iframe');
+  if (iframe) {
+    iframe.srcdoc = html;
+  }
+  closeHtmlEditor();
+  if (typeof _showSaveToast === 'function') _showSaveToast('HTML aplicat — apasă Salvează pentru a persista', '#64c8ff');
+}
+function handleTabKey(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    var ta = e.target;
+    var start = ta.selectionStart;
+    var end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + 2;
+  }
 }
 </script>
 </body>
