@@ -3235,11 +3235,13 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
       if (wsSession) {
         const saveBtn = document.getElementById('btn-save-account');
         if (saveBtn) saveBtn.style.display = 'inline-block';
-        // Also try auto-save
+        // Also try auto-save — block manual save until this completes
         if (brief.brandName) {
-          _saveUserSite(wsSession, html, brief)
+          if (saveBtn) { saveBtn.textContent = 'Se salvează…'; saveBtn.disabled = true; }
+          window._autoSavePromise = _saveUserSite(wsSession, html, brief)
             .then((saved) => {
               if (saved && saved.site && saved.site.id) window.editingSiteId = saved.site.id;
+              if (saved && saved.site && saved.site.sku) window.editingSku = saved.site.sku;
               const saveBtn2 = document.getElementById('btn-save-account');
               if (saveBtn2) { saveBtn2.textContent = '✓ Salvat'; saveBtn2.style.color = '#C8FF00'; saveBtn2.disabled = true; setTimeout(function(){ saveBtn2.textContent = '💾 Salvează modificările'; saveBtn2.disabled = false; }, 3000); }
               const mySites = document.getElementById('btn-my-sites');
@@ -3249,7 +3251,10 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
             .catch(e => {
               console.warn('[auto-save]', e);
               if (typeof _showSaveToast === 'function') _showSaveToast('⚠ Auto-save eșuat: ' + e.message, '#ff6b6b');
-            });
+              const saveBtn2 = document.getElementById('btn-save-account');
+              if (saveBtn2) { saveBtn2.textContent = '💾 Salvează modificările'; saveBtn2.disabled = false; }
+            })
+            .finally(() => { window._autoSavePromise = null; });
         }
       }
 
@@ -5905,6 +5910,13 @@ async function manuallySaveToAccount() {
   var session = _wsSession();
   if (!session) { openLoginModal(function(){ manuallySaveToAccount(); }); return; }
   if (!window.generatedHtml || !window.lastBrief) { alert('Generează mai întâi un site!'); return; }
+
+  // Wait for auto-save to finish first (so editingSiteId is set)
+  if (window._autoSavePromise) {
+    btn.textContent = 'Se salvează…';
+    btn.disabled = true;
+    try { await window._autoSavePromise; } catch(_) {}
+  }
 
   // Sync latest HTML from iframe before saving
   if (typeof syncHtml === 'function') syncHtml();
