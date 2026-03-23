@@ -152,9 +152,17 @@ module.exports = async function handler(req, res) {
       </div>
     `;
 
-    // Send only to site owner — if no owner email configured, don't send
-    if (!ownerEmail) return res.status(200).json({ ok: true });
-    const recipients = [ownerEmail];
+    // If site has owner email → send only to owner
+    // If no siteId (landing page form) → send to admins
+    // If siteId but no owner email → don't send
+    let recipients;
+    if (ownerEmail) {
+      recipients = [ownerEmail];
+    } else if (!siteId && !resolvedSiteId) {
+      recipients = ['IT@websiteai.ro', 'adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
+    } else {
+      return res.status(200).json({ ok: true });
+    }
 
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
