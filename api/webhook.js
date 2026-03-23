@@ -39,7 +39,10 @@ function verifyWebhook(rawBody, sigHeader, secret) {
 async function updateSitePaid(siteId, paidValue) {
   // Look up which user owns this site via site:meta:{siteId}
   const meta = await redis(['GET', `site:meta:${siteId}`]);
-  if (!meta) return false;
+  if (!meta) {
+    console.error(`[webhook] site:meta:${siteId} not found — cannot update paid status`);
+    return false;
+  }
   const { userId } = JSON.parse(meta);
   const key = `user:sites:${userId}`;
   const members = await redis(['ZRANGE', key, 0, -1]);
@@ -53,9 +56,13 @@ async function updateSitePaid(siteId, paidValue) {
         redis(['ZREM', key, m]),
         redis(['ZADD', key, Number(score) || Date.now(), JSON.stringify(s)]),
       ]);
+      console.log(`[webhook] site ${siteId} paid=${paidValue} updated OK (user: ${userId})`);
       return true;
-    } catch {}
+    } catch (err) {
+      console.error(`[webhook] error updating site ${siteId}:`, err.message);
+    }
   }
+  console.error(`[webhook] site ${siteId} not found in user:sites:${userId}`);
   return false;
 }
 
@@ -90,20 +97,34 @@ module.exports = async function handler(req, res) {
     siteId = obj.lines.data[0].metadata.origin_site_id || obj.lines.data[0].metadata.site_id;
   }
 
-  if (siteId && REST_URL && REST_TOKEN) {
-    switch (event.type) {
-      // Subscription cancelled or payment failed → revoke access
-      case 'customer.subscription.deleted':
-      case 'invoice.payment_failed':
-        await updateSitePaid(siteId, false).catch(() => {});
-        break;
+  console.log(`[webhook] event: ${event.type}, siteId: ${siteId || 'NONE'}`);
 
-      // Subscription renewed → re-activate
-      case 'invoice.payment_succeeded':
-      case 'customer.subscription.updated':
-        await updateSitePaid(siteId, true).catch(() => {});
-        break;
+  if (siteId && REST_URL && REST_TOKEN) {
+    try {
+      switch (event.type) {
+        case 'customer.subscription.deleted':
+        case 'invoice.payment_failed':
+          await updateSitePaid(siteId, false);
+          break;
+
+        case 'invoice.payment_succeeded':
+        case 'customer.subscription.updated':
+          await updateSitePaid(siteId, true);
+          break;
+
+        case 'customer.subscription.trial_will_end':
+          console.log(`[webhook] trial ending soon for site ${siteId}`);
+          break;
+
+        default:
+          console.log(`[webhook] unhandled event type: ${event.type}`);
+      }
+    } catch (err) {
+      console.error(`[webhook] CRITICAL: failed to process ${event.type} for site ${siteId}:`, err.message);
+      // Still return 200 so Stripe doesn't retry forever, but log the error
     }
+  } else if (!siteId) {
+    console.warn(`[webhook] no siteId found in event ${event.type} — metadata missing`);
   }
 
   return res.status(200).json({ received: true });

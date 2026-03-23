@@ -164,22 +164,30 @@ module.exports = async function handler(req, res) {
       const { id, sessionId } = req.body || {};
       if (!id || !sessionId) return res.status(400).json({ error: 'id and sessionId required' });
 
-      // Verify payment with Stripe (best-effort — if verification fails, trust success_url)
+      // Verify payment with Stripe — REQUIRED, do not proceed without valid payment
       const stripeKey = process.env.STRIPE_SECRET_KEY;
-      if (stripeKey && sessionId) {
-        try {
-          const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
-            headers: { Authorization: `Bearer ${stripeKey}` },
-          });
-          if (stripeRes.ok) {
-            const session = await stripeRes.json();
-            const validStatuses = ['paid', 'no_payment_required'];
-            if (!validStatuses.includes(session.payment_status)) {
-              return res.status(400).json({ error: `Plată neverificată (status: ${session.payment_status})` });
-            }
-          }
-          // If Stripe returns non-ok (e.g. key mismatch in sandbox), proceed anyway
-        } catch (_) { /* proceed */ }
+      if (!stripeKey) {
+        console.error('[PATCH] STRIPE_SECRET_KEY not configured');
+        return res.status(500).json({ error: 'Configurare Stripe lipsă' });
+      }
+      try {
+        const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+          headers: { Authorization: `Bearer ${stripeKey}` },
+        });
+        if (!stripeRes.ok) {
+          console.error('[PATCH] Stripe verification failed:', stripeRes.status);
+          return res.status(400).json({ error: 'Sesiune Stripe invalidă' });
+        }
+        const session = await stripeRes.json();
+        const validStatuses = ['paid', 'no_payment_required'];
+        if (!validStatuses.includes(session.payment_status)) {
+          console.warn('[PATCH] payment_status:', session.payment_status, 'for session:', sessionId);
+          return res.status(400).json({ error: `Plată neverificată (status: ${session.payment_status})` });
+        }
+        console.log('[PATCH] Stripe verified OK — payment_status:', session.payment_status, 'siteId:', id);
+      } catch (err) {
+        console.error('[PATCH] Stripe API error:', err.message);
+        return res.status(500).json({ error: 'Eroare la verificarea plății' });
       }
 
       // Find site in sorted set, update paid flag, re-save with same score
@@ -196,9 +204,13 @@ module.exports = async function handler(req, res) {
             // Store site→user mapping so webhook can find this site later
             redis(['SET', `site:meta:${id}`, JSON.stringify({ userId: user.sub }), 'EX', 7776000]),
           ]);
+          console.log('[PATCH] site', id, 'marked paid=true in Redis');
           return res.status(200).json({ ok: true, site: s });
-        } catch {}
+        } catch (err) {
+          console.error('[PATCH] error updating site', id, ':', err.message);
+        }
       }
+      console.error('[PATCH] site', id, 'not found in user sites');
       return res.status(404).json({ error: 'Site negăsit' });
     }
 

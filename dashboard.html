@@ -787,7 +787,7 @@ function buildCard(site) {
       '</div>' : '') +
       '<div class="card-date">' + date + '</div>' +
       '<div class="card-actions">' +
-        '<button class="btn-activate-card' + (site.paid || mockCheckPayment(site.id) ? ' btn-paid' : '') + '" onclick="activateSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\')">' + (site.paid || mockCheckPayment(site.id) ? '✓ Activat' : 'Activează') + '</button>' +
+        '<button class="btn-activate-card' + (site.paid ? ' btn-paid' : '') + '" onclick="activateSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\')">' + (site.paid ? '✓ Activat' : 'Activează') + '</button>' +
         '<button class="btn-edit-card" onclick="editSite(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\', \'' + _esc(site.activity || '') + '\', \'' + _esc(site.sku || '') + '\')">✏ Editează</button>' +
         '<button class="btn-open-card" onclick="openSite(\'' + site.id + '\')">↗</button>' +
         '<button class="btn-delete-card" onclick="confirmDelete(\'' + site.id + '\', \'' + _esc(site.brandName || '') + '\')">✕</button>' +
@@ -830,7 +830,7 @@ function openSite(id) {
 async function activateSite(id, brandName) {
   // Check if already paid (from API or localStorage) — open domain modal directly
   var _site = _sites.find(function(s) { return s.id === id; });
-  if ((_site && _site.paid) || mockCheckPayment(id)) {
+  if (_site && _site.paid) {
     openDomainModal(id);
     return;
   }
@@ -952,39 +952,34 @@ function handlePaymentReturn() {
   var sessionId = params.get('session_id');
   var siteId = params.get('site_id');
 
-  // New flow: returning from Stripe via dashboard success_url
+  // Returning from Stripe via dashboard success_url
   if (payment === 'success' && sessionId && siteId) {
     window.history.replaceState({}, '', '/dashboard');
     _showPaymentToast();
-    // Mark as paid in localStorage immediately (instant UI update)
-    mockMarkPaid(siteId);
-    // Try to persist paid status in Redis; open domain modal regardless
+    // Verify payment with Stripe via server, then mark paid in Redis
     fetch('/api/user/sites', {
       method: 'PATCH',
       headers: { Authorization: 'Bearer ' + _session, 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: siteId, sessionId: sessionId }),
     })
-      .then(function(r) { return r.json(); })
-      .catch(function() { return {}; })
+      .then(function(r) {
+        if (!r.ok) throw new Error('Verificare plată eșuată');
+        return r.json();
+      })
       .then(function() {
+        // Payment verified by Stripe + Redis updated — reload sites from server
         return loadSites();
       })
       .then(function() {
         setTimeout(function() { openDomainModal(siteId); }, 400);
       })
-      .catch(function() {
-        renderSites();
-        setTimeout(function() { openDomainModal(siteId); }, 400);
+      .catch(function(err) {
+        console.error('[payment] verification failed:', err.message);
+        // Show error instead of silently proceeding
+        alert('Eroare la verificarea plății. Dacă ai plătit, reîncarcă pagina sau contactează suportul.');
+        loadSites();
       });
     return;
-  }
-
-  // Legacy flow: ?paid=1&site_id=...
-  var paid = params.get('paid');
-  if (paid === '1' && siteId) {
-    mockMarkPaid(siteId);
-    window.history.replaceState({}, '', '/dashboard');
-    setTimeout(function() { openDomainModal(siteId); }, 600);
   }
 }
 
