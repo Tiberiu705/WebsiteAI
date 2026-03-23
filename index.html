@@ -4594,7 +4594,7 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
 
     // Load existing notification email
     (async function() {
-      const siteId = window._currentSiteId || window._editSiteId;
+      const siteId = window.editingSiteId || window._currentSiteId || window._editSiteId;
       if (!siteId) return;
       try {
         const r = await fetch('https://websiteai.ro/api/contact?action=get-email&siteId=' + encodeURIComponent(siteId));
@@ -4614,7 +4614,7 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
         notifStatus.style.color = '#fca5a5';
         return;
       }
-      const siteId = window._currentSiteId || window._editSiteId;
+      const siteId = window.editingSiteId || window._currentSiteId || window._editSiteId;
       const token = localStorage.getItem('ws_session') || '';
       if (!siteId) {
         notifStatus.textContent = 'Salvează site-ul mai întâi';
