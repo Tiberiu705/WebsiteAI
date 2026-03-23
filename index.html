@@ -3191,12 +3191,27 @@ async function submitContactForm(e) {
       html = html.replace(/©\s*\d{4}/g, '© 2026');
       html = html.replace(/new Date\(\)\.getFullYear\(\)/g, '2026');
 
-      /* ── Inject accessibility + mobile baseline CSS ── */
+      /* ── Inject accessibility + mobile baseline CSS + footer contact fix ── */
       const a11yFix = `<style id="websiteai-a11y-fix">
 a:focus-visible,button:focus-visible{outline:2px solid var(--brand,#C8FF00);outline-offset:3px;border-radius:3px;}
 @media(max-width:768px){footer .grid{grid-template-columns:1fr!important;gap:32px!important;}}
+/* FOOTER CONTACT FIX: icon + text pe aceeasi linie */
+a[href^="tel:"],a[href^="mailto:"]{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
+a[href^="tel:"] svg,a[href^="mailto:"] svg{flex-shrink:0!important;width:16px!important;height:16px!important;min-width:16px!important;}
+footer div:has(> svg),footer a:has(> svg),footer span:has(> svg),footer p:has(> svg),footer li:has(> svg){display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
+footer div:has(> svg) > svg,footer a:has(> svg) > svg,footer p:has(> svg) > svg{flex-shrink:0!important;width:16px!important;height:16px!important;min-width:16px!important;}
+footer div:has(> div > svg:only-child){display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
+footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;line-height:0!important;display:flex!important;}
 </style>`;
       html = html.replace(/<\/head>/i, a11yFix + '</head>');
+
+      /* ── Inject footer contact JS fix before </body> ── */
+      const footerContactFix = `<script id="websiteai-footer-fix">(function(){function fix(){document.querySelectorAll('a[href^="tel:"],a[href^="mailto:"]').forEach(function(el){el.style.setProperty('display','flex','important');el.style.setProperty('flex-direction','row','important');el.style.setProperty('align-items','center','important');el.style.setProperty('gap','10px','important');el.querySelectorAll('svg').forEach(function(s){s.style.setProperty('flex-shrink','0','important');s.style.setProperty('width','16px','important');s.style.setProperty('height','16px','important');});});var f=document.querySelector('footer');if(!f)return;f.querySelectorAll('a,div,p,span,li').forEach(function(el){var s=el.querySelector(':scope > svg');if(!s||el.querySelectorAll('svg').length>1||el.closest('nav'))return;el.style.setProperty('display','flex','important');el.style.setProperty('flex-direction','row','important');el.style.setProperty('align-items','center','important');el.style.setProperty('gap','10px','important');s.style.setProperty('flex-shrink','0','important');s.style.setProperty('width','16px','important');s.style.setProperty('height','16px','important');});f.querySelectorAll('svg').forEach(function(svg){if(svg.closest('nav'))return;var p=svg.parentElement;if(!p||p.children.length!==1||p.tagName==='A')return;var gp=p.parentElement;if(!gp)return;var kids=Array.from(gp.children);if(kids.length<2||kids.length>4)return;var hasSvg=kids.some(function(k){return k.querySelector('svg')&&!k.textContent.trim();});var hasText=kids.some(function(k){return k.textContent.trim().length>3&&!k.querySelector('svg');});if(hasSvg&&hasText){gp.style.setProperty('display','flex','important');gp.style.setProperty('flex-direction','row','important');gp.style.setProperty('align-items','center','important');gp.style.setProperty('gap','10px','important');p.style.setProperty('flex-shrink','0','important');p.style.setProperty('line-height','0','important');p.style.setProperty('display','flex','important');}});}[0,200,500,1000,2000].forEach(function(t){setTimeout(fix,t);});})();<\/script>`;
+      if (/<\/body>/i.test(html)) {
+        html = html.replace(/<\/body>/i, footerContactFix + '\n</body>');
+      } else {
+        html += '\n' + footerContactFix;
+      }
 
       /* Replace placeholders with Imagen AI-generated images */
       loadingStatus.textContent = 'Se generează imaginile cu AI…';

@@ -318,8 +318,11 @@ section:first-of-type p {
 /* FOOTER CONTACT FIX: icon + text pe aceeasi linie MEREU */
 a[href^="tel:"],a[href^="mailto:"]{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
 a[href^="tel:"] svg,a[href^="mailto:"] svg{flex-shrink:0!important;width:16px!important;height:16px!important;min-width:16px!important;display:inline-block!important;}
-footer div:has(> svg:only-of-type),footer a:has(> svg:only-of-type),footer span:has(> svg:only-of-type),footer p:has(> svg:only-of-type){display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
-footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{flex-shrink:0!important;width:16px!important;height:16px!important;min-width:16px!important;}
+footer div:has(> svg),footer a:has(> svg),footer span:has(> svg),footer p:has(> svg),footer li:has(> svg){display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
+footer div:has(> svg) > svg,footer a:has(> svg) > svg,footer p:has(> svg) > svg,footer li:has(> svg) > svg{flex-shrink:0!important;width:16px!important;height:16px!important;min-width:16px!important;}
+/* Fix wrapper divs around SVG icons in footer */
+footer div:has(> div > svg:only-child){display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;}
+footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;line-height:0!important;display:flex!important;}
 </style>
 <script id="websiteai-mob-js">
 (function(){
@@ -484,6 +487,41 @@ footer div:has(> svg:only-of-type) > svg,footer a:has(> svg:only-of-type) > svg{
       svg.style.setProperty('flex-shrink','0','important');
       svg.style.setProperty('width','16px','important');
       svg.style.setProperty('height','16px','important');
+    });
+    // 5) Fix cazul unde SVG e intr-un wrapper separat de text
+    // Ex: <div><div><svg/></div><span>text</span></div>
+    // sau <div><svg/></div> urmat de <div>text</div> (siblings)
+    footerArea.querySelectorAll('svg').forEach(function(svg){
+      if(svg.closest('nav'))return;
+      var parent=svg.parentElement;
+      if(!parent)return;
+      // Skip daca parent-ul are deja flex row si arata corect
+      var cs=getComputedStyle(parent);
+      if(cs.display==='flex'&&cs.flexDirection==='row'&&parent.children.length>1)return;
+      // Daca SVG e singur in parent (wrapper div), si sibling-ul e text
+      if(parent.children.length===1&&parent.tagName!=='A'){
+        var grandparent=parent.parentElement;
+        if(!grandparent)return;
+        // Verifica daca grandparent are SVG wrapper + text siblings
+        var kids=Array.from(grandparent.children);
+        if(kids.length>=2&&kids.length<=4){
+          var hasSvgWrapper=kids.some(function(k){return k.querySelector('svg')&&!k.textContent.trim().replace(/\\s/g,'');});
+          var hasText=kids.some(function(k){return k.textContent.trim().length>3&&!k.querySelector('svg');});
+          if(hasSvgWrapper&&hasText){
+            grandparent.style.setProperty('display','flex','important');
+            grandparent.style.setProperty('flex-direction','row','important');
+            grandparent.style.setProperty('align-items','center','important');
+            grandparent.style.setProperty('gap','10px','important');
+            grandparent.style.setProperty('flex-wrap','nowrap','important');
+            svg.style.setProperty('flex-shrink','0','important');
+            svg.style.setProperty('width','16px','important');
+            svg.style.setProperty('height','16px','important');
+            parent.style.setProperty('display','flex','important');
+            parent.style.setProperty('flex-shrink','0','important');
+            parent.style.setProperty('line-height','0','important');
+          }
+        }
+      }
     });
   }
   [0,200,500,1000,2000].forEach(function(t){setTimeout(fixFooterContact,t);});
