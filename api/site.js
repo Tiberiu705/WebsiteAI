@@ -161,7 +161,7 @@ module.exports = async function handler(req, res) {
       } catch {}
       return res.status(200).json({ html, siteId, ownerId, sku, brandName, activity });
     }
-    return res.status(200).send(html);
+    return res.status(200).send(stripInlineEditor(html));
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Eroare internă' });
   }
