@@ -26,7 +26,7 @@ const USER_SITES_MAX = 100;
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
@@ -45,10 +45,63 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ sites, user });
     }
 
-    // ── POST: save site ──
+    // ── POST: save site (or update existing if editId provided) ──
     if (req.method === 'POST') {
-      const { html, brandName, activity } = req.body || {};
+      const { html, brandName, activity, editId, adminEdit, adminSku } = req.body || {};
       if (!brandName) return res.status(400).json({ error: 'brandName required' });
+
+      console.log('[sites POST] editId:', editId, 'adminEdit:', adminEdit, 'adminSku:', adminSku);
+
+      // If editing an existing site, update it in place (preserve paid, sku, domain)
+      if (editId) {
+        // Determine which user's site list to search
+        let ownerKey = key; // default: current user's sites
+        const ADMIN_EMAILS = ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
+        const isAdmin = ADMIN_EMAILS.includes(user.email);
+
+        if (adminEdit && isAdmin && adminSku) {
+          // Admin editing client's site — find the owner via SKU mapping
+          try {
+            const skuData = await redis(['GET', `sku:${adminSku.toUpperCase()}`]);
+            if (skuData) {
+              const { ownerId } = JSON.parse(skuData);
+              ownerKey = `user:sites:${ownerId}`;
+            }
+          } catch {}
+        }
+
+        const members = await redis(['ZRANGE', ownerKey, 0, -1]);
+        console.log('[sites POST] searching', members ? members.length : 0, 'members for editId:', editId);
+        let found = false;
+        for (const m of (members || [])) {
+          try {
+            const s = JSON.parse(m);
+            if (s.id !== editId) continue;
+            found = true;
+            console.log('[sites POST] FOUND site, updating in place');
+            const score = await redis(['ZSCORE', ownerKey, m]);
+            const updated = {
+              ...s,
+              brandName: String(brandName).slice(0, 80),
+              activity: String(activity || '').slice(0, 120),
+              generatedAt: new Date().toISOString(),
+            };
+            const ops = [
+              redis(['ZREM', ownerKey, m]),
+              redis(['ZADD', ownerKey, Number(score) || Date.now(), JSON.stringify(updated)]),
+            ];
+            if (html && html.length > 100) {
+              ops.push(redis(['SET', `site:html:${editId}`, String(html), 'EX', 7776000]));
+            }
+            await Promise.all(ops);
+            return res.status(200).json({ ok: true, site: updated });
+          } catch (editErr) {
+            console.error('[sites POST] error updating site:', editErr.message);
+          }
+        }
+        console.log('[sites POST] editId NOT found in members, creating new. found=', found);
+        // If editId not found, fall through to create new
+      }
 
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
@@ -73,11 +126,37 @@ module.exports = async function handler(req, res) {
         redis(['SET', `sku:${sku}`, JSON.stringify({ siteId: id, ownerId: user.sub }), 'EX', 7776000]),
       ];
       if (html && html.length > 100) {
-        ops.push(redis(['SET', `site:html:${id}`, String(html), 'EX', 7776000])); // 90 days
+        ops.push(redis(['SET', `site:html:${id}`, String(html), 'EX', 7776000]));
       }
       await Promise.all(ops);
 
       return res.status(201).json({ ok: true, site });
+    }
+
+    // ── PUT: connect custom domain (replaces api/add-domain.js) ──
+    if (req.method === 'PUT') {
+      const { domain, siteId } = req.body || {};
+      if (!domain || !siteId) return res.status(400).json({ error: 'domain și siteId sunt obligatorii' });
+
+      const cleanDomain = domain.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/\/$/, '').replace(/^www\./, '');
+
+      await redis(['SET', `domain:${cleanDomain}`, JSON.stringify({ siteId, userId: user.sub }), 'EX', 7776000]);
+      await redis(['SET', `domain:www.${cleanDomain}`, JSON.stringify({ siteId, userId: user.sub }), 'EX', 7776000]);
+
+      // Add domain to Vercel project
+      const vercelToken = process.env.VERCEL_TOKEN;
+      const projectId = process.env.VERCEL_PROJECT_ID;
+      if (vercelToken && projectId) {
+        for (const d of [cleanDomain, `www.${cleanDomain}`]) {
+          await fetch(`https://api.vercel.com/v10/projects/${projectId}/domains`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${vercelToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: d }),
+          }).catch(() => {});
+        }
+      }
+
+      return res.status(200).json({ ok: true });
     }
 
     // ── PATCH: mark site as paid ──

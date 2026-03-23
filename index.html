@@ -3240,8 +3240,10 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
           if (saveBtn) { saveBtn.textContent = 'Se salvează…'; saveBtn.disabled = true; }
           window._autoSavePromise = _saveUserSite(wsSession, html, brief)
             .then((saved) => {
+              console.log('[auto-save] response:', JSON.stringify(saved));
               if (saved && saved.site && saved.site.id) window.editingSiteId = saved.site.id;
               if (saved && saved.site && saved.site.sku) window.editingSku = saved.site.sku;
+              console.log('[auto-save] editingSiteId set to:', window.editingSiteId);
               const saveBtn2 = document.getElementById('btn-save-account');
               if (saveBtn2) { saveBtn2.textContent = '✓ Salvat'; saveBtn2.style.color = '#C8FF00'; saveBtn2.disabled = true; setTimeout(function(){ saveBtn2.textContent = '💾 Salvează modificările'; saveBtn2.disabled = false; }, 3000); }
               const mySites = document.getElementById('btn-my-sites');
@@ -5921,11 +5923,14 @@ async function manuallySaveToAccount() {
   // Sync latest HTML from iframe before saving
   if (typeof syncHtml === 'function') syncHtml();
 
+  console.log('[manual-save] editingSiteId:', window.editingSiteId, 'editingSku:', window.editingSku);
+
   btn.textContent = '···';
   btn.disabled = true;
 
   try {
     var processedHtml = await _uploadBase64Images(window.generatedHtml);
+    console.log('[manual-save] sending editId:', window.editingSiteId || null);
     var res = await fetch('/api/user/sites', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
