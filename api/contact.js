@@ -111,21 +111,25 @@ module.exports = async function handler(req, res) {
 
   // Look up owner's notification email
   // siteId can be an internal ID or a SKU (WEB-XXXXXX) — resolve to internal ID if needed
+  console.log('[contact] received siteId:', siteId);
   let resolvedSiteId = siteId;
   if (siteId && /^WEB-[A-Z0-9]{6}$/i.test(siteId)) {
     try {
       const skuData = await redis(['GET', `sku:${siteId.toUpperCase()}`]);
+      console.log('[contact] SKU lookup:', siteId, '→', skuData);
       if (skuData) {
         const parsed = JSON.parse(skuData);
         if (parsed.siteId) resolvedSiteId = parsed.siteId;
       }
-    } catch (_) {}
+    } catch (e) { console.error('[contact] SKU resolve error:', e.message); }
   }
+  console.log('[contact] resolvedSiteId:', resolvedSiteId);
   let ownerEmail = null;
   if (resolvedSiteId) {
     try {
       ownerEmail = await redis(['GET', `contact-email:${resolvedSiteId}`]);
-    } catch (_) {}
+      console.log('[contact] ownerEmail for', resolvedSiteId, ':', ownerEmail);
+    } catch (e) { console.error('[contact] email lookup error:', e.message); }
   }
 
   // Send email notification via Resend
@@ -161,10 +165,12 @@ module.exports = async function handler(req, res) {
     } else if (!siteId && !resolvedSiteId) {
       recipients = ['IT@websiteai.ro', 'adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
     } else {
+      console.warn('[contact] siteId exists but no ownerEmail — email NOT sent. siteId:', siteId, 'resolved:', resolvedSiteId);
       return res.status(200).json({ ok: true });
     }
 
-    await fetch('https://api.resend.com/emails', {
+    console.log('[contact] sending email to:', recipients);
+    const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -174,7 +180,8 @@ module.exports = async function handler(req, res) {
         subject:  `Contact nou${safeBrand ? ` — ${safeBrand}` : ''}: ${safeName}`,
         html:     emailHtml,
       }),
-    }).catch(() => {});
+    });
+    console.log('[contact] Resend response:', emailRes.status, await emailRes.text().catch(() => ''));
   }
 
   return res.status(200).json({ ok: true });
