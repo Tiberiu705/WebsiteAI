@@ -15,10 +15,12 @@ async function redis(command) {
 // Strip inline editing artifacts from HTML so published sites are not editable
 function stripInlineEditor(html) {
   if (!html || typeof html !== 'string') return html;
-  // Remove the editor style block
-  html = html.replace(/<style id="we-css">[\s\S]*?<\/style>/gi, '');
-  // Remove the editor script block
-  html = html.replace(/<scr[^>]*id="we-js"[^>]*>[\s\S]*?<\/script>/gi, '');
+  // Remove ALL editor style blocks (id="we-css", id="we-s", id="we-edit-css")
+  html = html.replace(/<style\s+id="we-[^"]*"[^>]*>[\s\S]*?<\/style>/gi, '');
+  // Remove ALL editor script blocks (id="we-js", id="we-e", id="we-edit", etc.)
+  html = html.replace(/<script\s+id="we-[^"]*"[^>]*>[\s\S]*?<\/script>/gi, '');
+  // Also catch split tag trick: <scr + ipt id="we-...">
+  html = html.replace(/<scr[^>]*id="we-[^"]*"[^>]*>[\s\S]*?<\/script>/gi, '');
   // Remove contenteditable attributes
   html = html.replace(/\s+contenteditable="[^"]*"/gi, '');
   html = html.replace(/\s+contenteditable='[^']*'/gi, '');
