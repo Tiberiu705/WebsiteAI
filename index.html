@@ -520,7 +520,11 @@
       .brief-modal { padding: 28px 20px !important; }
       #generate-overlay { overflow-y: auto !important; }
 
-      .preview-toolbar-btns { overflow-x: auto !important; gap: 6px !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; padding-bottom: 4px; }
+      .preview-toolbar-logo { display: none !important; }
+      .preview-toolbar { padding: 8px 10px !important; gap: 0 !important; }
+      .preview-toolbar-btns { overflow-x: auto !important; gap: 6px !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; mask-image: linear-gradient(to right, #000 85%, transparent 100%); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%); }
+      .preview-toolbar-btns::-webkit-scrollbar { display: none; }
+      .preview-toolbar-btns.scrolled-end { mask-image: none; -webkit-mask-image: none; }
       .preview-toolbar-btns > * { flex-shrink: 0 !important; font-size: 0.72rem !important; padding: 7px 10px !important; }
       /* #btn-regenerate visible on mobile */
       #gallery-toast { display: none !important; }
@@ -1992,8 +1996,8 @@ async function submitContactForm(e) {
   <!-- ── PREVIEW STATE ── -->
   <div id="preview-panel" style="display:none;flex-direction:column;height:100vh;">
     <!-- Toolbar -->
-    <div style="background:#080808;border-bottom:1px solid rgba(200,255,0,0.15);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:12px;">
+    <div class="preview-toolbar" style="background:#080808;border-bottom:1px solid rgba(200,255,0,0.15);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;">
+      <div class="preview-toolbar-logo" style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
         <img src="websiteai-logo.png" style="height:20px;width:auto;object-fit:contain;display:block;" />
         <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:#C8FF00;letter-spacing:0.06em;">SITE GENERAT</span>
       </div>
@@ -2030,6 +2034,7 @@ async function submitContactForm(e) {
           Istoricul meu →
         </a>
         <script>(function(){try{if(localStorage.getItem('ws_session')){var b=document.getElementById('btn-my-sites');if(b)b.style.display='inline-flex';}}catch(e){}})()</script>
+        <script>(function(){var el=document.querySelector('.preview-toolbar-btns');if(el)el.addEventListener('scroll',function(){var atEnd=el.scrollLeft+el.clientWidth>=el.scrollWidth-8;el.classList.toggle('scrolled-end',atEnd);});})()</script>
         <button id="btn-close-preview" style="background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;color:#888;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;transition:color 0.15s,border-color 0.15s;" onmouseenter="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseleave="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.1)'">
           ✕ Închide
         </button>
