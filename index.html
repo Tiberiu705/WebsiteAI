@@ -3923,25 +3923,38 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
     }
     if (!brandName && window.lastBrief) brandName = window.lastBrief.brandName || '';
 
+    // Snapshot text nodes that contain the brand name so replacements are always from original
+    var _origBrand = brandName;
+    var _brandNodes = [];
+    var _origTitle = doc.title;
+    if (_origBrand) {
+      var _bWalker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+      var _bNode;
+      while (_bNode = _bWalker.nextNode()) {
+        if (_bNode.parentElement && _bNode.parentElement.closest('script,style,noscript')) continue;
+        if (_bNode.textContent.includes(_origBrand)) {
+          _brandNodes.push({ node: _bNode, original: _bNode.textContent });
+        }
+      }
+    }
+
     panel.appendChild(editorSectionHead('Numele brandului'));
     panel.appendChild(editorField({
       label: 'Numele afacerii',
       value: brandName,
       type: 'text',
       onInput: function(val) {
-        if (!val.trim() || !brandName) return;
-        var oldName = brandName;
-        // Replace brand name in all text nodes across the document
-        var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
-        var node;
-        while (node = walker.nextNode()) {
-          if (node.parentElement && node.parentElement.closest('script,style,noscript')) continue;
-          if (node.textContent.includes(oldName)) {
-            node.textContent = node.textContent.split(oldName).join(val.trim());
+        if (!val.trim() || !_origBrand) return;
+        // Replace from snapshotted originals — prevents cascading partial matches
+        _brandNodes.forEach(function(entry) {
+          if (entry.node.parentNode) {
+            entry.node.textContent = entry.original.split(_origBrand).join(val.trim());
           }
+        });
+        // Update <title> from original
+        if (_origTitle.includes(_origBrand)) {
+          doc.title = _origTitle.split(_origBrand).join(val.trim());
         }
-        // Update <title>
-        if (doc.title.includes(oldName)) doc.title = doc.title.split(oldName).join(val.trim());
         brandName = val.trim();
         // Update lastBrief so dashboard reflects the new name after save
         if (window.lastBrief) window.lastBrief.brandName = brandName;
