@@ -3943,6 +3943,8 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
         // Update <title>
         if (doc.title.includes(oldName)) doc.title = doc.title.split(oldName).join(val.trim());
         brandName = val.trim();
+        // Update lastBrief so dashboard reflects the new name after save
+        if (window.lastBrief) window.lastBrief.brandName = brandName;
         syncHtml();
       },
     }));
