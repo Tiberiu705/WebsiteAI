@@ -439,6 +439,7 @@ a{color:inherit;text-decoration:none;}
           <div class="dom-tld-pill" data-tld=".com" onclick="toggleTld(this)">.com</div>
           <div class="dom-tld-pill" data-tld=".net" onclick="toggleTld(this)">.net</div>
           <div class="dom-tld-pill" data-tld=".io" onclick="toggleTld(this)">.io</div>
+          <div class="dom-tld-pill" data-tld=".ai" onclick="toggleTld(this)">.ai</div>
         </div>
         <div class="dom-results" id="dom-results">
           <div style="text-align:center;padding:20px;color:#444;font-size:0.82rem;font-family:'Inter',sans-serif;">Introdu un nume de domeniu pentru a vedea disponibilitatea și prețurile</div>
@@ -1145,14 +1146,11 @@ function updateDomainSearch(val) {
 
 function toggleTld(el) {
   var tld = el.getAttribute('data-tld');
-  if (el.classList.contains('active')) {
-    if (_selectedTlds.length === 1) return;
-    _selectedTlds = _selectedTlds.filter(function(t){ return t !== tld; });
-    el.classList.remove('active');
-  } else {
-    _selectedTlds.push(tld);
-    el.classList.add('active');
-  }
+  // Single selection only — deselect all others
+  var pills = document.querySelectorAll('.dom-tld-pill');
+  pills.forEach(function(p) { p.classList.remove('active'); });
+  el.classList.add('active');
+  _selectedTlds = [tld];
 }
 
 async function searchDomains() {
