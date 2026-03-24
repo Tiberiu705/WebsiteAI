@@ -3959,6 +3959,14 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
         // Update lastBrief so dashboard reflects the new name after save
         if (window.lastBrief) window.lastBrief.brandName = brandName;
         syncHtml();
+        // Debounced auto-save so brand name persists to dashboard even without manual save
+        clearTimeout(window._brandSaveTimer);
+        window._brandSaveTimer = setTimeout(function() {
+          var s = (typeof _wsSession === 'function') ? _wsSession() : null;
+          if (s && window.editingSiteId && window.lastBrief) {
+            _saveUserSite(s, window.generatedHtml, window.lastBrief).catch(function(){});
+          }
+        }, 1500);
       },
     }));
 
