@@ -478,21 +478,21 @@ a{color:inherit;text-decoration:none;}
           <div style="font-size:0.82rem;color:#666;font-family:'Inter',sans-serif;margin-bottom:14px;line-height:1.6;">Adaugă aceste 2 înregistrări DNS în <strong style="color:#aaa;">cPanel → Zone Editor</strong> sau în panoul registrarului tău.</div>
           <div class="dom-dns-block">
             <div class="dom-dns-label">Înregistrări DNS</div>
-            <div style="display:grid;grid-template-columns:65px 60px 1fr auto;gap:8px;margin-bottom:8px;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.05);align-items:center;">
+            <div style="display:grid;grid-template-columns:65px 1fr 1fr auto;gap:8px;margin-bottom:8px;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.05);align-items:center;">
               <div style="font-family:'Syne',sans-serif;font-size:0.68rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Tip</div>
               <div style="font-family:'Syne',sans-serif;font-size:0.68rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Nume</div>
               <div style="font-family:'Syne',sans-serif;font-size:0.68rem;color:#555;letter-spacing:0.05em;text-transform:uppercase;">Valoare</div>
               <div></div>
             </div>
-            <div style="display:grid;grid-template-columns:65px 60px 1fr auto;gap:8px;margin-bottom:10px;align-items:center;">
+            <div style="display:grid;grid-template-columns:65px 1fr 1fr auto;gap:8px;margin-bottom:10px;align-items:center;">
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#C8FF00;">A</div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;">@</div>
+              <div id="dns-name-a" style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;word-break:break-all;">@</div>
               <div class="dom-dns-field"><span class="dom-dns-val">76.76.21.21</span></div>
               <button class="dom-copy-btn" onclick="copyDns(this,'76.76.21.21')">Copiază</button>
             </div>
-            <div style="display:grid;grid-template-columns:65px 60px 1fr auto;gap:8px;align-items:center;">
+            <div style="display:grid;grid-template-columns:65px 1fr 1fr auto;gap:8px;align-items:center;">
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#C8FF00;">CNAME</div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;">www</div>
+              <div id="dns-name-cname" style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;word-break:break-all;">www</div>
               <div class="dom-dns-field"><span class="dom-dns-val">cname.vercel-dns.com</span></div>
               <button class="dom-copy-btn" onclick="copyDns(this,'cname.vercel-dns.com')">Copiază</button>
             </div>
@@ -500,8 +500,8 @@ a{color:inherit;text-decoration:none;}
           <div class="dom-steps-list">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;color:#fff;margin-bottom:4px;">Pași în cPanel</div>
             <div class="dom-step-item"><div class="dom-step-num">1</div><div class="dom-step-text">Intră în <strong>cPanel → Zone Editor</strong> (sau DNS Management la registrar)</div></div>
-            <div class="dom-step-item"><div class="dom-step-num">2</div><div class="dom-step-text">Adaugă tip <strong>A</strong> → Nume: <strong>@</strong> → Valoare: <strong>76.76.21.21</strong></div></div>
-            <div class="dom-step-item"><div class="dom-step-num">3</div><div class="dom-step-text">Adaugă tip <strong>CNAME</strong> → Nume: <strong>www</strong> → Valoare: <strong>cname.vercel-dns.com</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">2</div><div class="dom-step-text">Adaugă tip <strong>A</strong> → Nume: <strong id="dns-step-a-name">@</strong> → Valoare: <strong>76.76.21.21</strong></div></div>
+            <div class="dom-step-item"><div class="dom-step-num">3</div><div class="dom-step-text">Adaugă tip <strong>CNAME</strong> → Nume: <strong id="dns-step-cname-name">www</strong> → Valoare: <strong>cname.vercel-dns.com</strong></div></div>
             <div class="dom-step-item"><div class="dom-step-num">4</div><div class="dom-step-text">Salvează și apasă <strong>Verifică conectarea</strong> (propagare DNS: 15 min – 48h)</div></div>
           </div>
         </div>
@@ -1207,7 +1207,24 @@ function switchDnsMethod(method) {
   document.getElementById('dns-panel-cname').style.display = method === 'cname' ? 'block' : 'none';
 }
 
-function updateExistingDomain(val) { /* live validation could go here */ }
+function updateExistingDomain(val) {
+  var domain = (val || '').trim().replace(/^https?:\/\//, '').replace(/\/$/, '').replace(/^www\./, '').toLowerCase();
+  var nameA = document.getElementById('dns-name-a');
+  var nameCname = document.getElementById('dns-name-cname');
+  var stepA = document.getElementById('dns-step-a-name');
+  var stepCname = document.getElementById('dns-step-cname-name');
+  if (domain) {
+    nameA.textContent = domain + '.';
+    nameCname.textContent = 'www.' + domain + '.';
+    if (stepA) stepA.textContent = domain + '.';
+    if (stepCname) stepCname.textContent = 'www.' + domain + '.';
+  } else {
+    nameA.textContent = '@';
+    nameCname.textContent = 'www';
+    if (stepA) stepA.textContent = '@';
+    if (stepCname) stepCname.textContent = 'www';
+  }
+}
 
 function copyDns(btn, text) {
   navigator.clipboard.writeText(text).then(function() {
