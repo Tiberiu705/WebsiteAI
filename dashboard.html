@@ -900,6 +900,12 @@ async function adminEditBySku() {
 }
 
 function editSite(id, brand, activity, sku) {
+  // Save last session so user can return after re-login
+  try {
+    localStorage.setItem('ws_last_session', JSON.stringify({
+      type: 'edit', siteId: id, sku: sku || '', brand: brand || '', activity: activity || '', savedAt: Date.now()
+    }));
+  } catch {}
   window.location.href = '/?edit=' + id
     + '&token=' + encodeURIComponent(_session)
     + '&brand=' + encodeURIComponent(brand || '')

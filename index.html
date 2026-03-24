@@ -572,6 +572,11 @@
         Generează Gratuit
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#080808" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
+      <!-- Login button — logged out -->
+      <button id="nav-login-btn" onclick="openLoginModal(function(){_restoreLastSession();})" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:9px 18px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:background 0.15s;display:inline-flex;align-items:center;gap:7px;" onmouseenter="this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.style.background='rgba(255,255,255,0.06)'">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3.5" stroke="#fff" stroke-width="1.4"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Conectează-te
+      </button>
 
       <!-- Avatar — logged in -->
       <a href="/dashboard" id="nav-user-area" style="display:none;align-items:center;gap:8px;text-decoration:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:10px;padding:6px 12px;">
@@ -595,6 +600,7 @@
     <a href="#contact" class="nav-mob-link" onclick="closeMobileMenu()">Contact</a>
     <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0;"></div>
     <a href="#" id="nav-mob-generate" class="nav-mob-link" onclick="closeMobileMenu();setTimeout(function(){if(typeof openOverlay==='function'){openOverlay();}else{document.getElementById('generator').scrollIntoView({behavior:'smooth'});}},100);return false;" style="color:#C8FF00;font-weight:600;">Generează Gratuit →</a>
+    <a href="#" id="nav-mob-login" class="nav-mob-link" onclick="closeMobileMenu();setTimeout(function(){openLoginModal(function(){_restoreLastSession();});},100);return false;" style="color:#fff;font-weight:600;">Conectează-te →</a>
     <a href="/dashboard" id="nav-mob-dashboard" class="nav-mob-link" style="display:none;color:#C8FF00;font-weight:600;" onclick="closeMobileMenu()">Dashboard →</a>
   </div>
 </nav>
@@ -643,6 +649,7 @@
     var user = JSON.parse(localStorage.getItem('ws_user') || 'null');
     if (session && user) {
       document.getElementById('nav-cta-loggedout').style.display = 'none';
+      document.getElementById('nav-login-btn').style.display = 'none';
       document.getElementById('nav-dashboard-link').style.display = 'inline';
       var userArea = document.getElementById('nav-user-area');
       userArea.setAttribute('style', 'display:flex!important;align-items:center;gap:8px;text-decoration:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:10px;padding:6px 12px;');
@@ -657,10 +664,12 @@
       } else {
         avatarEl.textContent = (user.name || 'U')[0].toUpperCase();
       }
-      // Mobile dropdown: show Dashboard, hide generate
+      // Mobile dropdown: show Dashboard, hide generate/login
       var mobGen = document.getElementById('nav-mob-generate');
       var mobDash = document.getElementById('nav-mob-dashboard');
+      var mobLogin = document.getElementById('nav-mob-login');
       if (mobGen) mobGen.style.display = 'none';
+      if (mobLogin) mobLogin.style.display = 'none';
       if (mobDash) mobDash.style.display = 'block';
     }
   } catch(e) {}
@@ -3251,6 +3260,7 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
               if (saved && saved.site && saved.site.id) window.editingSiteId = saved.site.id;
               if (saved && saved.site && saved.site.sku) window.editingSku = saved.site.sku;
               console.log('[auto-save] editingSiteId set to:', window.editingSiteId);
+              if (typeof _saveLastSession === 'function') _saveLastSession();
               const saveBtn2 = document.getElementById('btn-save-account');
               if (saveBtn2) { saveBtn2.textContent = '✓ Salvat'; saveBtn2.style.color = '#C8FF00'; saveBtn2.disabled = true; setTimeout(function(){ saveBtn2.textContent = '💾 Salvează modificările'; saveBtn2.disabled = false; }, 3000); }
               const mySites = document.getElementById('btn-my-sites');
@@ -5886,6 +5896,7 @@ async function _handleGoogleCredential(response) {
 
     _wsSetSession(data.token, data.user);
     document.getElementById('login-overlay').style.display = 'none';
+    _updateNavbarLoggedIn();
 
     if (typeof _loginCallback === 'function') {
       var cb = _loginCallback;
@@ -5896,6 +5907,86 @@ async function _handleGoogleCredential(response) {
     errEl.textContent = e.message;
     errEl.style.display = 'block';
   }
+}
+
+// ── Save & restore last session ──
+function _saveLastSession() {
+  try {
+    var state = {};
+    if (window.editingSiteId) {
+      state.type = 'edit';
+      state.siteId = window.editingSiteId;
+      state.sku = window.editingSku || '';
+      state.brand = (window.lastBrief && window.lastBrief.brandName) || '';
+      state.activity = (window.lastBrief && window.lastBrief.activity) || '';
+    } else if (window._siteGenerated && window.generatedHtml) {
+      state.type = 'preview';
+    } else {
+      state.type = 'dashboard';
+    }
+    state.savedAt = Date.now();
+    localStorage.setItem('ws_last_session', JSON.stringify(state));
+  } catch {}
+}
+
+function _restoreLastSession() {
+  try {
+    var raw = localStorage.getItem('ws_last_session');
+    if (!raw) { window.location.href = '/dashboard'; return; }
+    var state = JSON.parse(raw);
+    // Ignore sessions older than 7 days
+    if (Date.now() - (state.savedAt || 0) > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem('ws_last_session');
+      window.location.href = '/dashboard';
+      return;
+    }
+    if (state.type === 'edit' && state.siteId) {
+      var session = localStorage.getItem('ws_session') || '';
+      window.location.href = '/?edit=' + encodeURIComponent(state.siteId)
+        + '&token=' + encodeURIComponent(session)
+        + '&brand=' + encodeURIComponent(state.brand || '')
+        + '&act=' + encodeURIComponent(state.activity || '')
+        + (state.sku ? '&sku=' + encodeURIComponent(state.sku) : '');
+      return;
+    }
+    // For preview or unknown, go to dashboard
+    window.location.href = '/dashboard';
+  } catch {
+    window.location.href = '/dashboard';
+  }
+}
+
+function _updateNavbarLoggedIn() {
+  try {
+    var user = JSON.parse(localStorage.getItem('ws_user') || 'null');
+    if (!user) return;
+    var ctaBtn = document.getElementById('nav-cta-loggedout');
+    var loginBtn = document.getElementById('nav-login-btn');
+    var dashLink = document.getElementById('nav-dashboard-link');
+    var userArea = document.getElementById('nav-user-area');
+    if (ctaBtn) ctaBtn.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (dashLink) dashLink.style.display = 'inline';
+    if (userArea) userArea.setAttribute('style', 'display:flex!important;align-items:center;gap:8px;text-decoration:none;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:10px;padding:6px 12px;');
+    var uname = (user.name || user.email || '').split(' ')[0];
+    document.getElementById('nav-username').textContent = uname;
+    var avatarEl = document.getElementById('nav-avatar');
+    avatarEl.innerHTML = '';
+    if (user.picture) {
+      var img = document.createElement('img');
+      img.src = user.picture;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      avatarEl.appendChild(img);
+    } else {
+      avatarEl.textContent = (user.name || 'U')[0].toUpperCase();
+    }
+    var mobGen = document.getElementById('nav-mob-generate');
+    var mobLogin = document.getElementById('nav-mob-login');
+    var mobDash = document.getElementById('nav-mob-dashboard');
+    if (mobGen) mobGen.style.display = 'none';
+    if (mobLogin) mobLogin.style.display = 'none';
+    if (mobDash) mobDash.style.display = 'block';
+  } catch {}
 }
 
 function openLoginModal(callback) {
@@ -6097,6 +6188,7 @@ async function _saveUserSite(session, html, brief) {
   window.editingSiteId = editId;
   window.editingSku = sku;
   window.isAdminEdit = isAdmin;
+  if (typeof _saveLastSession === 'function') _saveLastSession();
 
   try {
     var res = await fetch('/api/preview?id=' + encodeURIComponent(editId));
