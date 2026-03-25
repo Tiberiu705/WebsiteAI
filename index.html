@@ -1093,6 +1093,7 @@ function quickStart(btn) {
 
   // Build filter pills
   var filtersEl = document.getElementById('tpl-filters');
+  if (!filtersEl) return; // Elements not yet in DOM — skip
   CATS.forEach(function(c) {
     var btn = document.createElement('button');
     btn.className = 'tpl-pill' + (c.key === 'toate' ? ' active' : '');
