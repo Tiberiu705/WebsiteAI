@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23C8FF00'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='18' fill='%23080808'%3EW%3C/text%3E%3C/svg%3E" />
   <!-- TheMarketer Tracking -->
   <script>
+  window.dataLayer = window.dataLayer || [];
   (function(){
     mktr_key = "FZSUET9N";
     var mktr = document.createElement("script");
@@ -15,6 +16,11 @@
     var s = document.getElementsByTagName("script")[0];
     s.parentNode.insertBefore(mktr, s);
   })();
+  // Fire page view events after tracker loads
+  window.addEventListener('load', function() {
+    dataLayer.push({ event: "__sm__view_homepage" });
+    dataLayer.push({ event: "__sm__view_page" });
+  });
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1804,6 +1810,11 @@ async function submitContactForm(e) {
       msg.style.border = '1px solid rgba(200,255,0,0.25)';
       msg.style.color = '#C8FF00';
       msg.textContent = '✓ Mesaj trimis! Te contactăm în curând.';
+      // TheMarketer: capture lead email
+      if (window.dataLayer && body.email) {
+        var parts = body.name.split(' ');
+        dataLayer.push({ event: "__sm__set_email", email_address: body.email, firstname: parts[0] || '', lastname: parts.slice(1).join(' ') || '' });
+      }
       document.getElementById('contact-form').reset();
     } else {
       throw new Error(data.error || 'Eroare');
@@ -5939,6 +5950,11 @@ async function _handleGoogleCredential(response) {
     _wsSetSession(data.token, data.user);
     document.getElementById('login-overlay').style.display = 'none';
     _updateNavbarLoggedIn();
+
+    // TheMarketer: capture user email on login
+    if (window.dataLayer && data.user && data.user.email) {
+      dataLayer.push({ event: "__sm__set_email", email_address: data.user.email, firstname: data.user.name || '' });
+    }
 
     if (typeof _loginCallback === 'function') {
       var cb = _loginCallback;

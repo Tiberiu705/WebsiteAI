@@ -7,6 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23C8FF00'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='18' fill='%23080808'%3EW%3C/text%3E%3C/svg%3E" />
 <!-- TheMarketer Tracking -->
 <script>
+window.dataLayer = window.dataLayer || [];
 (function(){
   mktr_key = "FZSUET9N";
   var mktr = document.createElement("script");
@@ -15,6 +16,14 @@
   var s = document.getElementsByTagName("script")[0];
   s.parentNode.insertBefore(mktr, s);
 })();
+window.addEventListener('load', function() {
+  dataLayer.push({ event: "__sm__view_page" });
+  // Capture logged-in user email
+  try {
+    var u = JSON.parse(localStorage.getItem('ws_user') || 'null');
+    if (u && u.email) dataLayer.push({ event: "__sm__set_email", email_address: u.email, firstname: u.name || '' });
+  } catch(e) {}
+});
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
