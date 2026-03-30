@@ -16,14 +16,19 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  // Admin only
+  // Admin only — session token OR temporary admin key
+  const ADMIN_KEY = process.env.ADMIN_SECRET || process.env.ADMIN_CLEANUP_KEY;
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
-  if (!token) return res.status(401).json({ error: 'No token' });
-  const sessionData = await redis(['GET', `session:${token}`]);
-  if (!sessionData) return res.status(401).json({ error: 'Invalid session' });
-  const user = JSON.parse(sessionData);
-  const ADMIN_EMAILS = ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
-  if (!ADMIN_EMAILS.includes(user.email)) return res.status(403).json({ error: 'Not admin' });
+  if (ADMIN_KEY && token === ADMIN_KEY) {
+    // OK — admin key auth
+  } else {
+    if (!token) return res.status(401).json({ error: 'No token' });
+    const sessionData = await redis(['GET', `session:${token}`]);
+    if (!sessionData) return res.status(401).json({ error: 'Invalid session' });
+    const user = JSON.parse(sessionData);
+    const ADMIN_EMAILS = ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
+    if (!ADMIN_EMAILS.includes(user.email)) return res.status(403).json({ error: 'Not admin' });
+  }
 
   const action = req.query.action || 'list';
 
