@@ -106,5 +106,105 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true, orphansDeleted: deleted, freedBytes });
   }
 
+  // Scan ALL keys, group by prefix, measure sizes
+  if (action === 'scan-all') {
+    const allKeys = await redis(['KEYS', '*']);
+    const prefixes = {};
+    for (const k of (allKeys || [])) {
+      const prefix = k.includes(':') ? k.split(':').slice(0, 2).join(':') : k;
+      if (!prefixes[prefix]) prefixes[prefix] = { count: 0, totalSize: 0, keys: [] };
+      prefixes[prefix].count++;
+      let size = 0;
+      try {
+        const type = await redis(['TYPE', k]);
+        if (type === 'string') {
+          size = await redis(['STRLEN', k]) || 0;
+        } else if (type === 'zset') {
+          const members = await redis(['ZRANGE', k, 0, -1]);
+          size = (members || []).reduce((s, m) => s + m.length, 0);
+        } else if (type === 'set') {
+          const members = await redis(['SMEMBERS', k]);
+          size = (members || []).reduce((s, m) => s + m.length, 0);
+        } else if (type === 'list') {
+          const len = await redis(['LLEN', k]) || 0;
+          size = len * 100; // estimate
+        } else if (type === 'hash') {
+          const vals = await redis(['HGETALL', k]);
+          size = JSON.stringify(vals || {}).length;
+        }
+      } catch {}
+      prefixes[prefix].totalSize += size;
+      if (prefixes[prefix].keys.length < 5) prefixes[prefix].keys.push({ key: k, size });
+    }
+    // Sort by totalSize descending
+    const sorted = Object.entries(prefixes)
+      .map(([p, d]) => ({ prefix: p, ...d, totalSizeMB: (d.totalSize / 1024 / 1024).toFixed(2) }))
+      .sort((a, b) => b.totalSize - a.totalSize);
+    const dbinfo = await redis(['DBSIZE']);
+    return res.status(200).json({ dbsize: dbinfo, totalKeys: (allKeys || []).length, prefixes: sorted });
+  }
+
+  // Delete all keys matching a prefix
+  if (action === 'delete-prefix') {
+    const prefix = req.query.prefix;
+    if (!prefix) return res.status(400).json({ error: 'prefix required' });
+    // Safety: don't delete user:sites or session keys
+    if (prefix === 'user:sites' || prefix === 'session') {
+      return res.status(400).json({ error: 'Cannot delete protected prefix' });
+    }
+    const keys = await redis(['KEYS', `${prefix}:*`]);
+    let deleted = 0;
+    for (const k of (keys || [])) {
+      await redis(['DEL', k]);
+      deleted++;
+    }
+    return res.status(200).json({ ok: true, prefix, deleted });
+  }
+
+  // Delete unpaid site HTML (keep metadata in user list, just remove heavy HTML)
+  if (action === 'cleanup-unpaid-html') {
+    const userKeys = await redis(['KEYS', 'user:sites:*']);
+    let deleted = 0;
+    let freedBytes = 0;
+    for (const uk of (userKeys || [])) {
+      const members = await redis(['ZRANGE', uk, 0, -1]);
+      for (const m of (members || [])) {
+        try {
+          const s = JSON.parse(m);
+          if (!s.paid) {
+            const size = await redis(['STRLEN', `site:html:${s.id}`]) || 0;
+            if (size > 0) {
+              await redis(['DEL', `site:html:${s.id}`]);
+              deleted++;
+              freedBytes += size;
+            }
+          }
+        } catch {}
+      }
+    }
+    return res.status(200).json({ ok: true, unpaidHtmlDeleted: deleted, freedBytes, freedMB: (freedBytes / 1024 / 1024).toFixed(2) });
+  }
+
+  // Get top N largest keys
+  if (action === 'top-keys') {
+    const limit = parseInt(req.query.limit) || 20;
+    const allKeys = await redis(['KEYS', '*']);
+    const keySizes = [];
+    for (const k of (allKeys || [])) {
+      let size = 0;
+      try {
+        const type = await redis(['TYPE', k]);
+        if (type === 'string') size = await redis(['STRLEN', k]) || 0;
+        else if (type === 'zset') {
+          const members = await redis(['ZRANGE', k, 0, -1]);
+          size = (members || []).reduce((s, m) => s + m.length, 0);
+        }
+      } catch {}
+      keySizes.push({ key: k, size, sizeMB: (size / 1024 / 1024).toFixed(3) });
+    }
+    keySizes.sort((a, b) => b.size - a.size);
+    return res.status(200).json({ topKeys: keySizes.slice(0, limit) });
+  }
+
   return res.status(400).json({ error: 'Unknown action' });
 };
