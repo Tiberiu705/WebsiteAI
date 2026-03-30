@@ -3206,7 +3206,9 @@ async function submitContactForm(e) {
       for (let mi = 0; mi < modelList.length; mi++) {
         const model = modelList[mi];
         if (mi > 0) loadingStatus.textContent = `Model suprasolicitată, încerc ${model}…`;
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+
+        // Use streaming for faster perceived speed
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${key}`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3227,11 +3229,41 @@ async function submitContactForm(e) {
           throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
         }
 
-        const data = await res.json();
-        html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        // Read SSE stream and accumulate text
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let charCount = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          // Parse SSE lines
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const jsonStr = line.slice(6);
+            if (jsonStr === '[DONE]') continue;
+            try {
+              const chunk = JSON.parse(jsonStr);
+              const text = chunk?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+              if (text) {
+                html += text;
+                charCount += text.length;
+                // Update progress based on chars received (~30k expected)
+                if (charCount < 35000) {
+                  const pct = Math.min(75, Math.round((charCount / 30000) * 70) + 5);
+                  loadingStatus.textContent = `Se generează codul… ${Math.round(charCount/1000)}k caractere`;
+                  if (typeof progressBar !== 'undefined' && progressBar) progressBar.style.width = pct + '%';
+                }
+              }
+            } catch {}
+          }
+        }
+
         if (!html) {
-          const reason = data?.candidates?.[0]?.finishReason || 'unknown';
-          throw new Error(`Gemini nu a returnat HTML. Motiv: ${reason}`);
+          throw new Error('Gemini nu a returnat HTML.');
         }
         html = html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
         break;
@@ -6162,7 +6194,7 @@ function _showSaveToast(msg, color) {
 })();
 
 async function _compressDataUrl(dataUrl, maxWidth, quality) {
-  maxWidth = maxWidth || 1200; quality = quality || 0.82;
+  maxWidth = maxWidth || 800; quality = quality || 0.72;
   return new Promise(function(resolve) {
     var img = new Image();
     img.onload = function() {
@@ -6184,30 +6216,47 @@ async function _compressDataUrl(dataUrl, maxWidth, quality) {
 }
 
 async function _uploadBase64Images(html) {
-  // Find all base64 image data URLs and upload them to /api/img
+  // Find all base64 image data URLs
   var matches = [];
   var re = /src="(data:image\/[^"]+)"/g;
   var m;
   while ((m = re.exec(html)) !== null) matches.push({ full: m[0], dataUrl: m[1] });
+  if (!matches.length) return html;
 
-  for (var i = 0; i < matches.length; i++) {
-    var item = matches[i];
-    try {
-      var compressed = await _compressDataUrl(item.dataUrl);
-      if (!compressed) { html = html.replace(item.full, 'src="https://placehold.co/800x500"'); continue; }
-      var res = await fetch('/api/img', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(compressed),
-      });
-      if (res.ok) {
-        var json = await res.json();
-        html = html.split(item.full).join('src="/api/img?k=' + json.key + '"');
-      } else {
-        html = html.replace(item.full, 'src="https://placehold.co/800x500"');
-      }
-    } catch(e) {
-      html = html.replace(item.full, 'src="https://placehold.co/800x500"');
+  // Compress all images in parallel
+  var compressed = await Promise.all(matches.map(function(item) {
+    return _compressDataUrl(item.dataUrl).catch(function() { return null; });
+  }));
+
+  // Upload in parallel batches of 4
+  var BATCH = 4;
+  var results = new Array(matches.length);
+  for (var i = 0; i < matches.length; i += BATCH) {
+    var batch = [];
+    for (var j = i; j < Math.min(i + BATCH, matches.length); j++) {
+      (function(idx) {
+        if (!compressed[idx]) { results[idx] = null; batch.push(Promise.resolve()); return; }
+        batch.push(
+          fetch('/api/img', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(compressed[idx]),
+          }).then(function(res) {
+            if (res.ok) return res.json().then(function(json) { results[idx] = json.key; });
+            results[idx] = null;
+          }).catch(function() { results[idx] = null; })
+        );
+      })(j);
+    }
+    await Promise.all(batch);
+  }
+
+  // Replace all in one pass
+  for (var k = 0; k < matches.length; k++) {
+    if (results[k]) {
+      html = html.split(matches[k].full).join('src="/api/img?k=' + results[k] + '"');
+    } else {
+      html = html.split(matches[k].full).join('src="https://placehold.co/800x500"');
     }
   }
   return html;

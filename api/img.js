@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
       if (!data) return res.status(404).send('Imaginea nu a fost găsită');
       const parsed = JSON.parse(data);
       res.setHeader('Content-Type', parsed.mime || 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=7776000');
+      res.setHeader('Cache-Control', 'public, max-age=7776000, s-maxage=7776000, immutable');
       return res.status(200).send(Buffer.from(parsed.data, 'base64'));
     } catch (e) {
       return res.status(500).send('Eroare internă');
