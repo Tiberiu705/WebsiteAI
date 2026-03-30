@@ -154,6 +154,23 @@ module.exports = async function handler(req, res) {
         generatedAt: new Date().toISOString(),
       };
 
+      // Before adding, clean up oldest sites that will be evicted
+      const currentCount = await redis(['ZCARD', key]) || 0;
+      if (currentCount >= USER_SITES_MAX) {
+        const evicted = await redis(['ZRANGE', key, 0, 0]);
+        for (const em of (evicted || [])) {
+          try {
+            const es = JSON.parse(em);
+            // Clean HTML + images + sku + meta
+            const oldHtml = await redis(['GET', `site:html:${es.id}`]);
+            if (oldHtml) await deleteAllImages(oldHtml);
+            const delOps = [redis(['DEL', `site:html:${es.id}`]), redis(['DEL', `site:meta:${es.id}`])];
+            if (es.sku) delOps.push(redis(['DEL', `sku:${es.sku}`]));
+            await Promise.all(delOps);
+          } catch {}
+        }
+      }
+
       const ops = [
         redis(['ZADD', key, Date.now(), JSON.stringify(site)]),
         redis(['ZREMRANGEBYRANK', key, 0, -(USER_SITES_MAX + 1)]),
@@ -259,15 +276,23 @@ module.exports = async function handler(req, res) {
         try {
           const s = JSON.parse(m);
           if (s.id === id) {
-            // Delete associated images before removing HTML
+            // Delete ALL associated data: images, HTML, sku mapping, site:meta, domain
             try {
               const siteHtml = await redis(['GET', `site:html:${id}`]);
               if (siteHtml) await deleteAllImages(siteHtml);
             } catch {}
-            await Promise.all([
+            const delOps = [
               redis(['ZREM', key, m]),
               redis(['DEL', `site:html:${id}`]),
-            ]);
+              redis(['DEL', `site:meta:${id}`]),
+            ];
+            if (s.sku) delOps.push(redis(['DEL', `sku:${s.sku}`]));
+            await Promise.all(delOps);
+            // If site had a domain, clean that too
+            if (s.domain) {
+              redis(['DEL', `domain:${s.domain}`]).catch(() => {});
+              redis(['DEL', `domain:www.${s.domain}`]).catch(() => {});
+            }
             removed++;
           }
         } catch {}

@@ -43,7 +43,24 @@ module.exports = async function handler(req, res) {
     };
 
     const token = crypto.randomBytes(32).toString('hex');
+
+    // Delete old sessions for this user (prevent session accumulation)
+    try {
+      const oldSessions = await redis(['SMEMBERS', `user:sessions:${user.sub}`]);
+      if (oldSessions && oldSessions.length > 0) {
+        // Keep max 3 recent sessions, delete the rest
+        if (oldSessions.length >= 3) {
+          for (const oldToken of oldSessions) {
+            await redis(['DEL', `session:${oldToken}`]);
+            await redis(['SREM', `user:sessions:${user.sub}`, oldToken]);
+          }
+        }
+      }
+    } catch {}
+
     await redis(['SET', `session:${token}`, JSON.stringify(user), 'EX', 2592000]);
+    await redis(['SADD', `user:sessions:${user.sub}`, token]);
+    await redis(['EXPIRE', `user:sessions:${user.sub}`, 2592000]);
 
     return res.status(200).json({ token, user });
   } catch (err) {

@@ -23,7 +23,7 @@ const PAGE_SIZE = 20;
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -66,6 +66,28 @@ module.exports = async function handler(req, res) {
         generatedAt: new Date().toISOString(),
       };
 
+      // Before adding, get items that will be evicted so we can clean them up
+      const currentCount = await redis(['ZCARD', KEY]) || 0;
+      if (currentCount >= MAX_ITEMS) {
+        // Get oldest items that will be evicted
+        const evicted = await redis(['ZRANGE', KEY, 0, 0]);
+        for (const em of (evicted || [])) {
+          try {
+            const es = JSON.parse(em);
+            // Clean up evicted site's HTML and images
+            const oldHtml = await redis(['GET', `site:html:${es.id}`]);
+            if (oldHtml) {
+              const imgMatches = oldHtml.match(/\/api\/img\?k=([a-z0-9]+)/gi) || [];
+              await Promise.all(imgMatches.map(match => {
+                const imgId = match.replace(/.*\/api\/img\?k=/i, '');
+                return redis(['DEL', `img:${imgId}`]).catch(() => {});
+              }));
+            }
+            await redis(['DEL', `site:html:${es.id}`]);
+          } catch {}
+        }
+      }
+
       const ops = [
         redis(['ZADD', KEY, Date.now(), JSON.stringify(site)]),
         redis(['ZREMRANGEBYRANK', KEY, 0, -(MAX_ITEMS + 1)]),
@@ -94,6 +116,17 @@ module.exports = async function handler(req, res) {
         try {
           const s = JSON.parse(m);
           if (s.id === id) {
+            // Delete associated images before removing HTML
+            try {
+              const siteHtml = await redis(['GET', `site:html:${id}`]);
+              if (siteHtml) {
+                const imgMatches = siteHtml.match(/\/api\/img\?k=([a-z0-9]+)/gi) || [];
+                await Promise.all(imgMatches.map(match => {
+                  const imgId = match.replace(/.*\/api\/img\?k=/i, '');
+                  return redis(['DEL', `img:${imgId}`]).catch(() => {});
+                }));
+              }
+            } catch {}
             await redis(['ZREM', KEY, m]);
             await redis(['DEL', `site:html:${id}`]);
             removed++;
@@ -101,6 +134,42 @@ module.exports = async function handler(req, res) {
         } catch {}
       }
       return res.status(200).json({ ok: true, removed });
+    }
+
+    // ── PUT: contact form submission ──
+    if (req.method === 'PUT') {
+      const { nume, prenume, telefon, email } = req.body || {};
+      if (!nume || !prenume || !telefon || !email) {
+        return res.status(400).json({ error: 'Toate câmpurile sunt obligatorii' });
+      }
+
+      const resendKey = process.env.RESEND_API_KEY;
+      if (!resendKey) return res.status(500).json({ error: 'Email neconfigurat' });
+
+      const emailBody = `
+        <h2>Mesaj nou din formularul de contact — WebsiteAI.ro</h2>
+        <p><strong>Nume:</strong> ${nume} ${prenume}</p>
+        <p><strong>Telefon:</strong> ${telefon}</p>
+        <p><strong>Email:</strong> ${email}</p>
+      `;
+
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'WebsiteAI Contact <contact@websiteai.ro>',
+          to: ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'],
+          subject: `Contact nou: ${nume} ${prenume}`,
+          html: emailBody,
+        }),
+      });
+
+      if (!emailRes.ok) {
+        const err = await emailRes.json().catch(() => ({}));
+        return res.status(500).json({ error: err.message || 'Eroare trimitere email' });
+      }
+
+      return res.status(200).json({ ok: true });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
