@@ -154,19 +154,26 @@ module.exports = async function handler(req, res) {
         generatedAt: new Date().toISOString(),
       };
 
-      // Before adding, clean up oldest sites that will be evicted
+      // Before adding, clean up oldest UNPAID sites that will be evicted
       const currentCount = await redis(['ZCARD', key]) || 0;
       if (currentCount >= USER_SITES_MAX) {
-        const evicted = await redis(['ZRANGE', key, 0, 0]);
-        for (const em of (evicted || [])) {
+        // Get all members to find oldest unpaid ones to evict
+        const allMembers = await redis(['ZRANGE', key, 0, -1]);
+        for (const em of (allMembers || [])) {
           try {
             const es = JSON.parse(em);
+            if (es.paid) continue; // Nu șterge site-urile plătite
             // Clean HTML + images + sku + meta
             const oldHtml = await redis(['GET', `site:html:${es.id}`]);
             if (oldHtml) await deleteAllImages(oldHtml);
-            const delOps = [redis(['DEL', `site:html:${es.id}`]), redis(['DEL', `site:meta:${es.id}`])];
+            const delOps = [
+              redis(['ZREM', key, em]),
+              redis(['DEL', `site:html:${es.id}`]),
+              redis(['DEL', `site:meta:${es.id}`]),
+            ];
             if (es.sku) delOps.push(redis(['DEL', `sku:${es.sku}`]));
             await Promise.all(delOps);
+            break; // Șterge doar cel mai vechi nepătit, nu toate
           } catch {}
         }
       }
@@ -276,6 +283,10 @@ module.exports = async function handler(req, res) {
         try {
           const s = JSON.parse(m);
           if (s.id === id) {
+            // Nu permite ștergerea site-urilor plătite
+            if (s.paid) {
+              return res.status(403).json({ error: 'Site-ul plătit nu poate fi șters' });
+            }
             // Delete ALL associated data: images, HTML, sku mapping, site:meta, domain
             try {
               const siteHtml = await redis(['GET', `site:html:${id}`]);

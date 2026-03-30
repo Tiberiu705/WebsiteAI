@@ -77,6 +77,7 @@ module.exports = async function handler(req, res) {
       try {
         const s = JSON.parse(m);
         if (s.id === siteId) {
+          if (s.paid) return res.status(403).json({ error: 'Site-ul plătit nu poate fi șters' });
           await redis(['ZREM', userKey, m]);
           removed++;
         }
