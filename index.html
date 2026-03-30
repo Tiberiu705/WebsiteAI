@@ -6214,25 +6214,18 @@ async function _uploadBase64Images(html) {
 }
 
 async function _saveUserSite(session, html, brief) {
-  console.log('[_saveUserSite] brandName:', brief.brandName, 'editId:', window.editingSiteId, 'htmlLen:', html ? html.length : 0);
   const processedHtml = await _uploadBase64Images(html);
-  console.log('[_saveUserSite] processedHtmlLen:', processedHtml ? processedHtml.length : 0);
   const payload = { html: processedHtml, brandName: brief.brandName, activity: brief.activity, editId: window.editingSiteId || null };
-  console.log('[_saveUserSite] payload size:', JSON.stringify(payload).length);
   const res = await fetch('/api/user/sites', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
     body: JSON.stringify(payload),
   });
-  console.log('[_saveUserSite] response status:', res.status);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    console.error('[_saveUserSite] error:', err);
     throw new Error(err.error || 'Save failed ' + res.status);
   }
-  const result = await res.json();
-  console.log('[_saveUserSite] result:', JSON.stringify(result));
-  return result;
+  return await res.json();
 }
 
 // ── Handle ?edit=siteId on load ──
