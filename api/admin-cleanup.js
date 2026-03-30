@@ -211,5 +211,49 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ topKeys: keySizes.slice(0, limit) });
   }
 
+  // Find orphan img keys not referenced by any site HTML
+  if (action === 'cleanup-orphan-images') {
+    const imgKeys = await redis(['KEYS', 'img:*']);
+    const htmlKeys = await redis(['KEYS', 'site:html:*']);
+    // Collect all img IDs referenced in site HTML
+    const referencedImgs = new Set();
+    for (const hk of (htmlKeys || [])) {
+      try {
+        const html = await redis(['GET', hk]);
+        if (html) {
+          const matches = html.match(/\/api\/img\?k=([a-z0-9]+)/gi) || [];
+          for (const m of matches) {
+            const id = m.replace('/api/img?k=', '');
+            referencedImgs.add(id);
+          }
+        }
+      } catch {}
+    }
+    // Delete orphan img keys
+    let deleted = 0;
+    let freedBytes = 0;
+    let kept = 0;
+    const dryRun = req.query.dryRun === 'true';
+    for (const ik of (imgKeys || [])) {
+      const id = ik.replace('img:', '');
+      if (!referencedImgs.has(id)) {
+        const size = await redis(['STRLEN', ik]) || 0;
+        if (!dryRun) await redis(['DEL', ik]);
+        deleted++;
+        freedBytes += size;
+      } else {
+        kept++;
+      }
+    }
+    return res.status(200).json({
+      ok: true, dryRun,
+      totalImgKeys: (imgKeys || []).length,
+      orphanImagesDeleted: deleted,
+      imagesKept: kept,
+      freedBytes,
+      freedMB: (freedBytes / 1024 / 1024).toFixed(2)
+    });
+  }
+
   return res.status(400).json({ error: 'Unknown action' });
 };
