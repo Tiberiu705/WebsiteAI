@@ -24,6 +24,33 @@ async function getUser(req) {
 
 const USER_SITES_MAX = 100;
 
+// Extract all img keys referenced in HTML (e.g. /api/img?k=abc123)
+function extractImgKeys(html) {
+  if (!html) return new Set();
+  const matches = html.match(/\/api\/img\?k=([a-z0-9]+)/gi) || [];
+  return new Set(matches.map(m => m.replace(/.*\/api\/img\?k=/i, '')));
+}
+
+// Delete orphan images: keys in oldHtml but not in newHtml
+async function cleanupOrphanImages(oldHtml, newHtml) {
+  const oldKeys = extractImgKeys(oldHtml);
+  const newKeys = extractImgKeys(newHtml);
+  const orphans = [...oldKeys].filter(k => !newKeys.has(k));
+  if (orphans.length > 0) {
+    await Promise.all(orphans.map(k => redis(['DEL', `img:${k}`]).catch(() => {})));
+  }
+  return orphans.length;
+}
+
+// Delete all images referenced in HTML
+async function deleteAllImages(html) {
+  const keys = extractImgKeys(html);
+  if (keys.size > 0) {
+    await Promise.all([...keys].map(k => redis(['DEL', `img:${k}`]).catch(() => {})));
+  }
+  return keys.size;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
@@ -86,6 +113,13 @@ module.exports = async function handler(req, res) {
               activity: String(activity || '').slice(0, 120),
               generatedAt: new Date().toISOString(),
             };
+            // Cleanup orphan images from previous version
+            if (html && html.length > 100) {
+              try {
+                const oldHtml = await redis(['GET', `site:html:${editId}`]);
+                if (oldHtml) await cleanupOrphanImages(oldHtml, html);
+              } catch {}
+            }
             const ops = [
               redis(['ZREM', ownerKey, m]),
               redis(['ZADD', ownerKey, Number(score) || Date.now(), JSON.stringify(updated)]),
@@ -225,6 +259,11 @@ module.exports = async function handler(req, res) {
         try {
           const s = JSON.parse(m);
           if (s.id === id) {
+            // Delete associated images before removing HTML
+            try {
+              const siteHtml = await redis(['GET', `site:html:${id}`]);
+              if (siteHtml) await deleteAllImages(siteHtml);
+            } catch {}
             await Promise.all([
               redis(['ZREM', key, m]),
               redis(['DEL', `site:html:${id}`]),

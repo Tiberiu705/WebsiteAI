@@ -42,9 +42,24 @@ module.exports = async function handler(req, res) {
     if (!data || !mime) return res.status(400).json({ error: 'data și mime sunt obligatorii' });
     if (data.length > 3500000) return res.status(413).json({ error: 'Imaginea este prea mare (max ~2MB)' });
 
+    // Check DB capacity before storing — refuse if over 200MB (limit is 256MB)
+    try {
+      const info = await redis(['INFO', 'memory']);
+      if (info) {
+        const match = info.match(/used_memory:(\d+)/);
+        if (match) {
+          const usedBytes = parseInt(match[1]);
+          const MAX_SAFE_BYTES = 200 * 1024 * 1024; // 200MB safety threshold
+          if (usedBytes > MAX_SAFE_BYTES) {
+            return res.status(507).json({ error: 'Spațiu de stocare insuficient. Ștergeți site-uri vechi.' });
+          }
+        }
+      }
+    } catch {}
+
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     try {
-      await redis(['SET', `img:${id}`, JSON.stringify({ data, mime }), 'EX', 7776000]); // 90 zile
+      await redis(['SET', `img:${id}`, JSON.stringify({ data, mime }), 'EX', 2592000]); // 30 zile (redus de la 90)
       return res.status(201).json({ key: id });
     } catch (e) {
       return res.status(500).json({ error: e.message });
