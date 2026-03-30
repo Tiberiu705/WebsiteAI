@@ -3022,53 +3022,104 @@ async function submitContactForm(e) {
     throw new Error(lastErr || 'Toate modelele sunt suprasolicitate. Încearcă în câteva minute.');
   }
 
-  /* ── Build role-based image prompts from brief ── */
-  function buildBriefPrompts(brief) {
+  /* ── Extract context around each placeholder image from HTML ── */
+  function extractImageContexts(html) {
+    const contexts = [];
+    // Parse HTML into a temporary DOM to find context around each placeholder
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const imgs = doc.querySelectorAll('img');
+
+    imgs.forEach(function(img) {
+      const src = img.getAttribute('src') || '';
+      if (!/placehold\.co|via\.placeholder\.com/i.test(src)) return;
+
+      // Collect context: alt text, nearby headings, nearby paragraphs
+      const alt = (img.getAttribute('alt') || '').trim();
+      let context = alt;
+
+      // Walk up to find the closest card/section container
+      let container = img.parentElement;
+      for (let d = 0; d < 5 && container; d++) {
+        // Check if this looks like a card or section (has heading + text)
+        const heading = container.querySelector('h1,h2,h3,h4,h5,h6');
+        const para = container.querySelector('p');
+        if (heading || para) {
+          if (heading) context = (heading.textContent || '').trim();
+          if (para) context += ' — ' + (para.textContent || '').trim().slice(0, 100);
+          break;
+        }
+        container = container.parentElement;
+      }
+
+      // If still empty, check next sibling elements
+      if (!context) {
+        let sibling = img.parentElement;
+        while (sibling && !context) {
+          sibling = sibling.nextElementSibling;
+          if (sibling) context = (sibling.textContent || '').trim().slice(0, 120);
+        }
+      }
+
+      contexts.push({ src: src, context: context || '' });
+    });
+
+    return contexts;
+  }
+
+  /* ── Build contextual image prompts from HTML content ── */
+  function buildContextualPrompts(contexts, brief) {
     const activity = (brief.activity || brief.brandName || 'business').slice(0, 80);
-    const style    = brief.designStyle || 'modern professional';
-    const q        = 'photorealistic, professional commercial photography, high resolution, well-lit, no text';
-    return [
-      `hero wide banner for ${activity}, ${style} aesthetic, dramatic lighting, ${q}`,
-      `professional team or workspace interior for ${activity}, warm welcoming atmosphere, ${q}`,
-      `close-up service or product detail for ${activity}, clean background, elegant composition, ${q}`,
-      `happy customer or lifestyle scene at ${activity}, natural candid light, ${q}`,
-      `exterior or interior architecture of ${activity}, polished clean look, ${q}`,
-      `service in action or process shot at ${activity}, dynamic composition, ${q}`,
-    ];
+    const style = brief.designStyle || 'modern professional';
+    const q = 'photorealistic, professional commercial photography, high resolution, well-lit, no text, no watermark, no words';
+
+    return contexts.map(function(ctx, i) {
+      const desc = ctx.context || activity;
+      if (i === 0) {
+        // First image is usually hero
+        return `${desc}, hero banner for ${activity}, ${style} aesthetic, dramatic lighting, wide composition, ${q}`;
+      }
+      // Use the extracted context directly as the main subject
+      return `${desc}, for ${activity}, ${style} aesthetic, professional food/product/service photography, ${q}`;
+    });
   }
 
   /* ── Inject AI images into all placehold.co placeholders ── */
   async function injectAIImages(html, brief) {
-    // Find all unique placehold.co URLs
-    const placeholders = [...new Set(
-      [...html.matchAll(/https?:\/\/(?:placehold\.co|via\.placeholder\.com)[^\s"'`\)>]*/g)].map(m => m[0])
-    )];
-    console.log('[img] Found', placeholders.length, 'placeholders');
-    if (!placeholders.length) return html;
+    const contexts = extractImageContexts(html);
+    console.log('[img] Found', contexts.length, 'placeholders with contexts:', contexts.map(c => c.context.slice(0, 50)));
+    if (!contexts.length) return html;
 
-    const prompts = buildBriefPrompts(brief);
-    const count   = Math.min(placeholders.length, prompts.length);
+    const prompts = buildContextualPrompts(contexts, brief);
+    const count = contexts.length;
 
-    console.log('[img] Generating', count, 'images in parallel…');
+    console.log('[img] Generating', count, 'contextual images in parallel…');
 
-    // Generate in parallel
-    const dataUrls = await Promise.all(
-      prompts.slice(0, count).map((p, i) =>
-        nanobanana2Generate(i === 0 ? `${p}, square 1:1 format, full frame composition, centered subject` : p).then(r => {
-          console.log(`[img] ${i+1}/${count}:`, r ? 'OK' : 'FAILED');
-          return r;
-        })
-      )
-    );
+    // Generate in parallel (max 6 concurrent)
+    const BATCH = 6;
+    const dataUrls = new Array(count);
+    for (let b = 0; b < count; b += BATCH) {
+      const batch = [];
+      for (let j = b; j < Math.min(b + BATCH, count); j++) {
+        (function(idx) {
+          batch.push(
+            nanobanana2Generate(prompts[idx]).then(function(r) {
+              console.log('[img] ' + (idx+1) + '/' + count + ':', r ? 'OK' : 'FAILED', '— ' + contexts[idx].context.slice(0, 40));
+              dataUrls[idx] = r;
+            }).catch(function() { dataUrls[idx] = null; })
+          );
+        })(j);
+      }
+      await Promise.all(batch);
+    }
 
     const ok = dataUrls.filter(Boolean).length;
-    console.log(`[img] Generated ${ok}/${count} images`);
+    console.log('[img] Generated ' + ok + '/' + count + ' contextual images');
 
-    // Replace each placeholder — if a slot failed, keep placehold.co
-    for (let i = 0; i < placeholders.length; i++) {
-      const dataUrl = dataUrls[i % count];
-      if (dataUrl) {
-        html = html.split(placeholders[i]).join(dataUrl);
+    // Replace each placeholder with its contextual image
+    for (let i = 0; i < contexts.length; i++) {
+      if (dataUrls[i]) {
+        html = html.split(contexts[i].src).join(dataUrls[i]);
       }
     }
 
