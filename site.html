@@ -73,15 +73,12 @@ body{background:#080808;color:#e0e0e0;font-family:'Inter',sans-serif;display:fle
   var session = '';
   try { session = localStorage.getItem('ws_session') || ''; } catch {}
 
-  if (!session) { show('state-auth'); return; }
-
   try {
-    var res = await fetch('/api/site?sku=' + encodeURIComponent(sku), {
-      headers: { Authorization: 'Bearer ' + session }
-    });
+    // Public view — no auth needed, anyone with the link can see the site
+    var headers = {};
+    if (session) headers.Authorization = 'Bearer ' + session;
+    var res = await fetch('/api/site?sku=' + encodeURIComponent(sku), { headers: headers });
 
-    if (res.status === 401) { show('state-auth'); return; }
-    if (res.status === 403) { show('state-forbidden'); return; }
     if (res.status === 404) { show('state-notfound'); return; }
     if (!res.ok) { show('state-notfound'); return; }
 

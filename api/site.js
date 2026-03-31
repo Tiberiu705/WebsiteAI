@@ -125,32 +125,26 @@ module.exports = async function handler(req, res) {
   if (!sku || !/^WEB-[A-Z0-9]{6}$/.test(sku)) return res.status(400).json({ error: 'SKU invalid' });
 
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
-  if (!token) return res.status(401).json({ error: 'Neautentificat' });
 
   try {
-    // Verify session + get SKU mapping in parallel
-    const [sessionData, skuData] = await Promise.all([
-      redis(['GET', `session:${token}`]),
-      redis(['GET', `sku:${sku}`]),
-    ]);
-    if (!sessionData) return res.status(401).json({ error: 'Sesiune expirată' });
+    // Get SKU mapping (always needed)
+    const skuData = await redis(['GET', `sku:${sku}`]);
     if (!skuData) return res.status(404).json({ error: 'Site negăsit' });
-    const user = JSON.parse(sessionData);
     const { siteId, ownerId } = JSON.parse(skuData);
 
-    // Verify ownership (admin emails bypass)
-    const ADMIN_EMAILS = ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
-    const isAdmin = ADMIN_EMAILS.includes(user.email);
-    if (!isAdmin && user.sub !== ownerId) return res.status(403).json({ error: 'Acces interzis' });
-
-    // Return site HTML + siteId for admin editing
+    // Get site HTML
     const html = await redis(['GET', `site:html:${siteId}`]);
     if (!html) return res.status(404).json({ error: 'Site-ul nu mai este disponibil' });
 
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('X-Robots-Tag', 'noindex');
-    // If admin requested JSON mode, return siteId + site metadata
+    // JSON format requires authentication (for editing)
     if (req.query.format === 'json') {
+      if (!token) return res.status(401).json({ error: 'Neautentificat' });
+      const sessionData = await redis(['GET', `session:${token}`]);
+      if (!sessionData) return res.status(401).json({ error: 'Sesiune expirată' });
+      const user = JSON.parse(sessionData);
+      const ADMIN_EMAILS = ['adelinp88@gmail.com', 'mtiberiu84@gmail.com'];
+      const isAdmin = ADMIN_EMAILS.includes(user.email);
+      if (!isAdmin && user.sub !== ownerId) return res.status(403).json({ error: 'Acces interzis' });
       let brandName = '', activity = '';
       try {
         const members = await redis(['ZRANGE', `user:sites:${ownerId}`, 0, -1]);
@@ -163,6 +157,10 @@ module.exports = async function handler(req, res) {
       } catch {}
       return res.status(200).json({ html, siteId, ownerId, sku, brandName, activity });
     }
+
+    // Public view — anyone with the link can see the site
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).send(stripInlineEditor(html));
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Eroare internă' });
