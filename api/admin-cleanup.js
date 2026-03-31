@@ -256,5 +256,25 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  // List all unique emails from sessions
+  if (action === 'emails') {
+    const sessionKeys = await redis(['KEYS', 'session:*']);
+    const emails = new Set();
+    const users = [];
+    for (const sk of (sessionKeys || [])) {
+      try {
+        const data = await redis(['GET', sk]);
+        if (data) {
+          const u = JSON.parse(data);
+          if (u.email && !emails.has(u.email)) {
+            emails.add(u.email);
+            users.push({ email: u.email, name: u.name || '', sub: u.sub || '' });
+          }
+        }
+      } catch {}
+    }
+    return res.status(200).json({ totalSessions: (sessionKeys || []).length, uniqueEmails: emails.size, users });
+  }
+
   return res.status(400).json({ error: 'Unknown action' });
 };
