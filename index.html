@@ -3311,17 +3311,43 @@ async function submitContactForm(e) {
         const model = modelList[mi];
         if (mi > 0) loadingStatus.textContent = `Model suprasolicitată, încerc ${model}…`;
 
-        // Use streaming for faster perceived speed
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${key}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
-            generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
-          }),
-        });
+        // Try streaming first, fallback to non-streaming
+        let useStreaming = true;
+        let res;
+        try {
+          const streamUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${key}`;
+          res = await fetch(streamUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+              contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
+              generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
+            }),
+          });
+        } catch (streamErr) {
+          useStreaming = false;
+        }
+
+        // If streaming request failed or returned error, try non-streaming
+        if (!useStreaming || (res && (res.status === 503 || res.status === 429 || res.status === 404))) {
+          if (res && (res.status === 503 || res.status === 429 || res.status === 404)) {
+            if (mi === modelList.length - 1) throw new Error('Toate modelele sunt suprasolicitate. Încearcă în 1-2 minute.');
+            continue;
+          }
+          // Fallback non-streaming
+          const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+          res = await fetch(fallbackUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+              contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
+              generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
+            }),
+          });
+          useStreaming = false;
+        }
 
         if (res.status === 503 || res.status === 429 || res.status === 404) {
           if (mi === modelList.length - 1) throw new Error('Toate modelele sunt suprasolicitate. Încearcă în 1-2 minute.');
@@ -3333,37 +3359,62 @@ async function submitContactForm(e) {
           throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
         }
 
-        // Read SSE stream and accumulate text
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let charCount = 0;
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          // Parse SSE lines
-          const lines = buffer.split('\n');
-          buffer = lines.pop();
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue;
-            const jsonStr = line.slice(6);
-            if (jsonStr === '[DONE]') continue;
-            try {
-              const chunk = JSON.parse(jsonStr);
-              const text = chunk?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-              if (text) {
-                html += text;
-                charCount += text.length;
-                // Update progress based on chars received (~30k expected)
-                if (charCount < 35000) {
-                  const pct = Math.min(75, Math.round((charCount / 30000) * 70) + 5);
-                  loadingStatus.textContent = `Se generează codul… ${Math.round(charCount/1000)}k caractere`;
-                  if (typeof progressBar !== 'undefined' && progressBar) progressBar.style.width = pct + '%';
-                }
+        if (useStreaming && res.body && typeof res.body.getReader === 'function') {
+          // Read SSE stream and accumulate text
+          try {
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let charCount = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop();
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const jsonStr = line.slice(6);
+                if (jsonStr === '[DONE]') continue;
+                try {
+                  const chunk = JSON.parse(jsonStr);
+                  const text = chunk?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                  if (text) {
+                    html += text;
+                    charCount += text.length;
+                    if (charCount < 35000) {
+                      const pct = Math.min(75, Math.round((charCount / 30000) * 70) + 5);
+                      loadingStatus.textContent = `Se generează codul… ${Math.round(charCount/1000)}k caractere`;
+                      if (progressBar) progressBar.style.width = pct + '%';
+                    }
+                  }
+                } catch {}
               }
-            } catch {}
+            }
+          } catch (streamReadErr) {
+            // If streaming read fails mid-way and we have no HTML, fallback
+            if (!html) {
+              console.warn('[generate] Stream read failed, falling back to non-streaming');
+              const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+              const fbRes = await fetch(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                  contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
+                  generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
+                }),
+              });
+              if (fbRes.ok) {
+                const data = await fbRes.json();
+                html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+              }
+            }
           }
+        } else {
+          // Non-streaming response
+          const data = await res.json();
+          html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
         }
 
         if (!html) {
