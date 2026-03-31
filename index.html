@@ -3031,9 +3031,9 @@ async function submitContactForm(e) {
     if (!key) throw new Error('Cheia Gemini lipsește');
 
     const models = [
-      'gemini-2.5-flash-image',
-      'gemini-3.1-flash-image-preview',
       'gemini-3-pro-image-preview',
+      'gemini-3.1-flash-image-preview',
+      'gemini-2.5-flash-image',
     ];
 
     const genConfig = { responseModalities: ['IMAGE', 'TEXT'] };
@@ -3124,16 +3124,16 @@ async function submitContactForm(e) {
   function buildContextualPrompts(contexts, brief) {
     const activity = (brief.activity || brief.brandName || 'business').slice(0, 80);
     const style = brief.designStyle || 'modern professional';
-    const q = 'photorealistic, professional commercial photography, high resolution, well-lit, no text, no watermark, no words';
+    const q = 'ultra high quality, 4K, photorealistic, professional commercial photography, sharp focus, beautiful lighting, vibrant colors, high detail, no text, no watermark, no words, no letters, no logos';
 
     return contexts.map(function(ctx, i) {
       const desc = ctx.context || activity;
       if (i === 0) {
-        // First image is usually hero
-        return `${desc}, hero banner for ${activity}, ${style} aesthetic, dramatic lighting, wide composition, ${q}`;
+        // First image is usually hero — wide, cinematic
+        return `${desc}, hero banner for ${activity}, ${style} aesthetic, cinematic dramatic lighting, wide 16:9 composition, shallow depth of field, editorial quality, ${q}`;
       }
       // Use the extracted context directly as the main subject
-      return `${desc}, for ${activity}, ${style} aesthetic, professional food/product/service photography, ${q}`;
+      return `${desc}, for ${activity}, ${style} aesthetic, professional studio photography, close-up detail shot, shallow depth of field, warm natural lighting, editorial magazine quality, ${q}`;
     });
   }
 
@@ -6275,7 +6275,7 @@ function _showSaveToast(msg, color) {
 })();
 
 async function _compressDataUrl(dataUrl, maxWidth, quality) {
-  maxWidth = maxWidth || 800; quality = quality || 0.72;
+  maxWidth = maxWidth || 1200; quality = quality || 0.85;
   return new Promise(function(resolve) {
     var timeout = setTimeout(function() {
       // Fallback if canvas is blocked (background tab) — send raw base64
