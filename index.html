@@ -797,10 +797,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             🔒 websiteai.ro
           </div>
         </div>
-        <!-- Site preview -->
-        <div style="position:relative;overflow:hidden;height:340px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;">
-          <div style="text-align:center;opacity:0.25;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C8FF00" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        <!-- Site preview — video demo -->
+        <div style="position:relative;overflow:hidden;height:340px;background:#0A0A0A;">
+          <video id="hero-video" autoplay muted loop playsinline
+            style="width:100%;height:100%;object-fit:cover;"
+            poster="">
+            <source src="/demo-generare.mp4" type="video/mp4">
+          </video>
+          <!-- Fallback if no video file yet -->
+          <div id="hero-video-fallback" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0A0A0A;">
+            <div style="text-align:center;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C8FF00" stroke-width="1.5" style="opacity:0.4;margin-bottom:12px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <p style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;">Demo generare site</p>
+            </div>
           </div>
         </div>
       </div>
@@ -819,6 +828,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   </div>
 </section>
+<script>
+(function(){
+  var v=document.getElementById('hero-video'),fb=document.getElementById('hero-video-fallback');
+  if(!v||!fb)return;
+  v.addEventListener('canplay',function(){fb.style.display='none';});
+  v.addEventListener('error',function(){fb.style.display='flex';v.style.display='none';});
+  setTimeout(function(){if(v.readyState<2)fb.style.display='flex';},2000);
+})();
+</script>
 
 <!-- ══════════════════════ MARQUEE ══════════════════════ -->
 <div class="overflow-hidden-mask" style="padding:20px 0;border-top:1px solid rgba(200,255,0,0.12);border-bottom:1px solid rgba(200,255,0,0.12);background:#030303;">
@@ -3283,19 +3301,6 @@ async function submitContactForm(e) {
 
   /* ── Generate ── */
   async function generate(brief) {
-    // Require login before generating
-    var _ss = (typeof _wsSession === 'function') ? _wsSession() : localStorage.getItem('ws_session');
-    if (!_ss) {
-      lastBrief = brief;
-      window.lastBrief = brief;
-      if (typeof openLoginModal === 'function') {
-        openLoginModal(() => generate(brief));
-      } else {
-        alert('Te rog conectează-te pentru a genera un site.');
-      }
-      return;
-    }
-
     lastBrief = brief;
     window.lastBrief = brief;
     showPanel('loading');
@@ -3400,12 +3405,12 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
       _siteGenerated = true;
       finishProgress(true);
 
-      // Show save button if logged in
+      // Show save button — if logged in, auto-save; if not, show login prompt on click
       const wsSession = _wsSession();
+      const saveBtn = document.getElementById('btn-save-account');
+      if (saveBtn) saveBtn.style.display = 'inline-block';
       if (wsSession) {
-        const saveBtn = document.getElementById('btn-save-account');
-        if (saveBtn) saveBtn.style.display = 'inline-block';
-        // Also try auto-save — block manual save until this completes
+        // Auto-save for logged-in users
         if (brief.brandName) {
           if (saveBtn) { saveBtn.textContent = 'Se salvează…'; saveBtn.disabled = true; }
           window._autoSavePromise = _saveUserSite(wsSession, html, brief)
@@ -3428,6 +3433,12 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
               if (saveBtn2) { saveBtn2.textContent = '💾 Salvează modificările'; saveBtn2.disabled = false; }
             })
             .finally(() => { window._autoSavePromise = null; });
+        }
+      } else {
+        // Not logged in — show save button that prompts login
+        if (saveBtn) {
+          saveBtn.textContent = '💾 Salvează în cont';
+          saveBtn.disabled = false;
         }
       }
 
@@ -3570,20 +3581,6 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
   document.getElementById('brief-form').addEventListener('submit', async e => {
     e.preventDefault();
     hideError();
-
-    // Require login before generating
-    var _ss2 = (typeof _wsSession === 'function') ? _wsSession() : localStorage.getItem('ws_session');
-    if (!_ss2) {
-      const brief = collectBrief();
-      lastBrief = brief;
-      window.lastBrief = brief;
-      if (typeof openLoginModal === 'function') {
-        openLoginModal(() => generate(brief));
-      } else {
-        alert('Te rog conectează-te pentru a genera un site.');
-      }
-      return;
-    }
 
     const brief = collectBrief();
 
