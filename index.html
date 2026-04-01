@@ -764,7 +764,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="trust-row" style="display:flex;align-items:center;gap:28px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:8px;font-size:0.825rem;font-family:'Inter',sans-serif;color:#666;">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.8 4.5L14 7l-5.2 1.5L7 13l-1.8-4.5L0 7l5.2-1.5z" fill="#C8FF00"/></svg>
-          340+ site-uri generate
+          <span id="gen-counter">340+</span> site-uri generate
         </div>
         <div class="trust-sep" style="width:1px;height:16px;background:rgba(255,255,255,0.08);"></div>
         <div style="display:flex;align-items:center;gap:8px;font-size:0.825rem;font-family:'Inter',sans-serif;color:#666;">
@@ -2212,6 +2212,11 @@ async function submitContactForm(e) {
     setTimeout(() => {
       document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
     }, 400);
+    // Load generation counter
+    fetch('/api/counter').then(r => r.json()).then(d => {
+      var gc = document.getElementById('gen-counter');
+      if (gc && d.count) gc.textContent = d.count + '+';
+    }).catch(function(){});
   });
 
   /* ── Smooth scroll ── */
@@ -3386,6 +3391,12 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
       window.generatedHtml = html;
       _siteGenerated = true;
       finishProgress(true);
+
+      // Increment generation counter
+      fetch('/api/counter', { method: 'POST' }).then(r => r.json()).then(d => {
+        var gc = document.getElementById('gen-counter');
+        if (gc && d.count) gc.textContent = d.count + '+';
+      }).catch(function(){});
 
       // Show save button — if logged in, auto-save; if not, show login prompt on click
       const wsSession = _wsSession();

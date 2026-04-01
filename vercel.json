@@ -18,6 +18,7 @@
     "api/user/sites.js": { "maxDuration": 15 },
     "api/img.js": { "maxDuration": 15 },
     "api/site.js": { "maxDuration": 10 },
-    "api/contact.js": { "maxDuration": 10 }
+    "api/contact.js": { "maxDuration": 10 },
+    "api/counter.js": { "maxDuration": 5 }
   }
 }
