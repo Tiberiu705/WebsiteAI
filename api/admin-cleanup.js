@@ -276,5 +276,14 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ totalSessions: (sessionKeys || []).length, uniqueEmails: emails.size, users });
   }
 
+  // Set a Redis key value (admin only)
+  if (action === 'set-key') {
+    const k = req.query.key;
+    const v = req.query.value;
+    if (!k || v === undefined) return res.status(400).json({ error: 'key and value required' });
+    await redis(['SET', k, v]);
+    return res.status(200).json({ ok: true, key: k, value: v });
+  }
+
   return res.status(400).json({ error: 'Unknown action' });
 };
