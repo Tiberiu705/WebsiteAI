@@ -3041,7 +3041,12 @@ async function submitContactForm(e) {
   }
 
   /* ── Gemini config ── */
-  const GEMINI_CANDIDATE_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+  const GEMINI_CANDIDATE_MODELS = [
+    'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-001',
+    'gemini-2.0-flash-lite', 'gemini-2.0-flash-lite-001', 'gemini-flash-latest',
+    'gemini-flash-lite-latest', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite-preview',
+    'gemini-3.1-pro-preview', 'gemini-3-pro-preview', 'gemini-2.5-pro', 'gemini-pro-latest',
+  ];
   let GEMINI_MODELS_FIRST = [...GEMINI_CANDIDATE_MODELS];
   let GEMINI_MODELS_REGEN = [...GEMINI_CANDIDATE_MODELS];
   let _siteGenerated = false;
@@ -3352,42 +3357,45 @@ async function submitContactForm(e) {
         generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
       });
 
-      for (let mi = 0; mi < modelList.length; mi++) {
+      const _deadline = Date.now() + 54000;
+      let _attempt = 0;
+      while (!html && Date.now() < _deadline) {
+        const mi = _attempt % modelList.length;
         const model = modelList[mi];
-        if (mi > 0) loadingStatus.textContent = `Model suprasolicitată, încerc ${model}…`;
-        html = '';
+        if (_attempt > 0 && mi === 0) {
+          const cycle = Math.floor(_attempt / modelList.length);
+          await new Promise(r => setTimeout(r, Math.min(cycle * 2000, 8000)));
+          if (Date.now() >= _deadline) break;
+        }
+        _attempt++;
+        if (_attempt > 1) loadingStatus.textContent = `Se încearcă ${model}…`;
 
-        // Always use non-streaming (reliable) — generateContent
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
         let res;
         try {
           res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: reqBody });
         } catch (fetchErr) {
           console.warn('[generate] fetch failed for', model, fetchErr.message);
-          if (mi === modelList.length - 1) throw new Error('Eroare de rețea. Verifică conexiunea la internet și încearcă din nou.');
           continue;
         }
 
-        if (res.status === 503 || res.status === 429 || res.status === 404) {
-          if (mi === modelList.length - 1) throw new Error('Toate modelele sunt suprasolicitate. Încearcă în 1-2 minute.');
+        if (res.status === 503 || res.status === 429 || res.status === 404 || res.status === 400) {
+          console.warn('[generate]', model, 'status', res.status, '— trying next');
           continue;
         }
 
         if (!res.ok) {
-          const errText = await res.text().catch(() => '');
-          throw new Error(`Gemini API error ${res.status}: ${errText.slice(0, 300)}`);
+          console.warn('[generate]', model, 'error', res.status, '— trying next');
+          continue;
         }
 
         const data = await res.json();
         html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        if (!html) {
-          const reason = data?.candidates?.[0]?.finishReason || 'unknown';
-          if (mi === modelList.length - 1) throw new Error(`Gemini nu a returnat HTML. Motiv: ${reason}`);
-          continue;
-        }
+        if (!html) { continue; }
         html = html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
-        break;
       }
+
+      if (!html) throw new Error('Serverele AI sunt suprasolicitate momentan. Te rugăm să mai încerci în 30 de secunde.');
 
       if (html.length < 100) {
         throw new Error('Site-ul generat este gol. Încearcă din nou.');
