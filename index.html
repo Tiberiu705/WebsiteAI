@@ -3439,53 +3439,55 @@ async function submitContactForm(e) {
         generationConfig: { maxOutputTokens: tokens, temperature: 0.75, topP: 0.95 },
       });
 
-      const _deadline = Date.now() + 240000; // 240s — no Vercel limit in browser
-      let _attempt = 0;
+      // Race all models in parallel — first valid response wins
+      async function raceModels(models, body) {
+        return new Promise((resolve) => {
+          let settled = 0;
+          let won = false;
+          const total = models.length;
+          models.forEach((model) => {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+            fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+              .then(async (res) => {
+                if (won) return;
+                if (res.ok) {
+                  const data = await res.json();
+                  const text = (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
+                  if (text && text.length > 100 && !won) {
+                    won = true;
+                    resolve({ html: text, model });
+                  }
+                } else {
+                  console.warn('[generate]', model, res.status);
+                }
+              })
+              .catch((e) => { console.warn('[generate] fetch err', model, e.message); })
+              .finally(() => {
+                settled++;
+                if (settled === total && !won) resolve(null);
+              });
+          });
+        });
+      }
+
+      const _deadline = Date.now() + 180000; // 180s total
       let _tokenIdx = 0;
+      let _round = 0;
       while (!html && Date.now() < _deadline) {
-        const mi = _attempt % modelList.length;
-        const model = modelList[mi];
-        // Between full cycles: wait a bit to let models recover
-        if (_attempt > 0 && mi === 0) {
-          const cycle = Math.floor(_attempt / modelList.length);
-          await new Promise(r => setTimeout(r, Math.min(cycle * 3000, 10000)));
+        if (_round > 0) {
+          const wait = Math.min(_round * 4000, 15000);
+          loadingStatus.textContent = `Se reîncearcă în ${wait/1000}s…`;
+          loadingStatus.style.opacity = '1';
+          await new Promise(r => setTimeout(r, wait));
           if (Date.now() >= _deadline) break;
-        } else if (_attempt > 0) {
-          await new Promise(r => setTimeout(r, 300)); // small gap between models
         }
-        _attempt++;
-        if (_attempt > 1) { loadingStatus.textContent = `Reîncercare (${model})…`; loadingStatus.style.opacity = '1'; }
-
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-        let res;
-        try {
-          res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: makeBody(tokenOptions[_tokenIdx]) });
-        } catch (fetchErr) {
-          console.warn('[generate] fetch failed for', model, fetchErr.message);
-          continue;
+        _round++;
+        const result = await raceModels(modelList, makeBody(tokenOptions[_tokenIdx]));
+        if (result) {
+          html = result.html;
+        } else if (_tokenIdx < tokenOptions.length - 1) {
+          _tokenIdx++; // try smaller token limit next round
         }
-
-        if (res.status === 503 || res.status === 429 || res.status === 404) {
-          console.warn('[generate]', model, 'overloaded', res.status);
-          continue;
-        }
-
-        if (res.status === 400) {
-          // Token count may be too high for this model — try lower
-          if (_tokenIdx < tokenOptions.length - 1) { _tokenIdx++; }
-          console.warn('[generate]', model, '400 — retry with', tokenOptions[_tokenIdx], 'tokens');
-          continue;
-        }
-
-        if (!res.ok) {
-          console.warn('[generate]', model, 'error', res.status, '— trying next');
-          continue;
-        }
-
-        const data = await res.json();
-        html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        if (!html) { continue; }
-        html = html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
       }
 
       if (!html) throw new Error('Serverele AI sunt suprasolicitate momentan. Te rugăm să mai încerci în 30 de secunde.');
