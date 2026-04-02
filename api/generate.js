@@ -1,13 +1,20 @@
-// Preferred model order — fastest/most available first
+// Models confirmed available on this API key, ordered fastest→most-capable
+// Excludes: image-only, TTS, robotics, computer-use, Gemma, Lyria, nano-banana
 const MODEL_PREFERENCE = [
   'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
   'gemini-2.0-flash',
+  'gemini-2.0-flash-001',
   'gemini-2.0-flash-lite',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
+  'gemini-2.0-flash-lite-001',
+  'gemini-flash-latest',
+  'gemini-flash-lite-latest',
+  'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite-preview',
+  'gemini-3.1-pro-preview',
+  'gemini-3-pro-preview',
   'gemini-2.5-pro',
-  'gemini-1.5-pro',
-  'gemini-1.5-flash-latest',
+  'gemini-pro-latest',
 ];
 
 // Module-level cache so warm serverless instances don't re-fetch on every request
@@ -24,18 +31,18 @@ async function getAvailableModels(key) {
     if (!res.ok) throw new Error('list failed');
     const data = await res.json();
 
+    const EXCLUDE = ['image', 'tts', 'robotics', 'computer-use', 'embedding', 'aqa', 'lyria', 'nano-banana', 'gemma', 'deep-research', 'customtools'];
     const available = (data.models || [])
       .filter(m =>
         Array.isArray(m.supportedGenerationMethods) &&
         m.supportedGenerationMethods.includes('generateContent') &&
-        !m.name.includes('embedding') &&
-        !m.name.includes('aqa')
+        !EXCLUDE.some(x => m.name.includes(x))
       )
       .map(m => m.name.replace('models/', ''));
 
-    // Sort by preference order; append any extra available models at end
+    // Sort by preference order; append any extra text-generation models at end
     const sorted = MODEL_PREFERENCE.filter(m => available.includes(m));
-    const extras = available.filter(m => !MODEL_PREFERENCE.includes(m) && m.includes('flash'));
+    const extras = available.filter(m => !MODEL_PREFERENCE.includes(m));
     const result = sorted.length > 0 ? [...sorted, ...extras] : MODEL_PREFERENCE;
 
     _modelsCache = result;
