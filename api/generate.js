@@ -1,4 +1,11 @@
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-2.5-pro',
+];
 
 // ── Shared inline editor block (injected into every generated site) ───────────
 // Pattern: elements are ALWAYS contenteditable from load (like the reference HTML),
@@ -154,7 +161,15 @@ module.exports = async function handler(req, res) {
     const brief = req.body;
     let html = '';
 
-    for (let mi = 0; mi < GEMINI_MODELS.length; mi++) {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const MAX_ROUNDS = 3;
+    let lastStatus = 503;
+
+    outer:
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      if (round > 0) await sleep(round * 2000);
+
+      for (let mi = 0; mi < GEMINI_MODELS.length; mi++) {
       const model = GEMINI_MODELS[mi];
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
@@ -169,9 +184,7 @@ module.exports = async function handler(req, res) {
       });
 
       if (gemRes.status === 503 || gemRes.status === 429 || gemRes.status === 404) {
-        if (mi === GEMINI_MODELS.length - 1) {
-          return res.status(503).json({ error: 'Toate modelele sunt suprasolicitate. Încearcă în 1-2 minute.' });
-        }
+        lastStatus = gemRes.status;
         continue;
       }
 
@@ -642,7 +655,12 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
         html += '\n' + contactSection;
       }
 
-      break;
+      break outer;
+      } // end inner for (mi)
+    } // end outer for (round)
+
+    if (!html) {
+      return res.status(503).json({ error: 'Serverele AI sunt momentan suprasolicitate. Te rugăm să mai încerci în 30 de secunde.' });
     }
 
     return res.status(200).json({ html });
