@@ -1,11 +1,51 @@
-const GEMINI_MODELS = [
+// Preferred model order — fastest/most available first
+const MODEL_PREFERENCE = [
   'gemini-2.5-flash',
   'gemini-2.0-flash',
   'gemini-2.0-flash-lite',
   'gemini-1.5-flash',
   'gemini-1.5-flash-8b',
   'gemini-2.5-pro',
+  'gemini-1.5-pro',
+  'gemini-1.5-flash-latest',
 ];
+
+// Module-level cache so warm serverless instances don't re-fetch on every request
+let _modelsCache = null;
+let _modelsCacheTime = 0;
+const MODELS_CACHE_TTL = 10 * 60 * 1000; // 10 min
+
+async function getAvailableModels(key) {
+  const now = Date.now();
+  if (_modelsCache && now - _modelsCacheTime < MODELS_CACHE_TTL) return _modelsCache;
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}&pageSize=100`);
+    if (!res.ok) throw new Error('list failed');
+    const data = await res.json();
+
+    const available = (data.models || [])
+      .filter(m =>
+        Array.isArray(m.supportedGenerationMethods) &&
+        m.supportedGenerationMethods.includes('generateContent') &&
+        !m.name.includes('embedding') &&
+        !m.name.includes('aqa')
+      )
+      .map(m => m.name.replace('models/', ''));
+
+    // Sort by preference order; append any extra available models at end
+    const sorted = MODEL_PREFERENCE.filter(m => available.includes(m));
+    const extras = available.filter(m => !MODEL_PREFERENCE.includes(m) && m.includes('flash'));
+    const result = sorted.length > 0 ? [...sorted, ...extras] : MODEL_PREFERENCE;
+
+    _modelsCache = result;
+    _modelsCacheTime = now;
+    return result;
+  } catch {
+    // Fallback: use hardcoded preference list if API discovery fails
+    return MODEL_PREFERENCE;
+  }
+}
 
 // ── Shared inline editor block (injected into every generated site) ───────────
 // Pattern: elements are ALWAYS contenteditable from load (like the reference HTML),
@@ -162,15 +202,22 @@ module.exports = async function handler(req, res) {
     let html = '';
 
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-    const MAX_ROUNDS = 3;
-    let lastStatus = 503;
+    const availableModels = await getAvailableModels(key);
+    // Keep retrying until we get HTML or hit the Vercel 60s function timeout
+    const DEADLINE = Date.now() + 54000;
+    let attempt = 0;
 
-    outer:
-    for (let round = 0; round < MAX_ROUNDS; round++) {
-      if (round > 0) await sleep(round * 2000);
+    while (!html && Date.now() < DEADLINE) {
+      const mi = attempt % availableModels.length;
+      const model = availableModels[mi];
 
-      for (let mi = 0; mi < GEMINI_MODELS.length; mi++) {
-      const model = GEMINI_MODELS[mi];
+      // After completing a full cycle through all models, wait before next cycle
+      if (attempt > 0 && mi === 0) {
+        const cycle = Math.floor(attempt / availableModels.length);
+        await sleep(Math.min(cycle * 2000, 8000));
+        if (Date.now() >= DEADLINE) break;
+      }
+      attempt++;
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
       const gemRes = await fetch(url, {
@@ -184,8 +231,7 @@ module.exports = async function handler(req, res) {
       });
 
       if (gemRes.status === 503 || gemRes.status === 429 || gemRes.status === 404) {
-        lastStatus = gemRes.status;
-        continue;
+        continue; // try next model in the while loop
       }
 
       if (!gemRes.ok) {
@@ -197,8 +243,8 @@ module.exports = async function handler(req, res) {
       html = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
       if (!html) {
-        const reason = data?.candidates?.[0]?.finishReason || 'unknown';
-        return res.status(500).json({ error: `Gemini nu a returnat HTML. Motiv: ${reason}` });
+        // Empty response — try next model
+        continue;
       }
 
       // Check if output was truncated
@@ -655,9 +701,8 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
         html += '\n' + contactSection;
       }
 
-      break outer;
-      } // end inner for (mi)
-    } // end outer for (round)
+      // html is set — while condition (!html) will exit the loop
+    } // end while
 
     if (!html) {
       return res.status(503).json({ error: 'Serverele AI sunt momentan suprasolicitate. Te rugăm să mai încerci în 30 de secunde.' });
