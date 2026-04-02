@@ -2060,30 +2060,56 @@ async function submitContactForm(e) {
   </div>
 
   <!-- ── LOADING STATE ── -->
-  <div id="loading-panel" style="display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:40px 24px;">
-    <img src="websiteai-logo.png" style="height:32px;width:auto;object-fit:contain;display:block;opacity:0.9;" />
-    <div style="text-align:center;">
-      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;letter-spacing:-0.03em;color:#fff;margin-bottom:12px;">
-        AI generează site-ul tău<span id="loading-dots"></span>
-      </h2>
-      <p style="font-family:'Inter',sans-serif;font-size:0.95rem;color:#555;max-width:360px;margin:0 auto;line-height:1.6;">
-        WebsiteAI construiește un site personalizat pe baza descrierii tale. De obicei durează 30–60 secunde.
-      </p>
-    </div>
-    <!-- Progress bar -->
-    <div style="width:100%;max-width:400px;">
-      <div style="background:rgba(255,255,255,0.06);border-radius:100px;height:4px;overflow:hidden;">
-        <div id="progress-bar" style="height:100%;background:#C8FF00;border-radius:100px;width:0%;transition:width 0.4s ease;box-shadow:0 0 12px rgba(200,255,0,0.5);"></div>
+  <div id="loading-panel" style="display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:0;padding:40px 24px;">
+    <img src="websiteai-logo.png" style="height:28px;width:auto;object-fit:contain;display:block;opacity:0.7;margin-bottom:40px;" />
+
+    <!-- Central animated orb -->
+    <div style="position:relative;width:96px;height:96px;margin-bottom:32px;">
+      <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(200,255,0,0.18) 0%,transparent 70%);animation:orb-pulse 2s ease-in-out infinite;"></div>
+      <div style="position:absolute;inset:0;border:1.5px solid rgba(200,255,0,0.2);border-top-color:#C8FF00;border-radius:50%;animation:spin 1.4s linear infinite;"></div>
+      <div style="position:absolute;inset:12px;border:1.5px solid rgba(200,255,0,0.1);border-bottom-color:rgba(200,255,0,0.5);border-radius:50%;animation:spin 2s linear infinite reverse;"></div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 10L12.5 12.5L10 18L7.5 12.5L2 10L7.5 7.5L10 2Z" stroke="#C8FF00" stroke-width="1.4" stroke-linejoin="round"/></svg>
       </div>
     </div>
-    <!-- Status messages -->
-    <div id="loading-status" style="font-family:'Inter',sans-serif;font-size:0.825rem;color:#555;text-align:center;min-height:20px;"></div>
-    <!-- Spinner rings -->
-    <div style="position:relative;width:80px;height:80px;">
-      <div style="position:absolute;inset:0;border:2px solid rgba(200,255,0,0.15);border-top-color:#C8FF00;border-radius:50%;animation:spin 1.2s linear infinite;"></div>
-      <div style="position:absolute;inset:10px;border:2px solid rgba(200,255,0,0.08);border-bottom-color:rgba(200,255,0,0.4);border-radius:50%;animation:spin 1.8s linear infinite reverse;"></div>
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 10L12.5 12.5L10 18L7.5 12.5L2 10L7.5 7.5L10 2Z" stroke="#C8FF00" stroke-width="1.4" stroke-linejoin="round"/></svg>
+
+    <!-- Title + active step -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.75rem;letter-spacing:-0.03em;color:#fff;margin:0 0 10px;">
+        Se construiește site-ul tău
+      </h2>
+      <div id="loading-status" style="font-family:'Inter',sans-serif;font-size:0.9rem;color:#C8FF00;min-height:22px;font-weight:500;transition:opacity 0.3s;"></div>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="width:100%;max-width:380px;margin-bottom:10px;">
+      <div style="background:rgba(255,255,255,0.07);border-radius:100px;height:3px;overflow:hidden;">
+        <div id="progress-bar" style="height:100%;background:linear-gradient(90deg,#9acd00,#C8FF00);border-radius:100px;width:0%;transition:width 0.6s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 10px rgba(200,255,0,0.6);"></div>
+      </div>
+    </div>
+    <!-- Progress percent -->
+    <div style="width:100%;max-width:380px;display:flex;justify-content:space-between;margin-bottom:36px;">
+      <span id="loading-pct" style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;"></span>
+      <span id="loading-timer" style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;"></span>
+    </div>
+
+    <!-- Step checklist -->
+    <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+      <div class="load-step" id="lstep-0" style="display:flex;align-items:center;gap:12px;opacity:0.3;transition:opacity 0.4s;">
+        <div class="lstep-icon" style="width:20px;height:20px;border-radius:50%;border:1.5px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
+        <span style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;">Analiză descriere afacere</span>
+      </div>
+      <div class="load-step" id="lstep-1" style="display:flex;align-items:center;gap:12px;opacity:0.3;transition:opacity 0.4s;">
+        <div class="lstep-icon" style="width:20px;height:20px;border-radius:50%;border:1.5px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
+        <span style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;">Design & structură pagini</span>
+      </div>
+      <div class="load-step" id="lstep-2" style="display:flex;align-items:center;gap:12px;opacity:0.3;transition:opacity 0.4s;">
+        <div class="lstep-icon" style="width:20px;height:20px;border-radius:50%;border:1.5px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
+        <span style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;">Texte & conținut personalizat</span>
+      </div>
+      <div class="load-step" id="lstep-3" style="display:flex;align-items:center;gap:12px;opacity:0.3;transition:opacity 0.4s;">
+        <div class="lstep-icon" style="width:20px;height:20px;border-radius:50%;border:1.5px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
+        <span style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;">Optimizare mobile & SEO</span>
       </div>
     </div>
   </div>
@@ -2183,6 +2209,16 @@ async function submitContactForm(e) {
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+  @keyframes orb-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.25); opacity: 1; }
+  }
+  .lstep-done .lstep-icon { border-color: #C8FF00 !important; background: rgba(200,255,0,0.15); }
+  .lstep-active .lstep-icon { border-color: #C8FF00 !important; animation: spin 1s linear infinite; }
+  .lstep-done { opacity: 1 !important; }
+  .lstep-active { opacity: 1 !important; }
+  .lstep-active span { color: #C8FF00 !important; }
+  .lstep-done span { color: #888 !important; }
 
   .step-dot {
     width: 6px; height: 6px;
@@ -2935,59 +2971,104 @@ async function submitContactForm(e) {
   });
   document.getElementById('design-style-btns').addEventListener('click', () => animateStepDots(5));
 
-  /* ── Loading dots animation ── */
-  const loadingDotsEl = document.getElementById('loading-dots');
-  if (loadingDotsEl) {
-    loadingDotsEl.innerHTML = '<span class="ldot">.</span><span class="ldot">.</span><span class="ldot">.</span>';
-  }
-
   /* ── Progress simulation during generation ── */
   let progressTimer = null;
-  const statusMessages = [
-    'Autentificare securizată…',
-    'Se analizează descrierea afacerii tale…',
-    'AI-ul selectează structura site-ului…',
-    'Se generează design-ul personalizat…',
-    'Se scriu textele și secțiunile…',
-    'Optimizare mobile & SEO…',
-    'Finalizare…',
-  ];
   // Request notification permission early (for background tab alerts)
   if ('Notification' in window && Notification.permission === 'default') {
-    // Ask on first user interaction
     document.addEventListener('click', function _askNotif() {
       Notification.requestPermission();
       document.removeEventListener('click', _askNotif);
     }, { once: true });
   }
 
+  // Step definitions: [label, statusText, activatesAt%]
+  const LOAD_STEPS = [
+    { id: 'lstep-0', status: 'Se analizează descrierea afacerii…',   from: 0  },
+    { id: 'lstep-1', status: 'Se proiectează design-ul și layout-ul…', from: 22 },
+    { id: 'lstep-2', status: 'AI-ul scrie texte și conținut…',        from: 48 },
+    { id: 'lstep-3', status: 'Optimizare mobile, SEO, finalizare…',   from: 74 },
+  ];
+  const CHECK_SVG = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function _setLoadStep(activeIdx) {
+    LOAD_STEPS.forEach((s, i) => {
+      const el = document.getElementById(s.id);
+      if (!el) return;
+      el.classList.remove('lstep-done', 'lstep-active');
+      const icon = el.querySelector('.lstep-icon');
+      if (i < activeIdx) {
+        el.classList.add('lstep-done');
+        if (icon) icon.innerHTML = CHECK_SVG;
+      } else if (i === activeIdx) {
+        el.classList.add('lstep-active');
+        if (icon) icon.innerHTML = '';
+      } else {
+        if (icon) icon.innerHTML = '';
+      }
+    });
+    if (loadingStatus && activeIdx < LOAD_STEPS.length) {
+      loadingStatus.style.opacity = '0';
+      setTimeout(() => {
+        loadingStatus.textContent = LOAD_STEPS[activeIdx].status;
+        loadingStatus.style.opacity = '1';
+      }, 150);
+    }
+  }
+
   function startProgress() {
     let pct = 0;
-    let msgIdx = 0;
+    let activeStep = 0;
     progressBar.style.width = '0%';
-    loadingStatus.textContent = statusMessages[0];
-    // Update title to show progress when tab is in background
+    const pctEl = document.getElementById('loading-pct');
+    const timerEl = document.getElementById('loading-timer');
+    const startTime = Date.now();
+    _setLoadStep(0);
     const origTitle = document.title;
     window._genOrigTitle = origTitle;
+
     progressTimer = setInterval(() => {
-      if (pct < 88) {
-        pct += pct < 30 ? 3 : pct < 60 ? 1.5 : 0.5;
-        progressBar.style.width = pct + '%';
+      // Smooth progress: fast start, steady middle, crawl at end
+      const inc = pct < 25 ? 2.5 : pct < 55 ? 1.2 : pct < 78 ? 0.6 : 0.2;
+      if (pct < 85) pct = Math.min(pct + inc, 85);
+      progressBar.style.width = pct + '%';
+      if (pctEl) pctEl.textContent = Math.round(pct) + '%';
+
+      // Elapsed timer
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      if (timerEl) timerEl.textContent = elapsed + 's';
+
+      // Advance step based on pct
+      const newStep = LOAD_STEPS.reduce((acc, s, i) => pct >= s.from ? i : acc, 0);
+      if (newStep !== activeStep) {
+        activeStep = newStep;
+        _setLoadStep(activeStep);
       }
-      if (msgIdx < statusMessages.length - 1 && pct > (msgIdx + 1) * 13) {
-        msgIdx++;
-        loadingStatus.textContent = statusMessages[msgIdx];
-      }
-      // Show progress in tab title so user sees it even on other tabs
+
       if (document.hidden) {
         document.title = '(' + Math.round(pct) + '%) Se generează…';
       }
-    }, 600);
+    }, 500);
   }
   function finishProgress(success) {
     clearInterval(progressTimer);
     progressBar.style.width = success ? '100%' : '0%';
-    loadingStatus.textContent = success ? 'Site generat cu succes ✓' : '';
+    if (success) {
+      // Mark all steps done
+      LOAD_STEPS.forEach((s, i) => {
+        const el = document.getElementById(s.id);
+        if (!el) return;
+        el.classList.remove('lstep-active');
+        el.classList.add('lstep-done');
+        const icon = el.querySelector('.lstep-icon');
+        if (icon) icon.innerHTML = CHECK_SVG;
+      });
+      loadingStatus.textContent = 'Site generat cu succes!';
+      loadingStatus.style.opacity = '1';
+      const pctEl = document.getElementById('loading-pct');
+      if (pctEl) pctEl.textContent = '100%';
+    } else {
+      loadingStatus.textContent = '';
+    }
     // Restore title
     if (window._genOrigTitle) document.title = window._genOrigTitle;
     // Notify user if tab is in background
@@ -3375,7 +3456,7 @@ async function submitContactForm(e) {
           await new Promise(r => setTimeout(r, 300)); // small gap between models
         }
         _attempt++;
-        if (_attempt > 1) loadingStatus.textContent = `Se încearcă ${model}…`;
+        if (_attempt > 1) { loadingStatus.textContent = `Reîncercare (${model})…`; loadingStatus.style.opacity = '1'; }
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
         let res;
@@ -3445,7 +3526,7 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
       }
 
       /* Replace placeholders with Imagen AI-generated images */
-      loadingStatus.textContent = 'Se generează imaginile cu AI…';
+      loadingStatus.textContent = 'Se generează imaginile cu AI…'; loadingStatus.style.opacity = '1';
       html = await injectAIImages(html, brief);
 
       /* ── Close truncated HTML if needed ── */
