@@ -3351,21 +3351,27 @@ async function submitContactForm(e) {
 
       const modelList = _siteGenerated ? GEMINI_MODELS_REGEN : GEMINI_MODELS_FIRST;
       let html = '';
-      const reqBody = JSON.stringify({
+      // Try high tokens first, fall back to lower if model rejects
+      const tokenOptions = [32768, 16384, 8192];
+      const makeBody = (tokens) => JSON.stringify({
         system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: 'user', parts: [{ text: buildUserPrompt(brief) }] }],
-        generationConfig: { maxOutputTokens: 65536, temperature: 0.75, topP: 0.95 },
+        generationConfig: { maxOutputTokens: tokens, temperature: 0.75, topP: 0.95 },
       });
 
-      const _deadline = Date.now() + 54000;
+      const _deadline = Date.now() + 110000; // 110s — no Vercel limit in browser
       let _attempt = 0;
+      let _tokenIdx = 0;
       while (!html && Date.now() < _deadline) {
         const mi = _attempt % modelList.length;
         const model = modelList[mi];
+        // Between full cycles: wait a bit to let models recover
         if (_attempt > 0 && mi === 0) {
           const cycle = Math.floor(_attempt / modelList.length);
-          await new Promise(r => setTimeout(r, Math.min(cycle * 2000, 8000)));
+          await new Promise(r => setTimeout(r, Math.min(cycle * 3000, 10000)));
           if (Date.now() >= _deadline) break;
+        } else if (_attempt > 0) {
+          await new Promise(r => setTimeout(r, 300)); // small gap between models
         }
         _attempt++;
         if (_attempt > 1) loadingStatus.textContent = `Se încearcă ${model}…`;
@@ -3373,14 +3379,21 @@ async function submitContactForm(e) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
         let res;
         try {
-          res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: reqBody });
+          res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: makeBody(tokenOptions[_tokenIdx]) });
         } catch (fetchErr) {
           console.warn('[generate] fetch failed for', model, fetchErr.message);
           continue;
         }
 
-        if (res.status === 503 || res.status === 429 || res.status === 404 || res.status === 400) {
-          console.warn('[generate]', model, 'status', res.status, '— trying next');
+        if (res.status === 503 || res.status === 429 || res.status === 404) {
+          console.warn('[generate]', model, 'overloaded', res.status);
+          continue;
+        }
+
+        if (res.status === 400) {
+          // Token count may be too high for this model — try lower
+          if (_tokenIdx < tokenOptions.length - 1) { _tokenIdx++; }
+          console.warn('[generate]', model, '400 — retry with', tokenOptions[_tokenIdx], 'tokens');
           continue;
         }
 
