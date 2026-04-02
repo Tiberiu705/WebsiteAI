@@ -97,9 +97,12 @@ module.exports = async function handler(req, res) {
   result.topReferrers = sortTop(result.referrers);
   result.topPages = sortTop(result.pages);
 
-  // Also pull generation counter
+  // Pull generation counter + daily generations
   try {
     result.totals.generations = parseInt(await redis(['GET', 'stats:generations']) || '0', 10);
+    const genDayData = await Promise.all(dates.map(d => redis(['HGET', `stats:gen:daily:${d}`, 'count'])));
+    result.dailyGenerations = dates.map((d, i) => ({ date: d, generations: parseInt(genDayData[i] || '0', 10) }));
+    result.totals.generationsPeriod = result.dailyGenerations.reduce((s, x) => s + x.generations, 0);
   } catch {}
 
   res.setHeader('Cache-Control', 'private, no-cache');

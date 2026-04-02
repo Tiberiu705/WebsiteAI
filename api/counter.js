@@ -22,7 +22,11 @@ module.exports = async function handler(req, res) {
 
   // POST — increment counter
   if (req.method === 'POST') {
-    const count = await redis(['INCR', key]);
+    const today = new Date().toISOString().slice(0, 10);
+    const [count] = await Promise.all([
+      redis(['INCR', key]),
+      redis(['HINCRBY', `stats:gen:daily:${today}`, 'count', 1]),
+    ]);
     return res.status(200).json({ count });
   }
 
