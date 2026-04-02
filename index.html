@@ -2090,7 +2090,7 @@ async function submitContactForm(e) {
     <!-- Progress percent -->
     <div style="width:100%;max-width:380px;display:flex;justify-content:space-between;margin-bottom:36px;">
       <span id="loading-pct" style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;"></span>
-      <span id="loading-timer" style="font-family:'Inter',sans-serif;font-size:0.75rem;color:#444;"></span>
+      <span id="loading-timer" style="display:none;"></span>
     </div>
 
     <!-- Step checklist -->
@@ -3034,8 +3034,6 @@ async function submitContactForm(e) {
       if (pctEl) pctEl.textContent = Math.round(pct) + '%';
 
       // Elapsed timer
-      const elapsed = Math.round((Date.now() - startTime) / 1000);
-      if (timerEl) timerEl.textContent = elapsed + 's';
 
       // Advance step based on pct
       const newStep = LOAD_STEPS.reduce((acc, s, i) => pct >= s.from ? i : acc, 0);
@@ -3441,7 +3439,7 @@ async function submitContactForm(e) {
         generationConfig: { maxOutputTokens: tokens, temperature: 0.75, topP: 0.95 },
       });
 
-      const _deadline = Date.now() + 110000; // 110s — no Vercel limit in browser
+      const _deadline = Date.now() + 240000; // 240s — no Vercel limit in browser
       let _attempt = 0;
       let _tokenIdx = 0;
       while (!html && Date.now() < _deadline) {
@@ -3526,7 +3524,7 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
       }
 
       /* Replace placeholders with Imagen AI-generated images */
-      loadingStatus.textContent = 'Se generează imaginile cu AI…'; loadingStatus.style.opacity = '1';
+      loadingStatus.textContent = 'Se generează imaginile…'; loadingStatus.style.opacity = '1';
       html = await injectAIImages(html, brief);
 
       /* ── Close truncated HTML if needed ── */
