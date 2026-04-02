@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Analytics — WebsiteAI</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23C8FF00'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='18' fill='%23080808'%3EW%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#080808;color:#e0e0e0;font-family:'Inter',sans-serif;min-height:100vh;}
+a{color:inherit;text-decoration:none;}
+
+.header{position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#C8FF00;letter-spacing:-0.02em;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.btn-back{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:7px 14px;color:#888;font-family:'Inter',sans-serif;font-size:0.78rem;cursor:pointer;transition:color 0.15s,border-color 0.15s;}
+.btn-back:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
+
+.main{max-width:1200px;margin:0 auto;padding:40px 24px;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:#fff;letter-spacing:-0.03em;margin-bottom:4px;}
+.page-sub{font-size:0.85rem;color:#555;margin-bottom:32px;}
+
+/* Period selector */
+.period-bar{display:flex;align-items:center;gap:8px;margin-bottom:32px;flex-wrap:wrap;}
+.period-label{font-size:0.78rem;color:#555;margin-right:4px;}
+.period-btn{background:transparent;border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:7px 16px;color:#666;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;cursor:pointer;transition:all 0.15s;}
+.period-btn:hover{color:#aaa;border-color:rgba(255,255,255,0.2);}
+.period-btn.active{background:#C8FF00;color:#080808;border-color:#C8FF00;}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:32px;}
+.kpi-card{background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px 22px;}
+.kpi-val{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:#C8FF00;letter-spacing:-0.02em;line-height:1;}
+.kpi-lbl{font-size:0.7rem;color:#555;text-transform:uppercase;letter-spacing:0.07em;margin-top:6px;}
+
+/* Chart card */
+.chart-card{background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:24px;margin-bottom:24px;}
+.chart-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;color:#fff;margin-bottom:20px;letter-spacing:-0.01em;}
+.chart-wrap{position:relative;height:240px;}
+
+/* Grid 2-col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+@media(max-width:720px){.grid2{grid-template-columns:1fr;}}
+
+/* Table card */
+.table-card{background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:22px;}
+.table-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#fff;margin-bottom:16px;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:0.68rem;color:#444;text-transform:uppercase;letter-spacing:0.07em;text-align:left;padding:0 0 10px;border-bottom:1px solid rgba(255,255,255,0.05);}
+th:last-child{text-align:right;}
+td{padding:9px 0;font-size:0.82rem;color:#ccc;border-bottom:1px solid rgba(255,255,255,0.04);}
+td:last-child{text-align:right;color:#888;}
+tr:last-child td{border-bottom:none;}
+.bar-cell{display:flex;align-items:center;gap:10px;}
+.mini-bar{height:4px;border-radius:2px;background:#C8FF00;opacity:0.7;flex-shrink:0;}
+
+/* Loading / empty */
+.loading-wrap{display:flex;align-items:center;justify-content:center;min-height:300px;color:#444;font-size:0.85rem;flex-direction:column;gap:12px;}
+.spinner{width:28px;height:28px;border:3px solid rgba(200,255,0,0.15);border-top-color:#C8FF00;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Login wall */
+#login-wall{position:fixed;inset:0;background:#080808;display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:16px;}
+.login-box{background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:40px;max-width:380px;width:100%;text-align:center;}
+.login-box h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#fff;margin-bottom:8px;}
+.login-box p{font-size:0.82rem;color:#555;margin-bottom:24px;line-height:1.6;}
+.login-error{font-size:0.78rem;color:#ff6b6b;margin-top:12px;min-height:18px;}
+input[type=password]{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#fff;font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;margin-bottom:12px;}
+input[type=password]:focus{border-color:rgba(200,255,0,0.4);}
+.btn-login{width:100%;background:#C8FF00;border:none;border-radius:10px;padding:12px;color:#080808;font-family:'Syne',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;transition:opacity 0.15s;}
+.btn-login:hover{opacity:0.88;}
+.btn-login:active{opacity:0.75;}
+</style>
+</head>
+<body>
+
+<!-- Login wall (shown when not authed) -->
+<div id="login-wall" style="display:none;">
+  <div class="login-box">
+    <h2>Analytics — Admin</h2>
+    <p>Introdu token-ul de admin pentru a accesa datele.</p>
+    <input type="password" id="admin-token-input" placeholder="Admin token" autocomplete="current-password"/>
+    <button class="btn-login" onclick="tryLogin()">Autentifică-te</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <header class="header">
+    <span class="logo">WebsiteAI</span>
+    <div class="header-right">
+      <a href="/dashboard" class="btn-back">← Dashboard</a>
+    </div>
+  </header>
+
+  <main class="main">
+    <h1 class="page-title">Analytics</h1>
+    <p class="page-sub" id="period-desc">Performanța campaniilor și traficul site-ului</p>
+
+    <div class="period-bar">
+      <span class="period-label">Perioadă:</span>
+      <button class="period-btn active" onclick="loadData(7,this)">7 zile</button>
+      <button class="period-btn" onclick="loadData(14,this)">14 zile</button>
+      <button class="period-btn" onclick="loadData(30,this)">30 zile</button>
+      <button class="period-btn" onclick="loadData(60,this)">60 zile</button>
+      <button class="period-btn" onclick="loadData(90,this)">90 zile</button>
+    </div>
+
+    <div id="kpi-row" class="kpi-row">
+      <div class="loading-wrap" style="grid-column:1/-1;min-height:100px;">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Trafic zilnic (vizite)</div>
+      <div class="chart-wrap"><canvas id="traffic-chart"></canvas></div>
+    </div>
+
+    <div class="grid2">
+      <div class="table-card">
+        <div class="table-title">Top surse (UTM Source)</div>
+        <div id="tbl-sources"></div>
+      </div>
+      <div class="table-card">
+        <div class="table-title">Top campanii (UTM Campaign)</div>
+        <div id="tbl-campaigns"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="table-card">
+        <div class="table-title">Top referrers</div>
+        <div id="tbl-referrers"></div>
+      </div>
+      <div class="table-card">
+        <div class="table-title">Top pagini</div>
+        <div id="tbl-pages"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const TOKEN_KEY = 'ws_analytics_token';
+let trafficChart = null;
+let currentToken = null;
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || '';
+}
+
+async function tryLogin() {
+  const val = document.getElementById('admin-token-input').value.trim();
+  const err = document.getElementById('login-err');
+  err.textContent = '';
+  if (!val) { err.textContent = 'Token-ul este gol.'; return; }
+  try {
+    const r = await fetch('/api/analytics?days=1', { headers: { Authorization: 'Bearer ' + val } });
+    if (r.status === 401 || r.status === 403) { err.textContent = 'Token invalid sau acces refuzat.'; return; }
+    if (!r.ok) { err.textContent = 'Eroare server: ' + r.status; return; }
+    sessionStorage.setItem(TOKEN_KEY, val);
+    currentToken = val;
+    showApp();
+    loadData(7);
+  } catch (e) { err.textContent = 'Eroare de rețea.'; }
+}
+
+document.getElementById('admin-token-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') tryLogin();
+});
+
+function showApp() {
+  document.getElementById('login-wall').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+async function init() {
+  // Try session token first (from dashboard auth)
+  let token = getToken();
+
+  // Also try the session from dashboard
+  if (!token) {
+    try {
+      const u = JSON.parse(localStorage.getItem('ws_session') || 'null');
+      if (u && u.token) token = u.token;
+    } catch {}
+  }
+
+  if (token) {
+    currentToken = token;
+    // Verify
+    try {
+      const r = await fetch('/api/analytics?days=1', { headers: { Authorization: 'Bearer ' + token } });
+      if (r.ok) {
+        showApp();
+        loadData(7);
+        return;
+      }
+    } catch {}
+  }
+
+  // Show login wall
+  document.getElementById('login-wall').style.display = 'flex';
+}
+
+async function loadData(days, btn) {
+  if (btn) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // Show loading in KPI
+  document.getElementById('kpi-row').innerHTML = '<div class="loading-wrap" style="grid-column:1/-1;min-height:100px;"><div class="spinner"></div></div>';
+
+  try {
+    const r = await fetch(`/api/analytics?days=${days}`, { headers: { Authorization: 'Bearer ' + currentToken } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    render(data, days);
+  } catch (e) {
+    document.getElementById('kpi-row').innerHTML = '<p style="color:#ff6b6b;font-size:0.82rem;">Eroare la încărcarea datelor: ' + e.message + '</p>';
+  }
+}
+
+function render(data, days) {
+  const { totals, daily, topSources, topMediums, topCampaigns, topReferrers, topPages, period } = data;
+
+  // Period desc
+  document.getElementById('period-desc').textContent = `${period.from} → ${period.to} · ${days} zile`;
+
+  // KPI
+  const avgViews = days > 0 ? Math.round(totals.views / days) : 0;
+  const kpis = [
+    { val: totals.views.toLocaleString('ro'), lbl: 'Vizite totale' },
+    { val: avgViews.toLocaleString('ro'), lbl: 'Vizite/zi (medie)' },
+    { val: (totals.generations || 0).toLocaleString('ro'), lbl: 'Site-uri generate' },
+    { val: topSources.length > 0 ? topSources[0].name : '—', lbl: 'Top sursă' },
+    { val: topCampaigns.length > 0 ? topCampaigns[0].name : '—', lbl: 'Top campanie' },
+  ];
+  document.getElementById('kpi-row').innerHTML = kpis.map(k =>
+    `<div class="kpi-card"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`
+  ).join('');
+
+  // Traffic chart
+  const labels = daily.map(d => d.date.slice(5)); // MM-DD
+  const values = daily.map(d => d.views);
+  const ctx = document.getElementById('traffic-chart').getContext('2d');
+  if (trafficChart) trafficChart.destroy();
+  trafficChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Vizite',
+        data: values,
+        backgroundColor: 'rgba(200,255,0,0.25)',
+        borderColor: '#C8FF00',
+        borderWidth: 1.5,
+        borderRadius: 4,
+        hoverBackgroundColor: 'rgba(200,255,0,0.45)',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(17,17,17,0.95)',
+          titleColor: '#C8FF00',
+          bodyColor: '#ccc',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: { color: '#555', font: { family: 'Inter', size: 11 }, maxRotation: 45 }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#555', font: { family: 'Inter', size: 11 }, precision: 0 },
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+
+  // Tables
+  renderTable('tbl-sources', topSources, 'Sursă', 'Vizite');
+  renderTable('tbl-campaigns', topCampaigns, 'Campanie', 'Vizite');
+  renderTable('tbl-referrers', topReferrers, 'Referrer', 'Vizite');
+  renderTable('tbl-pages', topPages, 'Pagină', 'Vizite');
+}
+
+function renderTable(id, rows, col1, col2) {
+  const el = document.getElementById(id);
+  if (!rows || rows.length === 0) {
+    el.innerHTML = '<p style="color:#444;font-size:0.8rem;text-align:center;padding:20px 0;">Nu există date pentru această perioadă.</p>';
+    return;
+  }
+  const max = rows[0].views;
+  el.innerHTML = `<table>
+    <thead><tr><th>${col1}</th><th>${col2}</th></tr></thead>
+    <tbody>
+    ${rows.map(r => {
+      const pct = max > 0 ? Math.round((r.views / max) * 100) : 0;
+      return `<tr>
+        <td><div class="bar-cell">
+          <div class="mini-bar" style="width:${pct}px;max-width:80px;"></div>
+          <span>${escHtml(r.name)}</span>
+        </div></td>
+        <td>${r.views.toLocaleString('ro')}</td>
+      </tr>`;
+    }).join('')}
+    </tbody></table>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+init();
+</script>
+</body>
+</html>

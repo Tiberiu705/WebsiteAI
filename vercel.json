@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/analytics", "destination": "/analytics.html" },
     { "source": "/site/:sku", "destination": "/site.html" },
     { "source": "/termeni", "destination": "/termeni.html" },
     { "source": "/confidentialitate", "destination": "/confidentialitate.html" },
@@ -19,6 +20,8 @@
     "api/img.js": { "maxDuration": 15 },
     "api/site.js": { "maxDuration": 10 },
     "api/contact.js": { "maxDuration": 10 },
-    "api/counter.js": { "maxDuration": 5 }
+    "api/counter.js": { "maxDuration": 5 },
+    "api/track.js": { "maxDuration": 5 },
+    "api/analytics.js": { "maxDuration": 10 }
   }
 }
