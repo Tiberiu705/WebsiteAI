@@ -2103,10 +2103,7 @@ async function submitContactForm(e) {
         <div class="lstep-icon" style="width:20px;height:20px;border-radius:50%;border:1.5px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
         <span style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;">Design & structură pagini</span>
       </div>
-      <div class="load-step" id="lstep-2" style="display:flex;align-items:center;gap:12px;opacity:0.3;transition:opacity 0.4s;">
-        <div class="lstep-icon" style="width:20px;height:20px;border-radius:50%;border:1.5px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
-        <span style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;">Texte & conținut personalizat</span>
-      </div>
+      <div class="load-step" id="lstep-2" style="display:none;"></div>
       <div class="load-step" id="lstep-3" style="display:flex;align-items:center;gap:12px;opacity:0.3;transition:opacity 0.4s;">
         <div class="lstep-icon" style="width:20px;height:20px;border-radius:50%;border:1.5px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
         <span style="font-family:'Inter',sans-serif;font-size:0.82rem;color:#aaa;">Optimizare mobile & SEO</span>
@@ -2985,7 +2982,7 @@ async function submitContactForm(e) {
   const LOAD_STEPS = [
     { id: 'lstep-0', status: 'Se analizează descrierea afacerii…',   from: 0  },
     { id: 'lstep-1', status: 'Se proiectează design-ul și layout-ul…', from: 22 },
-    { id: 'lstep-2', status: 'AI-ul scrie texte și conținut…',        from: 48 },
+    { id: 'lstep-2', status: 'Se finalizează structura…',             from: 48 },
     { id: 'lstep-3', status: 'Optimizare mobile, SEO, finalizare…',   from: 74 },
   ];
   const CHECK_SVG = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
