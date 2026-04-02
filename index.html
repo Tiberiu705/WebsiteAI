@@ -120,7 +120,7 @@
     .heading-xl {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: clamp(2.8rem, 7vw, 6rem);
+      font-size: clamp(2.8rem, 5vw, 4rem);
       line-height: 1.0;
       letter-spacing: -0.04em;
     }
@@ -512,9 +512,12 @@
       .nav-links { display: none !important; }
       .heading-xl { font-size: clamp(2rem, 8vw, 2.8rem) !important; }
 
-      .hero-section { padding-top: 88px !important; padding-bottom: 56px !important; }
-      .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+      .hero-section { padding-top: 64px !important; padding-bottom: 40px !important; }
+      .hero-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
       .hero-mockup { display: none !important; }
+      .hero-grid > div:first-child h1 { margin-bottom: 14px !important; }
+      .hero-grid > div:first-child > p.body-lg { margin-bottom: 20px !important; font-size: 0.95rem !important; }
+      .hero-grid > div:first-child .trust-row { display: none !important; }
 
       .ai-input-wrap {
         flex-direction: column !important;
@@ -723,8 +726,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </script>
 
 <!-- ══════════════════════ HERO ══════════════════════ -->
-<section class="hero-bg hero-section" style="padding:140px 24px 100px;" id="generator">
-  <div class="hero-grid" style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+<section class="hero-bg hero-section" style="padding:80px 24px 60px;" id="generator">
+  <div class="hero-grid" style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
 
     <!-- Left: copy + input -->
     <div>
@@ -734,7 +737,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         în 60 de secunde.
       </h1>
 
-      <p class="body-lg" style="max-width:480px;margin-bottom:40px;font-size:1.05rem;">
+      <p class="body-lg" style="max-width:480px;margin-bottom:24px;font-size:1rem;">
         Descrie afacerea ta în câteva cuvinte. WebsiteAI creează automat un site profesional, personalizat, gata de publicat.
       </p>
 
@@ -756,8 +759,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </button>
       </div>
 
-      <p style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#444;margin-bottom:48px;">
-        Fără cont. Fără card. Primul site e cadou.
+      <p style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#555;margin-bottom:28px;line-height:1.6;">
+        Primul site <strong style="color:#C8FF00;">100% gratuit.</strong> Apoi 7 zile trial — abonament 149 lei/lună, anulezi oricând.
       </p>
 
       <!-- Trust -->
@@ -1380,7 +1383,7 @@ function quickStart(btn) {
         <span class="badge-dot"></span>Prețuri
       </div>
       <h2 class="heading-lg">Simplu.<br /><span class="acid-text">Transparent.</span></h2>
-      <p class="body-lg" style="margin-top:16px;font-size:1rem;">Fără abonamente ascunse, fără taxe surpriză. Plătești doar pentru ce folosești.</p>
+      <p class="body-lg" style="margin-top:16px;font-size:1rem;">Testează gratuit 7 zile. Plătești doar dacă ești mulțumit — anulezi oricând, fără întrebări.</p>
     </div>
 
     <div class="pricing-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;max-width:740px;margin:0 auto;">
@@ -1391,11 +1394,15 @@ function quickStart(btn) {
           <div style="background:#C8FF00;color:#080808;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;padding:5px 16px;border-radius:100px;">Cel mai popular</div>
         </div>
         <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;color:#C8FF00;margin-bottom:24px;">Pro</div>
+        <div style="background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.25);border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#C8FF00;">7 ZILE GRATUIT</span>
+          <span style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#888;">— nu se taxează nimic acum</span>
+        </div>
         <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
           <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;letter-spacing:-0.04em;line-height:1;color:#C8FF00;">149</span>
-          <span style="font-family:'Inter',sans-serif;color:#666;font-size:0.95rem;">RON / lună</span>
+          <span style="font-family:'Inter',sans-serif;color:#666;font-size:0.95rem;">RON / lună după trial</span>
         </div>
-        <p style="font-size:0.875rem;color:#888;margin-bottom:32px;font-family:'Inter',sans-serif;">7 zile gratuit · pentru afaceri care vor să crească.</p>
+        <p style="font-size:0.875rem;color:#888;margin-bottom:32px;font-family:'Inter',sans-serif;">Pentru afaceri care vor să crească online.</p>
         <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;">
           <div class="check-item">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="rgba(200,255,0,0.18)"/><path d="M5 8l2 2 4-4" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1419,6 +1426,7 @@ function quickStart(btn) {
           </div>
         </div>
         <a href="/dashboard" class="btn-acid" style="width:100%;justify-content:center;">Începe 7 zile gratuit</a>
+        <p style="text-align:center;font-family:'Inter',sans-serif;font-size:0.78rem;color:#555;margin-top:12px;">Anulezi înainte de zi 7 → 0 lei plătiți</p>
       </div>
 
       <!-- Agency -->
@@ -1475,10 +1483,14 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Sincer, nu mă așteptam la mare lucru. Am completat formularul mai mult din curiozitate și după 40 de secunde aveam un site pe care l-am și publicat. Soția m-a întrebat cât am dat pe el."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(200,255,0,0.15);color:#C8FF00;">MC</div>
-            <div>
+            <img src="https://i.pravatar.cc/48?img=8" alt="Marian Ciobanu" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
               <div class="tm-name">Marian Ciobanu</div>
               <div class="tm-role">Instalator, Sector 4 București</div>
+              <a href="/sites/instalatii-ciobanu/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H5M10 2v5" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round"/></svg>
+                instalatii-ciobanu.websiteai.ro
+              </a>
             </div>
           </div>
         </div>
@@ -1488,10 +1500,14 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Am plătit anul trecut 3.500 lei pentru un site care a durat 2 luni. Cu WebsiteAI am făcut ceva similar în câteva minute, gratis. Puțin supărată pe mine că nu am știut mai devreme."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(236,72,153,0.15);color:#ec4899;">AT</div>
-            <div>
+            <img src="https://i.pravatar.cc/48?img=47" alt="Andreea Tănase" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
               <div class="tm-name">Andreea Tănase</div>
               <div class="tm-role">Salon de manichiură, Craiova</div>
+              <a href="/sites/salon-andreea/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H5M10 2v5" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round"/></svg>
+                salon-andreea.websiteai.ro
+              </a>
             </div>
           </div>
         </div>
@@ -1501,10 +1517,14 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★☆</div>
           <p class="tm-text">"Recunosc că la prima generare n-a ieșit perfect — am mai regenerat o dată și a doua variantă era exact ce voiam. Am schimbat culorile din editor și gata, am trimis link-ul la clienți."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(99,102,241,0.15);color:#818cf8;">DP</div>
-            <div>
+            <img src="https://i.pravatar.cc/48?img=12" alt="Dragoș Popa" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
               <div class="tm-name">Dragoș Popa</div>
               <div class="tm-role">Electrician autorizat, Pitești</div>
+              <a href="/sites/electrician-popa/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H5M10 2v5" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round"/></svg>
+                electrician-popa.websiteai.ro
+              </a>
             </div>
           </div>
         </div>
@@ -1514,10 +1534,14 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Am 54 de ani și nu mă pricep la calculatoare. Fiica mea mi-a arătat WebsiteAI, am dictat ce face firma, ea a scris, și acum am un site de parcă l-a făcut cineva care se pricepe."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(251,146,60,0.15);color:#fb923c;">GS</div>
-            <div>
+            <img src="https://i.pravatar.cc/48?img=15" alt="Gheorghe Stan" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
               <div class="tm-name">Gheorghe Stan</div>
               <div class="tm-role">Tâmplărie la comandă, Buzău</div>
+              <a href="/sites/tamplarie-stan/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H5M10 2v5" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round"/></svg>
+                tamplarie-stan.websiteai.ro
+              </a>
             </div>
           </div>
         </div>
@@ -1527,10 +1551,14 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Lucrez ca freelancer și fac site-uri pentru clienți mici. WebsiteAI îmi dă o bază foarte bună pe care o personalizez apoi. Îmi economisește ore bune de muncă pe fiecare proiect."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(34,197,94,0.15);color:#22c55e;">BI</div>
-            <div>
+            <img src="https://i.pravatar.cc/48?img=3" alt="Bogdan Ilie" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
               <div class="tm-name">Bogdan Ilie</div>
               <div class="tm-role">Web designer freelancer, Cluj</div>
+              <a href="/sites/bogdan-design/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H5M10 2v5" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round"/></svg>
+                bogdan-ilie.websiteai.ro
+              </a>
             </div>
           </div>
         </div>
@@ -1540,10 +1568,14 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Am deschis o cafenea acum 2 luni. N-aveam buget de site. Am găsit WebsiteAI pe Google, am generat site-ul seara, și a doua zi deja apăream în căutări. Primul client de pe net a venit în 3 zile."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(56,189,248,0.15);color:#38bdf8;">IM</div>
-            <div>
+            <img src="https://i.pravatar.cc/48?img=44" alt="Ioana Moldovan" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
               <div class="tm-name">Ioana Moldovan</div>
               <div class="tm-role">Cafenea, Alba Iulia</div>
+              <a href="/sites/cafenea-ioana/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H5M10 2v5" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round"/></svg>
+                cafeneaua-ioanei.websiteai.ro
+              </a>
             </div>
           </div>
         </div>
@@ -1553,10 +1585,14 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★☆</div>
           <p class="tm-text">"Am generat 3 variante până am găsit-o pe cea care mi-a plăcut. Editorul e simplu, am schimbat texte și poze fără probleme. Singurul lucru care ar mai trebui e să poți adăuga mai multe pagini."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(168,85,247,0.15);color:#a855f7;">CR</div>
-            <div>
+            <img src="https://i.pravatar.cc/48?img=52" alt="Cristian Rusu" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
               <div class="tm-name">Cristian Rusu</div>
               <div class="tm-role">Firmă de transport, Sibiu</div>
+              <a href="/sites/transport-rusu/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H5M10 2v5" stroke="#C8FF00" stroke-width="1.5" stroke-linecap="round"/></svg>
+                transport-rusu.websiteai.ro
+              </a>
             </div>
           </div>
         </div>
@@ -1566,77 +1602,56 @@ function quickStart(btn) {
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Sincer, nu mă așteptam la mare lucru. Am completat formularul mai mult din curiozitate și după 40 de secunde aveam un site pe care l-am și publicat. Soția m-a întrebat cât am dat pe el."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(200,255,0,0.15);color:#C8FF00;">MC</div>
-            <div>
-              <div class="tm-name">Marian Ciobanu</div>
-              <div class="tm-role">Instalator, Sector 4 București</div>
-            </div>
+            <img src="https://i.pravatar.cc/48?img=8" alt="Marian Ciobanu" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;"><div class="tm-name">Marian Ciobanu</div><div class="tm-role">Instalator, Sector 4 București</div><a href="/sites/instalatii-ciobanu/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;">instalatii-ciobanu.websiteai.ro</a></div>
           </div>
         </div>
         <div class="tm-card">
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Am plătit anul trecut 3.500 lei pentru un site care a durat 2 luni. Cu WebsiteAI am făcut ceva similar în câteva minute, gratis. Puțin supărată pe mine că nu am știut mai devreme."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(236,72,153,0.15);color:#ec4899;">AT</div>
-            <div>
-              <div class="tm-name">Andreea Tănase</div>
-              <div class="tm-role">Salon de manichiură, Craiova</div>
-            </div>
+            <img src="https://i.pravatar.cc/48?img=47" alt="Andreea Tănase" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;"><div class="tm-name">Andreea Tănase</div><div class="tm-role">Salon de manichiură, Craiova</div><a href="/sites/salon-andreea/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;">salon-andreea.websiteai.ro</a></div>
           </div>
         </div>
         <div class="tm-card">
           <div class="tm-stars">★★★★☆</div>
           <p class="tm-text">"Recunosc că la prima generare n-a ieșit perfect — am mai regenerat o dată și a doua variantă era exact ce voiam. Am schimbat culorile din editor și gata, am trimis link-ul la clienți."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(99,102,241,0.15);color:#818cf8;">DP</div>
-            <div>
-              <div class="tm-name">Dragoș Popa</div>
-              <div class="tm-role">Electrician autorizat, Pitești</div>
-            </div>
+            <img src="https://i.pravatar.cc/48?img=12" alt="Dragoș Popa" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;"><div class="tm-name">Dragoș Popa</div><div class="tm-role">Electrician autorizat, Pitești</div><a href="/sites/electrician-popa/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;">electrician-popa.websiteai.ro</a></div>
           </div>
         </div>
         <div class="tm-card">
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Am 54 de ani și nu mă pricep la calculatoare. Fiica mea mi-a arătat WebsiteAI, am dictat ce face firma, ea a scris, și acum am un site de parcă l-a făcut cineva care se pricepe."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(251,146,60,0.15);color:#fb923c;">GS</div>
-            <div>
-              <div class="tm-name">Gheorghe Stan</div>
-              <div class="tm-role">Tâmplărie la comandă, Buzău</div>
-            </div>
+            <img src="https://i.pravatar.cc/48?img=15" alt="Gheorghe Stan" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;"><div class="tm-name">Gheorghe Stan</div><div class="tm-role">Tâmplărie la comandă, Buzău</div><a href="/sites/tamplarie-stan/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;">tamplarie-stan.websiteai.ro</a></div>
           </div>
         </div>
         <div class="tm-card">
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Lucrez ca freelancer și fac site-uri pentru clienți mici. WebsiteAI îmi dă o bază foarte bună pe care o personalizez apoi. Îmi economisește ore bune de muncă pe fiecare proiect."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(34,197,94,0.15);color:#22c55e;">BI</div>
-            <div>
-              <div class="tm-name">Bogdan Ilie</div>
-              <div class="tm-role">Web designer freelancer, Cluj</div>
-            </div>
+            <img src="https://i.pravatar.cc/48?img=3" alt="Bogdan Ilie" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;"><div class="tm-name">Bogdan Ilie</div><div class="tm-role">Web designer freelancer, Cluj</div><a href="/sites/bogdan-design/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;">bogdan-ilie.websiteai.ro</a></div>
           </div>
         </div>
         <div class="tm-card">
           <div class="tm-stars">★★★★★</div>
           <p class="tm-text">"Am deschis o cafenea acum 2 luni. N-aveam buget de site. Am găsit WebsiteAI pe Google, am generat site-ul seara, și a doua zi deja apăream în căutări. Primul client de pe net a venit în 3 zile."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(56,189,248,0.15);color:#38bdf8;">IM</div>
-            <div>
-              <div class="tm-name">Ioana Moldovan</div>
-              <div class="tm-role">Cafenea, Alba Iulia</div>
-            </div>
+            <img src="https://i.pravatar.cc/48?img=44" alt="Ioana Moldovan" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;"><div class="tm-name">Ioana Moldovan</div><div class="tm-role">Cafenea, Alba Iulia</div><a href="/sites/cafenea-ioana/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;">cafeneaua-ioanei.websiteai.ro</a></div>
           </div>
         </div>
         <div class="tm-card">
           <div class="tm-stars">★★★★☆</div>
           <p class="tm-text">"Am generat 3 variante până am găsit-o pe cea care mi-a plăcut. Editorul e simplu, am schimbat texte și poze fără probleme. Singurul lucru care ar mai trebui e să poți adăuga mai multe pagini."</p>
           <div class="tm-author">
-            <div class="tm-avatar" style="background:rgba(168,85,247,0.15);color:#a855f7;">CR</div>
-            <div>
-              <div class="tm-name">Cristian Rusu</div>
-              <div class="tm-role">Firmă de transport, Sibiu</div>
-            </div>
+            <img src="https://i.pravatar.cc/48?img=52" alt="Cristian Rusu" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;"><div class="tm-name">Cristian Rusu</div><div class="tm-role">Firmă de transport, Sibiu</div><a href="/sites/transport-rusu/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif;font-size:0.72rem;color:#C8FF00;text-decoration:none;margin-top:4px;opacity:0.8;">transport-rusu.websiteai.ro</a></div>
           </div>
         </div>
 
