@@ -4221,7 +4221,8 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
     var _origBrand = brandName;
     var _brandNodes = [];
     var _origTitle = doc.title;
-    if (_origBrand) {
+    // Only do brand replacement if the detected name is at least 3 chars (prevents single-letter disasters)
+    if (_origBrand && _origBrand.length >= 3) {
       var _bWalker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
       var _bNode;
       while (_bNode = _bWalker.nextNode()) {
@@ -4238,7 +4239,7 @@ footer div:has(> div > svg:only-child) > div:has(> svg){flex-shrink:0!important;
       value: brandName,
       type: 'text',
       onInput: function(val) {
-        if (!val.trim() || !_origBrand) return;
+        if (!val.trim() || !_origBrand || _origBrand.length < 3) return;
         // Replace from snapshotted originals — prevents cascading partial matches
         _brandNodes.forEach(function(entry) {
           if (entry.node.parentNode) {
